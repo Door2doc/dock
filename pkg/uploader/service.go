@@ -108,7 +108,7 @@ func (s *Service) run(ctx context.Context) error {
 		// run the upload, IF the configuration is active
 		sleep := time.Second
 		if cfg.Active {
-			if err := Upload(ctx, cfg); err != nil {
+			if err := Upload(ctx, s.log, cfg); err != nil {
 				_ = s.log.Errorf("While processing upload: %v", err)
 			}
 			sleep = cfg.Interval

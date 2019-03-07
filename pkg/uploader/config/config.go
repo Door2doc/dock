@@ -31,7 +31,10 @@ type Configuration struct {
 // does not exist.
 func Load(ctx context.Context) (*Configuration, error) {
 	// todo
-	return &Configuration{}, nil
+	return &Configuration{
+		Active:   true,
+		Interval: time.Minute,
+	}, nil
 }
 
 // Validate validates the configuration and returns the results of those checks.

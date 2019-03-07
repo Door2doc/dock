@@ -7,6 +7,7 @@ import (
 
 	"github.com/kardianos/service"
 	"github.com/publysher/d2d-uploader/pkg/uploader/config"
+	"github.com/publysher/d2d-uploader/pkg/uploader/web"
 )
 
 // Service contains the definition to run the application as a service.
@@ -31,9 +32,11 @@ func (s *Service) Start(svc service.Service) error {
 	s.log = logger
 
 	// create HTTP server for configuration purposes
+	mux := http.DefaultServeMux
+	mux.Handle("/", web.NewServeMux())
 	s.srv = &http.Server{
 		Addr:    ":17226",
-		Handler: http.DefaultServeMux,
+		Handler: mux,
 	}
 
 	// create service context

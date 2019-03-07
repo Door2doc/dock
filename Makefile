@@ -15,7 +15,7 @@ endif
 	hub release create -d -a d2d-upload_windows_amd64.exe -m"$(VERSION)" $(VERSION)
 
 .PHONY:	compile
-compile:
+compile:	generate
 	docker run --rm \
 		-v "$(shell pwd)":/gopath/src/github.com/publysher/d2d-uploader \
 		-w /gopath/src/github.com/publysher/d2d-uploader tcnksm/gox:1.10.3 \
@@ -34,3 +34,9 @@ clean:
 .PHONY:	test
 test:
 	go test ./...
+
+.PHONY:	generate
+generate:
+	go get -u github.com/mjibson/esc
+
+	$(shell go env GOPATH)/bin/esc -o pkg/uploader/web/assets.go -pkg web -prefix pkg/uploader/web/resources pkg/uploader/web/resources

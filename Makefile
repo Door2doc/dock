@@ -1,6 +1,17 @@
 COMMIT =	$(shell git rev-list -1 HEAD | head -c 8)
 NOW = 		$(shell date +"%Y-%m-%d %H:%M:%S")
-GOVERSION =	$(shell go version)
+VERSION = 	$(shell git describe --candidates=0)
+CLEAN =		$(shell git status -s)
+
+.PHONY:	release
+release:
+ifneq "$(CLEAN)" ""
+	$(error There are uncommitted changes: "$(CLEAN)")
+endif
+ifeq "$(VERSION)" ""
+	$(error There is no annotated release tag)
+endif
+	$(MAKE) compile
 
 .PHONY:	compile
 compile:
@@ -10,7 +21,7 @@ compile:
 		gox \
 			-osarch="windows/amd64 darwin/amd64" \
 			-ldflags '-X "main.GitCommit=$(COMMIT)" \
-					  -X main.Version=todo \
+					  -X main.Version=$(VERSION) \
 					  -X "main.Built=$(NOW)" \
 					  ' \
 			./...

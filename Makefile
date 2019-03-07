@@ -10,8 +10,9 @@ endif
 ifeq "$(VERSION)" ""
 	$(error There is no version specified)
 endif
+	git push origin master
 	$(MAKE) compile
-	hub release create -d -a d2d-upload_windows_amd64.exe $(VERSION)
+	hub release create -d -a d2d-upload_windows_amd64.exe -m"$(VERSION)" $(VERSION)
 
 .PHONY:	compile
 compile:

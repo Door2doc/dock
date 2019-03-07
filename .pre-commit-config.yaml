@@ -1,0 +1,22 @@
+- repo: local
+  hooks:
+  - id: go-vet
+    name: go vet
+    types: 
+    - go 
+    language: system
+    entry: 'go vet ./...'
+    pass_filenames: false
+  - id: go-fmt
+    name: go fmt
+    types:
+    - go
+    language: system
+    entry: 'gofmt -w -s'
+  - id: go-test
+    name: go test
+    types:
+    - go
+    language: system
+    entry: 'go test -short ./...'
+    pass_filenames: false

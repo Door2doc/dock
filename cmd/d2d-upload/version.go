@@ -7,9 +7,9 @@ import (
 )
 
 var (
-	Version   string
-	GitCommit string
-	Built     string
+	Version   string = "latest"
+	GitCommit string = "latest"
+	Built     string = "just now"
 )
 
 func PrintVersion(w io.Writer) {

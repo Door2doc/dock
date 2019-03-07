@@ -30,11 +30,27 @@ func (s *Service) Start(svc service.Service) error {
 	}
 	s.log = logger
 
+	// create HTTP server for configuration purposes
+	s.srv = &http.Server{
+		Addr:    ":17226",
+		Handler: http.DefaultServeMux,
+	}
+
 	// create service context
 	ctx, cancel := context.WithCancel(context.Background())
 	s.shutdown = cancel
 
-	// run service asynchronously
+	// run HTTP server
+	go func() {
+		_ = s.log.Info("Starting configuration server")
+		err := s.srv.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			_ = logger.Errorf("Failed to start configuration server: %v", err)
+			_ = svc.Stop()
+		}
+	}()
+
+	// run service
 	go func() {
 		err := s.run(ctx)
 		switch {
@@ -43,22 +59,6 @@ func (s *Service) Start(svc service.Service) error {
 			_ = logger.Info("Service stopped")
 		case err != nil:
 			_ = logger.Errorf("While running service: %v", err)
-			cancel()
-		}
-	}()
-
-	// start HTTP server for configuration purposes
-	s.srv = &http.Server{
-		Addr:    ":17226",
-		Handler: http.DefaultServeMux,
-	}
-
-	// run HTTP server
-	go func() {
-		_ = s.log.Info("Starting configuration server")
-		err := s.srv.ListenAndServe()
-		if err != nil && err != http.ErrServerClosed {
-			_ = logger.Errorf("Failed to start configuration server: %v", err)
 			_ = svc.Stop()
 		}
 	}()
@@ -76,6 +76,7 @@ func (s *Service) Stop(svc service.Service) error {
 	// shutdown HTTP server
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
+
 	err := s.srv.Shutdown(ctx)
 	if err == nil {
 		_ = s.log.Info("Configuration server stopped")

@@ -1,6 +1,5 @@
 COMMIT =	$(shell git rev-list -1 HEAD | head -c 8)
 NOW = 		$(shell date +"%Y-%m-%d %H:%M:%S")
-VERSION = 	$(shell git describe --candidates=0)
 CLEAN =		$(shell git status -s)
 
 .PHONY:	release
@@ -9,9 +8,10 @@ ifneq "$(CLEAN)" ""
 	$(error There are uncommitted changes: "$(CLEAN)")
 endif
 ifeq "$(VERSION)" ""
-	$(error There is no annotated release tag)
+	$(error There is no version specified)
 endif
 	$(MAKE) compile
+	hub release create -d -a d2d-upload_windows_amd64.exe $(VERSION)
 
 .PHONY:	compile
 compile:

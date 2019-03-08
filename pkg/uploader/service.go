@@ -2,6 +2,7 @@ package uploader
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"time"
 
@@ -49,17 +50,29 @@ func (s *Service) Start(svc service.Service) error {
 		Handler: mux,
 	}
 
+	// start listening, and fail service start if port is occupied
+	ln, err := net.Listen("tcp", s.srv.Addr)
+	if err != nil {
+		return err
+	}
+
 	// create service context
 	ctx, cancel := context.WithCancel(context.Background())
 	s.shutdown = cancel
 
 	// run HTTP server
 	go func() {
+		defer func() {
+			if err := ln.Close(); err != nil {
+				_ = logger.Errorf("While closing listener: %v", err)
+			}
+		}()
+
 		_ = s.log.Info("Starting configuration server")
-		err := s.srv.ListenAndServe()
+		err := s.srv.Serve(ln)
+
 		if err != nil && err != http.ErrServerClosed {
-			_ = logger.Errorf("Failed to start configuration server: %v", err)
-			_ = svc.Stop()
+			_ = logger.Errorf("While running configuration server: %v", err)
 		}
 	}()
 

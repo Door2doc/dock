@@ -27,115 +27,60 @@
         </div>
     </nav>
 
+    {{ if .GlobalError }}
+    <div class="alert alert-danger">
+        <h4 class="alert-heading">Unrecoverable error</h4>
+        <p>
+            An unrecoverable error occurred. Please contact door2doc support. The error reported is:
+        </p>
+        <p>
+            <code>{{ .GlobalError }}</code>
+        </p>
+        <p>
+            Make sure to collect all relevant service logs when contacting door2doc.
+        </p>
+    </div>
+
+    {{ else }}
+
     <div class="container-fluid flex-grow-1 d-flex flex-column">
         <div class="row flex-grow-1  py-4">
             <nav class="col-sm-3 border-right">
                 <ul class="list-group list-group-flush">
-                    <a href="/" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ if eq .Path "/" }} active {{ end }}">
+                    <a href="/"
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ if eq .Path "/" }} active {{ end }}">
                         Status
                     </a>
-                    <a href="/database" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ if eq .Path "/database" }} active {{ end }}">
+                    <a href="/database"
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ if eq .Path "/database" }} active {{ end }}">
                         Database connection
                         {{ if .Problems.Database }}
-                        <span class="badge badge-danger badge-pill">!</span>
+                            <span class="badge badge-danger badge-pill">!</span>
                         {{ end }}
                     </a>
-                    <a href="/query" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center  {{ if eq .Path "/query" }} active {{ end }}">
+                    <a href="/query"
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center  {{ if eq .Path "/query" }} active {{ end }}">
                         Visitor query
                         {{ if .Problems.Query }}
-                        <span class="badge badge-danger badge-pill">!</span>
+                            <span class="badge badge-danger badge-pill">!</span>
                         {{ end }}
                     </a>
-                    <a href="/upload" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center  {{ if eq .Path "/upload" }} active {{ end }}">
+                    <a href="/upload"
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center  {{ if eq .Path "/upload" }} active {{ end }}">
                         Upload
                         {{ if .Problems.Upload }}
-                        <span class="badge badge-danger badge-pill">!</span>
+                            <span class="badge badge-danger badge-pill">!</span>
                         {{ end }}
                     </a>
                 </ul>
             </nav>
             <main class="col-sm-9">
                 <h2 class="h3 pt-1 pb-2">{{ template "title" }}</h2>
-                {{ template "body" }}
+                {{ template "body" . }}
             </main>
         </div>
 
-
-        <!-- Status + toggle -->
-        <!-- Test configuration -->
-
-        <!--
-        <div class="card mt-4">
-            <div class="card-header">Status</div>
-            <div class="card-body">
-                <dl class="row">
-                    <dt class="col-sm-3">Status</dt>
-                    <dd class="col-sm-3">Paused</dd>
-                    <dd class="col-sm-3">
-                        <a href="">activate</a>
-                    </dd>
-                </dl>
-            </div>
-        </div>
-
-        <div class="card mt-4">
-            <div class="card-header">Configuration</div>
-            <div class="card-body">
-                <dl class="row">
-                    <dt class="col-sm-3">Configuration</dt>
-                    <dd class="col-sm-9">Invalid</dd>
-                </dl>
-            </div>
-        </div>
-
-        <div class="card mt-4">
-            <div class="card-header">Door2doc</div>
-            <div class="card-body">
-                <form method="post" action="/update-d2d">
-                    <div class="form-group">
-                        <label for="d2d-username">Username</label>
-                        <input type="text" id="d2d-username" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="d2d-password">Password</label>
-                        <input type="password" id="d2d-password" class="form-control">
-                    </div>
-
-                    <div class="text-right">
-                        <button type="reset" class="btn btn-secondary">Reset</button>
-                        <button type="submit" class="btn btn-primary">Save</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div class="card mt-4">
-            <div class="card-header">Database</div>
-            <div class="card-body">
-                <form method="post" action="/update-database">
-                    <div class="form-group">
-                        <label for="db-dsn">Database connection string</label>
-                        <input type="text" id="db-dsn" class="form-control" placeholder="">
-                        <small class="form-text">
-                            Example: <code>Server=127.0.0.1; Database=myDB; User Id=username; Password=password</code> <br/>
-                            Refer to <a href="https://www.connectionstrings.com/sql-server/" target="_blank">this site</a> for more examples of MSSQL Connection strings.
-                        </small>
-                    </div>
-                    <div class="form-group">
-                        <label for="db-query">Database query</label>
-                        <textarea id="db-query" class="form-control" rows="10"></textarea>
-                    </div>
-
-                    <div class="text-right">
-                        <button type="reset" class="btn btn-secondary">Reset</button>
-                        <button type="submit" class="btn btn-primary">Save</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        -->
-
+        {{ end }}
 
     </div>
 </div>

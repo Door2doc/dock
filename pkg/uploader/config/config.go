@@ -3,12 +3,29 @@ package config
 
 import (
 	"context"
+	"errors"
 	"time"
 )
 
-// ValidationResult contains the results of a single step in validating the current configuration.
+var (
+	ErrDatabaseNotConfigured       = errors.New("database connection is not configured")
+	ErrVisitorQueryNotConfigured   = errors.New("visitor query is not configured")
+	ErrD2DConnectionFailed         = errors.New("unable to connect to https://integration.door2doc.net; make sure that the firewall allows access")
+	ErrD2DCredentialsNotConfigured = errors.New("username/password is not configured")
+)
+
+// ValidationResult contains the results of validating the current configuration.
 type ValidationResult struct {
+	DatabaseConnection error
+	VisitorQuery       error
+	D2DConnection      error
+	D2DCredentials     error
+}
+
+// IsValid returns true if all possible validation errors are nil.
+func (v *ValidationResult) IsValid() bool {
 	// todo
+	return true
 }
 
 // Configuration contains the configuration options for the service.
@@ -38,9 +55,9 @@ func Load(ctx context.Context) (*Configuration, error) {
 }
 
 // Validate validates the configuration and returns the results of those checks.
-func (c *Configuration) Validate(ctx context.Context) []ValidationResult {
+func (c *Configuration) Validate(ctx context.Context) *ValidationResult {
 	// todo
-	return nil
+	return &ValidationResult{}
 }
 
 // Save stores the latest configuration values to a well-known location.

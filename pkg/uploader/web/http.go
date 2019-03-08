@@ -1,11 +1,16 @@
 package web
 
 import (
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"net/http"
+	"regexp"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/publysher/d2d-uploader/pkg/uploader/config"
 )
 
 type Log interface {
@@ -27,8 +32,32 @@ type mux struct {
 	upload   *template.Template
 }
 
+var (
+	urlRe      = regexp.MustCompile(`https://[a-zA-Z0-9/.]+`)
+	sentenceRe = regexp.MustCompile(`(?:^|\. )[a-z]`)
+)
+
+func sentence(s interface{}) template.HTML {
+	base := fmt.Sprintf("%s", s)
+	base = urlRe.ReplaceAllStringFunc(base, func(v string) string {
+		return fmt.Sprintf("<a href=\"%s\">%s</a>", v, v)
+	})
+	if !strings.HasPrefix(base, ".") {
+		base = base + "."
+	}
+	base = strings.Replace(base, ";", ".", -1)
+	base = sentenceRe.ReplaceAllStringFunc(base, func(v string) string {
+		return strings.ToUpper(v)
+	})
+
+	return template.HTML(base)
+}
+
 func (m *mux) load(templates ...string) *template.Template {
 	res := template.New(templates[0])
+	res = res.Funcs(template.FuncMap{
+		"sentence": sentence,
+	})
 
 	for _, name := range templates {
 		err := func() error {
@@ -106,21 +135,33 @@ func NewServeMux(l Log, dev bool, version string) (http.Handler, error) {
 }
 
 type Page struct {
-	Version  string
-	Path     string
-	Problems map[string]bool
+	Version       string
+	Path          string
+	Problems      map[string]bool
+	GlobalError   error
+	Validation    *config.ValidationResult
+	Configuration *config.Configuration
 }
 
 func (m *mux) page(r *http.Request) *Page {
-	return &Page{
+	p := &Page{
 		Version: m.version,
 		Path:    r.URL.Path,
-		Problems: map[string]bool{
-			"Database": true,
-			"Query":    true,
-			"Upload":   false,
-		},
 	}
+
+	p.Configuration, p.GlobalError = config.Load(r.Context())
+	if p.GlobalError != nil {
+		return p
+	}
+
+	p.Validation = p.Configuration.Validate(r.Context())
+	p.Problems = map[string]bool{
+		"Database": p.Validation.DatabaseConnection != nil,
+		"Query":    p.Validation.VisitorQuery != nil,
+		"Upload":   p.Validation.D2DCredentials != nil,
+	}
+
+	return p
 }
 
 type StatusPage struct {
@@ -132,7 +173,7 @@ func (m *mux) StatusHandler() http.Handler {
 		m.mu.RLock()
 		defer m.mu.RUnlock()
 
-		p := StatusPage{
+		p := &StatusPage{
 			Page: m.page(r),
 		}
 

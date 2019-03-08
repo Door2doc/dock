@@ -1,69 +1,93 @@
 {{ define "title" }}Status{{ end }}
 {{ define "body" }}
-    <div class="card my-4">
-        <div class="card-header text-white bg-danger ">
-            Database connection failed
-        </div>
-        <div class="card-body">
-            <a href="/database" class="card-link">Update configuration</a>
-        </div>
-    </div>
+    {{ if .Validation.IsValid }}
 
-    <div class="card my-4">
-        <div class="card-header text-white bg-danger ">
-            Visitor query failed
-        </div>
-        <div class="card-body">
-            <a href="/query" class="card-link">Update configuration</a>
-        </div>
-    </div>
+        {{ if .Configuration.Active }}
+            <div class="card my-4">
+                <div class="card-header text-white bg-success">
+                    Service is running
+                </div>
+                <div class="card-body">
+                    <p>
+                        Most recent uploads:
+                    </p>
+                    <ul class="list-unstyled">
+                        <li>7 Mar 2019, 12:17 - Uploaded 129 items.</li>
+                        <li>7 Mar 2019, 12:16 - Uploaded 129 items.</li>
+                        <li>7 Mar 2019, 12:15 - Uploaded 127 items.</li>
+                        <li>7 Mar 2019, 12:14 - Uploaded 125 items.</li>
+                    </ul>
 
-    <div class="card my-4">
-        <div class="card-header text-white bg-danger ">
-            Upload failed
-        </div>
-        <div class="card-body">
-            Unable to connect to <a href="https://integration.door2doc.net">https://integration.door2doc.net</a>.
-        </div>
-    </div>
+                </div>
+                <div class="card-body border-top">
+                    <a href="/pause" class="card-link">Pause upload</a>
+                </div>
+            </div>
+        {{ else }}
+            <div class="card my-4">
+                <div class="card-header text-white bg-warning">
+                    Service is paused
+                </div>
+                <div class="card-body">
+                    <a href="/resume" class="card-link">Resume upload</a>
+                </div>
+            </div>
+        {{ end }}
+    {{ else }}
 
-    <div class="card my-4">
-        <div class="card-header text-white bg-danger ">
-            Upload failed: invalid username/password
-        </div>
-        <div class="card-body border-top">
-            <a href="/upload" class="card-link">Update configuration</a>
-        </div>
-    </div>
 
-    <div class="card my-4">
-        <div class="card-header text-white bg-success">
-            Service is running
-        </div>
-        <div class="card-body">
-            <p>
-                Most recent uploads:
-            </p>
-            <ul class="list-unstyled">
-                <li>7 Mar 2019, 12:17 - Uploaded 129 items.</li>
-                <li>7 Mar 2019, 12:16 - Uploaded 129 items.</li>
-                <li>7 Mar 2019, 12:15 - Uploaded 127 items.</li>
-                <li>7 Mar 2019, 12:14 - Uploaded 125 items.</li>
-            </ul>
+        {{ if .Validation.DatabaseConnection }}
+            <div class="card my-4">
+                <div class="card-header text-white bg-danger ">
+                    Database connection failed
+                </div>
+                <div class="card-body">
+                    {{ .Validation.DatabaseConnection | sentence }}
+                </div>
+                <div class="card-body border-top">
+                    <a href="/database" class="card-link">Update configuration</a>
+                </div>
+            </div>
+        {{ end }}
 
-        </div>
-        <div class="card-body border-top">
-            <a href="/pause" class="card-link">Pause upload</a>
-        </div>
-    </div>
+        {{ if .Validation.VisitorQuery }}
+            <div class="card my-4">
+                <div class="card-header text-white bg-danger ">
+                    Visitor query failed
+                </div>
+                <div class="card-body">
+                    {{ .Validation.VisitorQuery | sentence }}
+                </div>
+                <div class="card-body border-top">
+                    <a href="/query" class="card-link">Update configuration</a>
+                </div>
+            </div>
+        {{ end }}
 
-    <div class="card my-4">
-        <div class="card-header text-white bg-warning">
-            Service is paused
-        </div>
-        <div class="card-body border-top">
-            <a href="/resume" class="card-link">Resume upload</a>
-        </div>
-    </div>
+        {{ if .Validation.D2DConnection }}
+            <div class="card my-4">
+                <div class="card-header text-white bg-danger ">
+                    Upload failed
+                </div>
+                <div class="card-body">
+                    {{ .Validation.D2DConnection | sentence  }}
+                </div>
+            </div>
+        {{ end }}
+
+        {{ if .Validation.D2DCredentials }}
+            <div class="card my-4">
+                <div class="card-header text-white bg-danger ">
+                    Upload failed
+                </div>
+                <div class="card-body">
+                    {{ .Validation.D2DCredentials | sentence }}
+                </div>
+                <div class="card-body border-top">
+                    <a href="/upload" class="card-link">Update configuration</a>
+                </div>
+            </div>
+        {{ end }}
+    {{ end }}
 {{ end }}
 

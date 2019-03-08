@@ -62,12 +62,6 @@ func (s *Service) Start(svc service.Service) error {
 
 	// run HTTP server
 	go func() {
-		defer func() {
-			if err := ln.Close(); err != nil {
-				_ = logger.Errorf("While closing listener: %v", err)
-			}
-		}()
-
 		_ = s.log.Info("Starting configuration server")
 		err := s.srv.Serve(ln)
 

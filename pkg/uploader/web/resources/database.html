@@ -2,6 +2,14 @@
 {{ define "body" }}
     <form method="post" action="/update-database">
         <div class="form-group">
+            <label for="db-type">Database type:</label>
+            <select id="db-type" class="form-control">
+                <option selected value="sqlserver">SQL Server</option>
+                <option value="postgres">Postgres</option>
+            </select>
+        </div>
+
+        <div class="form-group">
             <label for="db-dsn">Database connection string:</label>
             <input type="text" id="db-dsn" class="form-control" placeholder="" required>
             <small class="form-text">

@@ -12,14 +12,17 @@ import (
 
 // Service contains the definition to run the application as a service.
 type Service struct {
+	dev      bool
 	shutdown context.CancelFunc
 	log      service.Logger
 	srv      *http.Server
 }
 
 // NewService creates a new Service instance.
-func NewService() *Service {
-	return &Service{}
+func NewService(development bool) *Service {
+	return &Service{
+		dev: development,
+	}
 }
 
 // Start starts running the service. It will return as soon as possible.
@@ -32,8 +35,13 @@ func (s *Service) Start(svc service.Service) error {
 	s.log = logger
 
 	// create HTTP server for configuration purposes
+	handler, err := web.NewServeMux(s.log, s.dev)
+	if err != nil {
+		return err
+	}
+
 	mux := http.DefaultServeMux
-	mux.Handle("/", web.NewServeMux())
+	mux.Handle("/", handler)
 	s.srv = &http.Server{
 		Addr:    ":17226",
 		Handler: mux,

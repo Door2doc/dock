@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -12,20 +13,26 @@ import (
 
 var _ mssql.Driver
 
+var (
+	DevelopmentMode = flag.Bool("dev", false, "Run in development mode")
+)
+
 func main() {
+	flag.Parse()
+
 	config := &service.Config{
 		Name:        "Door2docUploader",
 		DisplayName: "Door2doc Upload Service",
 		Description: "This service takes care of regular uploads to door2doc",
 	}
-	svc := uploader.NewService()
+	svc := uploader.NewService(*DevelopmentMode)
 	s, err := service.New(svc, config)
 	if err != nil {
 		log.Fatalf("Failed to construct service: %v", err)
 	}
 
-	if len(os.Args) > 1 {
-		switch action := os.Args[1]; action {
+	if flag.NArg() == 1 {
+		switch action := flag.Arg(0); action {
 		case "install", "uninstall", "start", "stop", "restart":
 			err := service.Control(s, action)
 			if err != nil {

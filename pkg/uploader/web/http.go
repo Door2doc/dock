@@ -4,37 +4,95 @@ import (
 	"html/template"
 	"io/ioutil"
 	"net/http"
+	"sync"
+	"time"
 )
 
-// NewServeMux generates the toplevel http mux for managing the service.
-func NewServeMux() http.Handler {
-	res := http.NewServeMux()
-	res.Handle("/assets/", http.FileServer(FS(false)))
-	res.Handle("/", ConfigurationHandler())
-	return res
+type Log interface {
+	Errorf(pattern string, args ...interface{}) error
 }
 
-func load(name string) *template.Template {
-	r, err := FS(false).Open(name)
+type mux struct {
+	*http.ServeMux
+
+	log Log
+	fs  http.FileSystem
+
+	mu    sync.RWMutex
+	err   error
+	index *template.Template
+}
+
+func (m *mux) load(name string) *template.Template {
+	r, err := m.fs.Open(name)
 	if err != nil {
-		panic(err)
+		m.err = err
+		return nil
 	}
-	defer r.Close()
+	defer func() {
+		if err := r.Close(); err != nil {
+			_ = m.log.Errorf("Failed to close %s: %v", name, err)
+		}
+	}()
 
 	text, err := ioutil.ReadAll(r)
 	if err != nil {
-		panic(err)
+		m.err = err
+		return nil
 	}
 
-	return template.Must(template.New(name).Parse(string(text)))
-	// return nil
+	res, err := template.New(name).Parse(string(text))
+	if err != nil {
+		m.err = err
+		return nil
+	}
+
+	return res
 }
 
-func ConfigurationHandler() http.Handler {
-	tmpl := load("/index.html")
-	_ = tmpl
+func (m *mux) initTemplates() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 
+	m.index = m.load("/index.html")
+}
+
+// NewServeMux generates the toplevel http mux for managing the service.
+func NewServeMux(l Log, dev bool) (http.Handler, error) {
+	res := &mux{
+		ServeMux: http.NewServeMux(),
+		log:      l,
+		fs:       FS(dev),
+	}
+
+	res.initTemplates()
+	if res.err != nil {
+		return nil, res.err
+	}
+
+	if dev {
+		go func() {
+			for {
+				select {
+				case <-time.After(time.Second):
+					res.initTemplates()
+				}
+			}
+		}()
+	}
+
+	res.Handle("/assets/", http.FileServer(res.fs))
+	res.Handle("/", res.ConfigurationHandler())
+	return res, nil
+}
+
+func (m *mux) ConfigurationHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl.Execute(w, nil)
+		m.mu.RLock()
+		defer m.mu.RUnlock()
+
+		if err := m.index.Execute(w, nil); err != nil {
+			_ = m.log.Errorf("while serving index page: %v", err)
+		}
 	})
 }

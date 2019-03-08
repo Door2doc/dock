@@ -15,8 +15,9 @@ type Log interface {
 type mux struct {
 	*http.ServeMux
 
-	log Log
-	fs  http.FileSystem
+	log     Log
+	fs      http.FileSystem
+	version string
 
 	mu    sync.RWMutex
 	err   error
@@ -58,11 +59,12 @@ func (m *mux) initTemplates() {
 }
 
 // NewServeMux generates the toplevel http mux for managing the service.
-func NewServeMux(l Log, dev bool) (http.Handler, error) {
+func NewServeMux(l Log, dev bool, version string) (http.Handler, error) {
 	res := &mux{
 		ServeMux: http.NewServeMux(),
 		log:      l,
 		fs:       FS(dev),
+		version:  version,
 	}
 
 	res.initTemplates()
@@ -86,12 +88,20 @@ func NewServeMux(l Log, dev bool) (http.Handler, error) {
 	return res, nil
 }
 
+type ConfigurationPage struct {
+	Version string
+}
+
 func (m *mux) ConfigurationHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		m.mu.RLock()
 		defer m.mu.RUnlock()
 
-		if err := m.index.Execute(w, nil); err != nil {
+		p := ConfigurationPage{
+			Version: m.version,
+		}
+
+		if err := m.index.Execute(w, p); err != nil {
 			_ = m.log.Errorf("while serving index page: %v", err)
 		}
 	})

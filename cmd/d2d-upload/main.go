@@ -25,7 +25,7 @@ func main() {
 		DisplayName: "Door2doc Upload Service",
 		Description: "This service takes care of regular uploads to door2doc",
 	}
-	svc := uploader.NewService(*DevelopmentMode)
+	svc := uploader.NewService(*DevelopmentMode, Version)
 	s, err := service.New(svc, config)
 	if err != nil {
 		log.Fatalf("Failed to construct service: %v", err)

@@ -1,6 +1,9 @@
 package web
 
 import (
+	"bytes"
+	"context"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"net/http"
@@ -11,11 +14,12 @@ import (
 	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
 )
 
-type mux struct {
+type ServeMux struct {
 	*http.ServeMux
 
 	fs      http.FileSystem
 	version string
+	cfg     *config.Configuration
 
 	mu       sync.RWMutex
 	err      error
@@ -25,7 +29,7 @@ type mux struct {
 	upload   *template.Template
 }
 
-func (m *mux) load(templates ...string) *template.Template {
+func (m *ServeMux) load(templates ...string) *template.Template {
 	res := template.New(templates[0])
 	res = res.Funcs(template.FuncMap{
 		"humanize": Humanize,
@@ -63,7 +67,7 @@ func (m *mux) load(templates ...string) *template.Template {
 	return res
 }
 
-func (m *mux) initTemplates() {
+func (m *ServeMux) initTemplates() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -73,12 +77,28 @@ func (m *mux) initTemplates() {
 	m.upload = m.load("/upload.html", "/_layout.html")
 }
 
+func runTemplate(w http.ResponseWriter, tmpl *template.Template, data interface{}) {
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, data); err != nil {
+		dlog.Error("Error while writing template %s: %v", tmpl.Name(), err)
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Internal Server Error: %v", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	if _, err := w.Write(buf.Bytes()); err != nil {
+		dlog.Error("Error while writing response: %v", err)
+	}
+}
+
 // NewServeMux generates the toplevel http mux for managing the service.
-func NewServeMux(dev bool, version string) (http.Handler, error) {
-	res := &mux{
+func NewServeMux(dev bool, version string, cfg *config.Configuration) (*ServeMux, error) {
+	res := &ServeMux{
 		ServeMux: http.NewServeMux(),
 		fs:       FS(dev),
 		version:  version,
+		cfg:      cfg,
 	}
 
 	res.initTemplates()
@@ -114,18 +134,14 @@ type Page struct {
 	Configuration *config.Configuration
 }
 
-func (m *mux) page(r *http.Request) *Page {
+func (m *ServeMux) page(ctx context.Context, path string) *Page {
 	p := &Page{
 		Version: m.version,
-		Path:    r.URL.Path,
+		Path:    path,
 	}
 
-	p.Configuration, p.GlobalError = config.Load(r.Context())
-	if p.GlobalError != nil {
-		return p
-	}
-
-	p.Validation = p.Configuration.Validate(r.Context())
+	p.Configuration = m.cfg
+	p.Validation = p.Configuration.Validate(ctx)
 	p.Problems = map[string]bool{
 		"Database": p.Validation.DatabaseConnection != nil,
 		"Query":    p.Validation.VisitorQuery != nil,
@@ -139,18 +155,14 @@ type StatusPage struct {
 	*Page
 }
 
-func (m *mux) StatusHandler() http.Handler {
+func (m *ServeMux) StatusHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		m.mu.RLock()
 		defer m.mu.RUnlock()
 
-		p := &StatusPage{
-			Page: m.page(r),
-		}
-
-		if err := m.status.Execute(w, p); err != nil {
-			dlog.Error("while serving index page: %v", err)
-		}
+		runTemplate(w, m.status, StatusPage{
+			Page: m.page(r.Context(), r.URL.Path),
+		})
 	})
 }
 
@@ -158,18 +170,14 @@ type DatabasePage struct {
 	*Page
 }
 
-func (m *mux) DatabaseHandler() http.Handler {
+func (m *ServeMux) DatabaseHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		m.mu.RLock()
 		defer m.mu.RUnlock()
 
-		p := DatabasePage{
-			Page: m.page(r),
-		}
-
-		if err := m.database.Execute(w, p); err != nil {
-			dlog.Error("while serving index page: %v", err)
-		}
+		runTemplate(w, m.database, DatabasePage{
+			Page: m.page(r.Context(), r.URL.Path),
+		})
 	})
 }
 
@@ -177,18 +185,14 @@ type UploadPage struct {
 	*Page
 }
 
-func (m *mux) UploadHandler() http.Handler {
+func (m *ServeMux) UploadHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		m.mu.RLock()
 		defer m.mu.RUnlock()
 
-		p := UploadPage{
-			Page: m.page(r),
-		}
-
-		if err := m.upload.Execute(w, p); err != nil {
-			dlog.Error("while serving index page: %v", err)
-		}
+		runTemplate(w, m.upload, UploadPage{
+			Page: m.page(r.Context(), r.URL.Path),
+		})
 	})
 }
 
@@ -196,17 +200,13 @@ type QueryPage struct {
 	*Page
 }
 
-func (m *mux) QueryHandler() http.Handler {
+func (m *ServeMux) QueryHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		m.mu.RLock()
 		defer m.mu.RUnlock()
 
-		p := QueryPage{
-			Page: m.page(r),
-		}
-
-		if err := m.query.Execute(w, p); err != nil {
-			dlog.Error("while serving index page: %v", err)
-		}
+		runTemplate(w, m.query, QueryPage{
+			Page: m.page(r.Context(), r.URL.Path),
+		})
 	})
 }

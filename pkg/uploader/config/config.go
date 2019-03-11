@@ -39,30 +39,49 @@ func (v *ValidationResult) IsValid() bool {
 // Configuration contains the configuration options for the service.
 type Configuration struct {
 	// username to connect to the d2d upload service
-	Username string
+	username string
 	// password to connect to the d2d upload service
-	Password string
+	password string
 	// Driver for the database connection
-	Driver string
+	driver string
 	// DSN for the database connection to retrieve visitor information from
-	DSN string
+	dsn string
 	// Query to execute to retrieve visitor information
-	Query string
+	query string
 	// Set to true if the service should be active
-	Active bool
+	active bool
 	// Pause between runs
-	Interval time.Duration
+	interval time.Duration
 }
 
-// Load loads the configuration from a well-known location. It does not give an error if the configuration
-// does not exist.
-func Load(ctx context.Context) (*Configuration, error) {
-	// todo
+func NewConfiguration() *Configuration {
 	return &Configuration{
-		Active:   true,
-		Interval: time.Minute,
-		Driver:   "sqlserver",
-	}, nil
+		active:   true,
+		interval: time.Minute,
+		driver:   "sqlserver",
+	}
+}
+
+func (c *Configuration) SetCredentials(username, password string) {
+	c.username = username
+	c.password = password
+}
+
+func (c *Configuration) SetDSN(driver, dsn string) {
+	c.driver = driver
+	c.dsn = dsn
+}
+
+func (c *Configuration) SetQuery(query string) {
+	c.query = query
+}
+
+func (c *Configuration) Active() bool {
+	return c.active
+}
+
+func (c *Configuration) Interval() time.Duration {
+	return c.interval
 }
 
 // Validate validates the configuration and returns the results of those checks.
@@ -76,20 +95,20 @@ func (c *Configuration) Validate(ctx context.Context) *ValidationResult {
 	return res
 }
 
+// Reload loads the configuration form a well-known location and updates the values accordingly.
+func (c *Configuration) Reload() error {
+	// todo
+	return nil
+}
+
 // Save stores the latest configuration values to a well-known location.
 func (c *Configuration) Save() error {
 	// todo
 	return nil
 }
 
-// Refresh ensures that the configuration is the latest version saved.
-func (c *Configuration) Refresh() error {
-	// todo
-	return nil
-}
-
 func (c *Configuration) checkConnection() (connErr error, credErr error) {
-	if c.Username == "" || c.Password == "" {
+	if c.username == "" || c.password == "" {
 		credErr = ErrD2DCredentialsNotConfigured
 	}
 
@@ -100,7 +119,7 @@ func (c *Configuration) checkConnection() (connErr error, credErr error) {
 		return
 	}
 	req.URL.Path = PathPing
-	req.SetBasicAuth(c.Username, c.Password)
+	req.SetBasicAuth(c.username, c.password)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -133,15 +152,15 @@ func (c *Configuration) checkConnection() (connErr error, credErr error) {
 }
 
 func (c *Configuration) checkDatabase(ctx context.Context) (connErr, queryErr error) {
-	if c.Query == "" {
+	if c.query == "" {
 		queryErr = ErrVisitorQueryNotConfigured
 	}
-	if c.DSN == "" || c.Driver == "" {
+	if c.dsn == "" || c.driver == "" {
 		connErr = ErrDatabaseNotConfigured
 		return
 	}
 
-	db, err := sql.Open(c.Driver, c.DSN)
+	db, err := sql.Open(c.driver, c.dsn)
 	if err != nil {
 		dlog.Error("Failed to connect to database: %v", err)
 		connErr = &ErrDatabaseInvalid{Cause: err.Error()}

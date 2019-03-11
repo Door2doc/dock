@@ -19,6 +19,7 @@ type Service struct {
 	version  string
 	shutdown context.CancelFunc
 	srv      *http.Server
+	cfg      *config.Configuration
 }
 
 // NewService creates a new Service instance.
@@ -31,8 +32,14 @@ func NewService(development bool, version string) *Service {
 
 // Start starts running the service. It will return as soon as possible.
 func (s *Service) Start(svc service.Service) error {
+	// load configuration
+	s.cfg = config.NewConfiguration()
+	if err := s.cfg.Reload(); err != nil {
+		return err
+	}
+
 	// create HTTP server for configuration purposes
-	handler, err := web.NewServeMux(s.dev, s.version)
+	handler, err := web.NewServeMux(s.dev, s.version, s.cfg)
 	if err != nil {
 		return err
 	}
@@ -108,27 +115,16 @@ func (s *Service) Stop(svc service.Service) error {
 }
 
 func (s *Service) run(ctx context.Context) error {
-	// obtain latest version of the configuration
-	cfg, err := config.Load(ctx)
-	if err != nil {
-		dlog.Error("Failed to load configuration: %v", err)
-		return err
-	}
 	dlog.Info("Starting service")
 
 	for {
-		// refresh configuration
-		if err := cfg.Refresh(); err != nil {
-			dlog.Error("Failed to refresh configuration: %v", err)
-		}
-
 		// run the upload, IF the configuration is active
 		sleep := time.Second
-		if cfg.Active {
-			if err := Upload(ctx, cfg); err != nil {
+		if s.cfg.Active() {
+			if err := Upload(ctx, s.cfg); err != nil {
 				dlog.Error("While processing upload: %v", err)
 			}
-			sleep = cfg.Interval
+			sleep = s.cfg.Interval()
 		}
 
 		// sleep until the next iteration

@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/kardianos/service"
@@ -62,7 +63,13 @@ func (s *Service) Start(svc service.Service) error {
 
 	// run HTTP server
 	go func() {
-		_ = s.log.Info("Starting configuration server")
+		addr := s.srv.Addr
+		if strings.HasPrefix(addr, ":") {
+			addr = "localhost" + addr
+		}
+		addr = "http://" + addr
+
+		_ = s.log.Infof("Starting configuration server on %s", addr)
 		err := s.srv.Serve(ln)
 
 		if err != nil && err != http.ErrServerClosed {

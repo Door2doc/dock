@@ -12,6 +12,10 @@ import (
 	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
 )
 
+const (
+	Server = "https://integration.door2doc.net/"
+)
+
 var (
 	ErrDatabaseNotConfigured       = errors.New("database connection not configured")
 	ErrVisitorQueryNotConfigured   = errors.New("visitor query not configured")
@@ -100,10 +104,9 @@ func (c *Configuration) validateConnection(ctx context.Context) error {
 }
 
 func checkConnection() error {
-	server := "https://integration.door2doc.net"
-	res, err := http.Get(server)
+	res, err := http.Get(Server)
 	if err != nil {
-		dlog.Error("Failed to connect to %s: %v", server, err)
+		dlog.Error("Failed to connect to %s: %v", Server, err)
 		return err
 	}
 	_, err = io.Copy(ioutil.Discard, res.Body)

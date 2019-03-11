@@ -13,6 +13,7 @@ import (
 const (
 	TestUser     = "test-user"
 	TestPassword = "test-password"
+	TestDSN      = "postgres://pguser:pwd@localhost:5436/pgdb?sslmode=disable"
 )
 
 func DummyHandler() http.Handler {
@@ -40,8 +41,9 @@ func TestConfiguration_Validate(t *testing.T) {
 	failing.Close()
 
 	for name, test := range map[string]struct {
-		Given func(cfg *Configuration)
-		Want  *ValidationResult
+		Given     func(cfg *Configuration)
+		Want      *ValidationResult
+		WantValid bool
 	}{
 		"unconfigured, no access": {
 			Given: func(cfg *Configuration) {
@@ -86,7 +88,7 @@ func TestConfiguration_Validate(t *testing.T) {
 		},
 		"correct database": {
 			Given: func(cfg *Configuration) {
-				cfg.DSN = "postgres://pguser:pwd@localhost:5436/pgdb?sslmode=disable"
+				cfg.DSN = TestDSN
 			},
 			Want: &ValidationResult{
 				D2DCredentials: ErrD2DCredentialsNotConfigured,
@@ -141,6 +143,25 @@ func TestConfiguration_Validate(t *testing.T) {
 				VisitorQuery:   ErrVisitorQueryNotConfigured,
 			},
 		},
+		"correct query": {
+			Given: func(cfg *Configuration) {
+				cfg.DSN = TestDSN
+				cfg.Query = `select * from correct`
+			},
+			Want: &ValidationResult{
+				D2DCredentials: ErrD2DCredentialsNotConfigured,
+			},
+		},
+		"correct configuration": {
+			Given: func(cfg *Configuration) {
+				cfg.DSN = TestDSN
+				cfg.Username = TestUser
+				cfg.Password = TestPassword
+				cfg.Query = `select * from correct`
+			},
+			Want:      &ValidationResult{},
+			WantValid: true,
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
@@ -156,6 +177,9 @@ func TestConfiguration_Validate(t *testing.T) {
 
 			if !reflect.DeepEqual(got, test.Want) {
 				t.Errorf("Validate() == \n\t%v, got \n\t%v", test.Want, got)
+			}
+			if !reflect.DeepEqual(got.IsValid(), test.WantValid) {
+				t.Errorf("Validate().IsValid() == %t, got %t", test.WantValid, got.IsValid())
 			}
 		})
 	}

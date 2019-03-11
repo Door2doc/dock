@@ -30,8 +30,10 @@ type ValidationResult struct {
 
 // IsValid returns true if all possible validation errors are nil.
 func (v *ValidationResult) IsValid() bool {
-	// todo
-	return false
+	return v.DatabaseConnection == nil &&
+		v.VisitorQuery == nil &&
+		v.D2DConnection == nil &&
+		v.D2DCredentials == nil
 }
 
 // Configuration contains the configuration options for the service.
@@ -68,25 +70,8 @@ func (c *Configuration) Validate(ctx context.Context) *ValidationResult {
 	res := &ValidationResult{}
 
 	// configure d2d connection
-	status, err := c.checkConnection()
-	if err != nil {
-		res.D2DConnection = ErrD2DConnectionFailed
-	}
-
-	// configure d2d credentials
-	switch {
-	case c.Username == "" || c.Password == "":
-		res.D2DCredentials = ErrD2DCredentialsNotConfigured
-	case status == http.StatusUnauthorized:
-		res.D2DCredentials = ErrD2DCredentialsInvalid
-	case status == http.StatusOK:
-		res.D2DCredentials = nil
-	default:
-		res.D2DCredentials = &ErrD2DCredentialsStatus{StatusCode: status}
-	}
-
-	res.DatabaseConnection = c.checkDatabase(ctx)
-	res.VisitorQuery = ErrVisitorQueryNotConfigured
+	res.D2DConnection, res.D2DCredentials = c.checkConnection()
+	res.DatabaseConnection, res.VisitorQuery = c.checkDatabase(ctx)
 
 	return res
 }
@@ -103,10 +88,16 @@ func (c *Configuration) Refresh() error {
 	return nil
 }
 
-func (c *Configuration) checkConnection() (int, error) {
+func (c *Configuration) checkConnection() (connErr error, credErr error) {
+	if c.Username == "" || c.Password == "" {
+		credErr = ErrD2DCredentialsNotConfigured
+	}
+
 	req, err := http.NewRequest(http.MethodGet, Server, nil)
 	if err != nil {
 		dlog.Error("Failed to initialize connection to %s: %v", Server, err)
+		connErr = err
+		return
 	}
 	req.URL.Path = PathPing
 	req.SetBasicAuth(c.Username, c.Password)
@@ -114,35 +105,60 @@ func (c *Configuration) checkConnection() (int, error) {
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		dlog.Error("Failed to connect to %s: %v", Server, err)
-		return 0, err
+		connErr = ErrD2DConnectionFailed
+		return
 	}
 	_, err = io.Copy(ioutil.Discard, res.Body)
 	if err != nil {
 		dlog.Error("Failed to drain response: %v", err)
-		return 0, err
+		connErr = err
+		return
 	}
 	dlog.Close(res.Body)
 
-	return res.StatusCode, nil
+	if credErr != nil {
+		return
+	}
+
+	switch res.StatusCode {
+	case http.StatusOK:
+		credErr = nil
+	case http.StatusUnauthorized:
+		credErr = ErrD2DCredentialsInvalid
+	default:
+		credErr = ErrD2DCredentialsStatus{StatusCode: res.StatusCode}
+	}
+
+	return
 }
 
-func (c *Configuration) checkDatabase(ctx context.Context) error {
+func (c *Configuration) checkDatabase(ctx context.Context) (connErr, queryErr error) {
+	if c.Query == "" {
+		queryErr = ErrVisitorQueryNotConfigured
+	}
 	if c.DSN == "" || c.Driver == "" {
-		return ErrDatabaseNotConfigured
+		connErr = ErrDatabaseNotConfigured
+		return
 	}
 
 	db, err := sql.Open(c.Driver, c.DSN)
 	if err != nil {
 		dlog.Error("Failed to connect to database: %v", err)
-		return &ErrDatabaseInvalid{Cause: err.Error()}
+		connErr = &ErrDatabaseInvalid{Cause: err.Error()}
+		return
 	}
 
 	err = db.PingContext(ctx)
 	if err != nil {
 		dlog.Error("Failed to ping database: %v", err)
-		return &ErrDatabaseInvalid{Cause: err.Error()}
+		connErr = &ErrDatabaseInvalid{Cause: err.Error()}
+		return
 	}
 	dlog.Close(db)
 
-	return nil
+	if queryErr != nil {
+		return
+	}
+
+	return nil, nil
 }

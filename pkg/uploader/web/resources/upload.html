@@ -1,17 +1,21 @@
 {{ define "title" }}Upload{{ end }}
 {{ define "body" }}
-    <form method="post" action="/update-d2d">
+    <form method="post" action="/upload">
         <div class="form-group">
             <label for="d2d-username">Username:</label>
-            <input type="text" id="d2d-username" class="form-control">
+            <input type="text" id="d2d-username" required class="form-control {{ if .Error }}is-invalid{{ end }}" name="username" value="{{ .Username }}">
         </div>
         <div class="form-group">
             <label for="d2d-password">Password:</label>
-            <input type="password" id="d2d-password" class="form-control">
+            <input type="password" id="d2d-password" required class="form-control {{ if .Error }}is-invalid{{ end }}" name="password" value="{{ .Password }}">
+            <div class="invalid-feedback">
+                {{ if .Error }}
+                {{ .Error | humanize }}
+                {{ end }}
+            </div>
         </div>
 
         <div class="text-right">
-            <button type="reset" class="btn btn-secondary">Reset</button>
             <button type="submit" class="btn btn-primary">Update</button>
         </div>
     </form>

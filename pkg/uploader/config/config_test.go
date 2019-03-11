@@ -168,13 +168,14 @@ func TestConfiguration_Validate(t *testing.T) {
 			cfg := NewConfiguration()
 
 			test.Given(cfg)
-			got := cfg.Validate(ctx)
+			cfg.UpdateValidation(ctx)
+			got := cfg.Validate()
 
 			if !reflect.DeepEqual(got, test.Want) {
-				t.Errorf("Validate() == \n\t%v, got \n\t%v", test.Want, got)
+				t.Errorf("UpdateValidation() == \n\t%v, got \n\t%v", test.Want, got)
 			}
 			if !reflect.DeepEqual(got.IsValid(), test.WantValid) {
-				t.Errorf("Validate().IsValid() == %t, got %t", test.WantValid, got.IsValid())
+				t.Errorf("UpdateValidation().IsValid() == %t, got %t", test.WantValid, got.IsValid())
 			}
 		})
 	}

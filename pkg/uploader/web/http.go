@@ -14,6 +14,10 @@ import (
 	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
 )
 
+const (
+	pathUpload = "/upload"
+)
+
 type ServeMux struct {
 	*http.ServeMux
 
@@ -121,7 +125,7 @@ func NewServeMux(dev bool, version string, cfg *config.Configuration) (*ServeMux
 	res.Handle("/", res.StatusHandler())
 	res.Handle("/database", res.DatabaseHandler())
 	res.Handle("/query", res.QueryHandler())
-	res.Handle("/upload", res.UploadHandler())
+	res.Handle(pathUpload, res.UploadHandler())
 	return res, nil
 }
 
@@ -141,7 +145,7 @@ func (m *ServeMux) page(ctx context.Context, path string) *Page {
 	}
 
 	p.Configuration = m.cfg
-	p.Validation = p.Configuration.Validate(ctx)
+	p.Validation = p.Configuration.Validate()
 	p.Problems = map[string]bool{
 		"Database": p.Validation.DatabaseConnection != nil,
 		"Query":    p.Validation.VisitorQuery != nil,
@@ -183,6 +187,10 @@ func (m *ServeMux) DatabaseHandler() http.Handler {
 
 type UploadPage struct {
 	*Page
+
+	Username string
+	Password string
+	Error    error
 }
 
 func (m *ServeMux) UploadHandler() http.Handler {
@@ -190,8 +198,29 @@ func (m *ServeMux) UploadHandler() http.Handler {
 		m.mu.RLock()
 		defer m.mu.RUnlock()
 
+		if r.Method == http.MethodPost {
+			m.cfg.SetCredentials(r.FormValue("username"), r.FormValue("password"))
+			m.cfg.UpdateValidation(r.Context())
+			if err := m.cfg.Save(); err != nil {
+				dlog.Error("While saving credentials: %v", err)
+			}
+
+			w.Header().Set("Location", pathUpload)
+			w.WriteHeader(http.StatusFound)
+			return
+		}
+
+		username, password := m.cfg.Credentials()
+		err := m.cfg.Validate().D2DCredentials
+		if err == config.ErrD2DCredentialsNotConfigured {
+			err = nil
+		}
+
 		runTemplate(w, m.upload, UploadPage{
-			Page: m.page(r.Context(), r.URL.Path),
+			Page:     m.page(r.Context(), r.URL.Path),
+			Username: username,
+			Password: password,
+			Error:    err,
 		})
 	})
 }

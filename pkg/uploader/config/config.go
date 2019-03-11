@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
@@ -38,6 +39,8 @@ func (v *ValidationResult) IsValid() bool {
 
 // Configuration contains the configuration options for the service.
 type Configuration struct {
+	mu sync.RWMutex
+
 	// username to connect to the d2d upload service
 	username string
 	// password to connect to the d2d upload service
@@ -52,6 +55,9 @@ type Configuration struct {
 	active bool
 	// Pause between runs
 	interval time.Duration
+
+	// results of the last call to UpdateValidation
+	validationResult *ValidationResult
 }
 
 func NewConfiguration() *Configuration {
@@ -62,37 +68,70 @@ func NewConfiguration() *Configuration {
 	}
 }
 
+// Credentials returns the door2doc credentials stored in the configuration.
+func (c *Configuration) Credentials() (string, string) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	return c.username, c.password
+}
+
 func (c *Configuration) SetCredentials(username, password string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	c.username = username
 	c.password = password
 }
 
 func (c *Configuration) SetDSN(driver, dsn string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	c.driver = driver
 	c.dsn = dsn
 }
 
 func (c *Configuration) SetQuery(query string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	c.query = query
 }
 
 func (c *Configuration) Active() bool {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
 	return c.active
 }
 
 func (c *Configuration) Interval() time.Duration {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
 	return c.interval
 }
 
-// Validate validates the configuration and returns the results of those checks.
-func (c *Configuration) Validate(ctx context.Context) *ValidationResult {
+// UpdateValidation validates the configuration and returns the results of those checks.
+func (c *Configuration) UpdateValidation(ctx context.Context) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	res := &ValidationResult{}
 
 	// configure d2d connection
 	res.D2DConnection, res.D2DCredentials = c.checkConnection()
 	res.DatabaseConnection, res.VisitorQuery = c.checkDatabase(ctx)
 
-	return res
+	c.validationResult = res
+}
+
+// Validate returns the result of the last validation.
+func (c *Configuration) Validate() *ValidationResult {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.validationResult
 }
 
 // Reload loads the configuration form a well-known location and updates the values accordingly.

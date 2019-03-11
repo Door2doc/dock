@@ -3,7 +3,7 @@ package config
 
 import (
 	"context"
-	"errors"
+	"database/sql"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -18,14 +18,6 @@ var (
 
 const (
 	PathPing = "/services/v1/upload/ping"
-)
-
-var (
-	ErrDatabaseNotConfigured       = errors.New("database connection not configured")
-	ErrVisitorQueryNotConfigured   = errors.New("visitor query not configured")
-	ErrD2DConnectionFailed         = errors.New("connection failed")
-	ErrD2DCredentialsNotConfigured = errors.New("credentials not configured")
-	ErrD2DCredentialsInvalid       = errors.New("credentials invalid")
 )
 
 // ValidationResult contains the results of validating the current configuration.
@@ -48,6 +40,8 @@ type Configuration struct {
 	Username string
 	// password to connect to the d2d upload service
 	Password string
+	// Driver for the database connection
+	Driver string
 	// DSN for the database connection to retrieve visitor information from
 	DSN string
 	// Query to execute to retrieve visitor information
@@ -65,6 +59,7 @@ func Load(ctx context.Context) (*Configuration, error) {
 	return &Configuration{
 		Active:   true,
 		Interval: time.Minute,
+		Driver:   "sqlserver",
 	}, nil
 }
 
@@ -84,10 +79,14 @@ func (c *Configuration) Validate(ctx context.Context) *ValidationResult {
 		res.D2DCredentials = ErrD2DCredentialsNotConfigured
 	case status == http.StatusUnauthorized:
 		res.D2DCredentials = ErrD2DCredentialsInvalid
+	case status == http.StatusOK:
+		res.D2DCredentials = nil
+	default:
+		res.D2DCredentials = &ErrD2DCredentialsStatus{StatusCode: status}
 	}
 
+	res.DatabaseConnection = c.checkDatabase(ctx)
 	res.VisitorQuery = ErrVisitorQueryNotConfigured
-	res.DatabaseConnection = ErrDatabaseNotConfigured
 
 	return res
 }
@@ -125,4 +124,25 @@ func (c *Configuration) checkConnection() (int, error) {
 	dlog.Close(res.Body)
 
 	return res.StatusCode, nil
+}
+
+func (c *Configuration) checkDatabase(ctx context.Context) error {
+	if c.DSN == "" || c.Driver == "" {
+		return ErrDatabaseNotConfigured
+	}
+
+	db, err := sql.Open(c.Driver, c.DSN)
+	if err != nil {
+		dlog.Error("Failed to connect to database: %v", err)
+		return &ErrDatabaseInvalid{Cause: err.Error()}
+	}
+
+	err = db.PingContext(ctx)
+	if err != nil {
+		dlog.Error("Failed to ping database: %v", err)
+		return &ErrDatabaseInvalid{Cause: err.Error()}
+	}
+	dlog.Close(db)
+
+	return nil
 }

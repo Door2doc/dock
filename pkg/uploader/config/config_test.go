@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+
+	_ "github.com/lib/pq"
 )
 
 const (
@@ -54,7 +56,6 @@ func TestConfiguration_Validate(t *testing.T) {
 		},
 		"unconfigured with endpoint access": {
 			Given: func(cfg *Configuration) {
-				Server = srv.URL
 			},
 			Want: &ValidationResult{
 				DatabaseConnection: ErrDatabaseNotConfigured,
@@ -64,7 +65,6 @@ func TestConfiguration_Validate(t *testing.T) {
 		},
 		"correct credentials": {
 			Given: func(cfg *Configuration) {
-				Server = srv.URL
 				cfg.Username = TestUser
 				cfg.Password = TestPassword
 			},
@@ -75,7 +75,6 @@ func TestConfiguration_Validate(t *testing.T) {
 		},
 		"incorrect credentials": {
 			Given: func(cfg *Configuration) {
-				Server = srv.URL
 				cfg.Username = "konijn"
 				cfg.Password = TestPassword
 			},
@@ -85,15 +84,73 @@ func TestConfiguration_Validate(t *testing.T) {
 				D2DCredentials:     ErrD2DCredentialsInvalid,
 			},
 		},
+		"correct database": {
+			Given: func(cfg *Configuration) {
+				cfg.DSN = "postgres://pguser:pwd@localhost:5436/pgdb?sslmode=disable"
+			},
+			Want: &ValidationResult{
+				D2DCredentials: ErrD2DCredentialsNotConfigured,
+				VisitorQuery:   ErrVisitorQueryNotConfigured,
+			},
+		},
+		"incorrect user": {
+			Given: func(cfg *Configuration) {
+				cfg.DSN = "postgres://postgres:pwd@localhost:5436/pgdb?sslmode=disable"
+			},
+			Want: &ValidationResult{
+				DatabaseConnection: &ErrDatabaseInvalid{
+					Cause: `pq: password authentication failed for user "postgres"`,
+				},
+				D2DCredentials: ErrD2DCredentialsNotConfigured,
+				VisitorQuery:   ErrVisitorQueryNotConfigured,
+			},
+		},
+		"incorrect password": {
+			Given: func(cfg *Configuration) {
+				cfg.DSN = "postgres://pguser:password@localhost:5436/pgdb?sslmode=disable"
+			},
+			Want: &ValidationResult{
+				DatabaseConnection: &ErrDatabaseInvalid{
+					Cause: `pq: password authentication failed for user "pguser"`,
+				},
+				D2DCredentials: ErrD2DCredentialsNotConfigured,
+				VisitorQuery:   ErrVisitorQueryNotConfigured,
+			},
+		},
+		"incorrect database": {
+			Given: func(cfg *Configuration) {
+				cfg.DSN = "postgres://pguser:pwd@localhost:5436/database?sslmode=disable"
+			},
+			Want: &ValidationResult{
+				DatabaseConnection: &ErrDatabaseInvalid{
+					Cause: `pq: database "database" does not exist`,
+				},
+				D2DCredentials: ErrD2DCredentialsNotConfigured,
+				VisitorQuery:   ErrVisitorQueryNotConfigured,
+			},
+		},
+		"incorrect host": {
+			Given: func(cfg *Configuration) {
+				cfg.DSN = "postgres://pguser:pwd@localhost:9999/pgdb?sslmode=disable"
+			},
+			Want: &ValidationResult{
+				DatabaseConnection: &ErrDatabaseInvalid{
+					Cause: `dial tcp [::1]:9999: connect: connection refused`,
+				},
+				D2DCredentials: ErrD2DCredentialsNotConfigured,
+				VisitorQuery:   ErrVisitorQueryNotConfigured,
+			},
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
-			cfg, err := Load(ctx)
-			if err != nil {
-				t.Fatal(err)
+			Server = srv.URL
+			cfg := &Configuration{
+				Driver: "postgres",
 			}
+
 			test.Given(cfg)
 			got := cfg.Validate(ctx)
 

@@ -9,7 +9,9 @@ import (
 
 func TestHumanize(t *testing.T) {
 	for err, want := range map[error]interface{}{
-		config.ErrD2DCredentialsNotConfigured: `Username and/or password not configured.`,
+		config.ErrD2DCredentialsNotConfigured:           `Username and/or password not configured.`,
+		config.ErrD2DCredentialsStatus{StatusCode: 404}: `Could not verify credentials: the server returned HTTP 404. Please contact door2doc support.`,
+		config.ErrDatabaseInvalid{Cause: `argh`}:        `Could not connect to the database. Driver response: argh.`,
 	} {
 		t.Run(err.Error(), func(t *testing.T) {
 			got := Humanize(err)

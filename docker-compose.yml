@@ -3,3 +3,9 @@ version: "3"
 services:
   database:
     image: postgres:11.2-alpine
+    environment:
+      POSTGRES_USER: pguser
+      POSTGRES_PASSWORD: pwd
+      POSTGRES_DB: pgdb
+    ports:
+      - "5436:5432"

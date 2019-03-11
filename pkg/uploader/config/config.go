@@ -12,8 +12,12 @@ import (
 	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
 )
 
-const (
+var (
 	Server = "https://integration.door2doc.net/"
+)
+
+const (
+	PathPing = "/services/v1/upload/ping"
 )
 
 var (
@@ -21,6 +25,7 @@ var (
 	ErrVisitorQueryNotConfigured   = errors.New("visitor query not configured")
 	ErrD2DConnectionFailed         = errors.New("connection failed")
 	ErrD2DCredentialsNotConfigured = errors.New("credentials not configured")
+	ErrD2DCredentialsInvalid       = errors.New("credentials invalid")
 )
 
 // ValidationResult contains the results of validating the current configuration.
@@ -39,9 +44,6 @@ func (v *ValidationResult) IsValid() bool {
 
 // Configuration contains the configuration options for the service.
 type Configuration struct {
-	// function used to check accessibility of the upload service.
-	checkAccess func() error
-
 	// username to connect to the d2d upload service
 	Username string
 	// password to connect to the d2d upload service
@@ -70,8 +72,20 @@ func Load(ctx context.Context) (*Configuration, error) {
 func (c *Configuration) Validate(ctx context.Context) *ValidationResult {
 	res := &ValidationResult{}
 
-	res.D2DConnection = c.validateConnection(ctx)
-	res.D2DCredentials = ErrD2DCredentialsNotConfigured
+	// configure d2d connection
+	status, err := c.checkConnection()
+	if err != nil {
+		res.D2DConnection = ErrD2DConnectionFailed
+	}
+
+	// configure d2d credentials
+	switch {
+	case c.Username == "" || c.Password == "":
+		res.D2DCredentials = ErrD2DCredentialsNotConfigured
+	case status == http.StatusUnauthorized:
+		res.D2DCredentials = ErrD2DCredentialsInvalid
+	}
+
 	res.VisitorQuery = ErrVisitorQueryNotConfigured
 	res.DatabaseConnection = ErrDatabaseNotConfigured
 
@@ -90,31 +104,25 @@ func (c *Configuration) Refresh() error {
 	return nil
 }
 
-func (c *Configuration) validateConnection(ctx context.Context) error {
-	check := c.checkAccess
-	if check == nil {
-		check = checkConnection
-	}
-
-	err := check()
+func (c *Configuration) checkConnection() (int, error) {
+	req, err := http.NewRequest(http.MethodGet, Server, nil)
 	if err != nil {
-		return ErrD2DConnectionFailed
+		dlog.Error("Failed to initialize connection to %s: %v", Server, err)
 	}
-	return nil
-}
+	req.URL.Path = PathPing
+	req.SetBasicAuth(c.Username, c.Password)
 
-func checkConnection() error {
-	res, err := http.Get(Server)
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		dlog.Error("Failed to connect to %s: %v", Server, err)
-		return err
+		return 0, err
 	}
 	_, err = io.Copy(ioutil.Discard, res.Body)
 	if err != nil {
 		dlog.Error("Failed to drain response: %v", err)
-		return err
+		return 0, err
 	}
-
 	dlog.Close(res.Body)
-	return nil
+
+	return res.StatusCode, nil
 }

@@ -36,7 +36,7 @@ func Info(pattern string, args ...interface{}) {
 
 func Error(pattern string, args ...interface{}) {
 	if svc == nil {
-		log.Panicf(pattern, args...)
+		log.Printf(pattern, args...)
 		return
 	}
 

@@ -42,7 +42,7 @@
                     Database connection failed
                 </div>
                 <div class="card-body">
-                    {{ .Validation.DatabaseConnection | sentence }}
+                    {{ .Validation.DatabaseConnection | humanize }}
                 </div>
                 <div class="card-body border-top">
                     <a href="/database" class="card-link">Update configuration</a>
@@ -56,7 +56,7 @@
                     Visitor query failed
                 </div>
                 <div class="card-body">
-                    {{ .Validation.VisitorQuery | sentence }}
+                    {{ .Validation.VisitorQuery | humanize }}
                 </div>
                 <div class="card-body border-top">
                     <a href="/query" class="card-link">Update configuration</a>
@@ -70,7 +70,7 @@
                     Upload failed
                 </div>
                 <div class="card-body">
-                    {{ .Validation.D2DConnection | sentence  }}
+                    {{ .Validation.D2DConnection | humanize  }}
                 </div>
             </div>
         {{ end }}

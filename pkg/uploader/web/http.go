@@ -1,12 +1,9 @@
 package web
 
 import (
-	"fmt"
 	"html/template"
 	"io/ioutil"
 	"net/http"
-	"regexp"
-	"strings"
 	"sync"
 	"time"
 
@@ -32,31 +29,9 @@ type mux struct {
 	upload   *template.Template
 }
 
-var (
-	urlRe      = regexp.MustCompile(`https://[a-zA-Z0-9/.]+`)
-	sentenceRe = regexp.MustCompile(`(?:^|\. )[a-z]`)
-)
-
-func sentence(s interface{}) template.HTML {
-	base := fmt.Sprintf("%s", s)
-	base = urlRe.ReplaceAllStringFunc(base, func(v string) string {
-		return fmt.Sprintf("<a href=\"%s\">%s</a>", v, v)
-	})
-	if !strings.HasPrefix(base, ".") {
-		base = base + "."
-	}
-	base = strings.Replace(base, ";", ".", -1)
-	base = sentenceRe.ReplaceAllStringFunc(base, func(v string) string {
-		return strings.ToUpper(v)
-	})
-
-	return template.HTML(base)
-}
-
 func (m *mux) load(templates ...string) *template.Template {
 	res := template.New(templates[0])
 	res = res.Funcs(template.FuncMap{
-		"sentence": sentence,
 		"humanize": Humanize,
 	})
 

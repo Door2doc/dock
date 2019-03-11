@@ -58,7 +58,10 @@ func Load(ctx context.Context) (*Configuration, error) {
 func (c *Configuration) Validate(ctx context.Context) *ValidationResult {
 	// todo
 	return &ValidationResult{
-		D2DCredentials: ErrD2DCredentialsNotConfigured,
+		D2DCredentials:     ErrD2DCredentialsNotConfigured,
+		D2DConnection:      ErrD2DConnectionFailed,
+		VisitorQuery:       ErrVisitorQueryNotConfigured,
+		DatabaseConnection: ErrDatabaseNotConfigured,
 	}
 }
 

@@ -9,6 +9,7 @@ import (
 	"github.com/denisenkom/go-mssqldb"
 	"github.com/kardianos/service"
 	"github.com/publysher/d2d-uploader/pkg/uploader"
+	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
 )
 
 var _ mssql.Driver
@@ -62,13 +63,9 @@ func main() {
 		return
 	}
 
-	lg, err := s.Logger(nil)
-	if err != nil {
-		log.Fatalf("Failed to register logger: %v", err)
-	}
-
+	dlog.SetService(s)
 	err = s.Run()
 	if err != nil {
-		_ = lg.Errorf("Failed to run service: %v", err)
+		dlog.Error("Failed to run service: %v", err)
 	}
 }

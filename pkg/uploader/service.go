@@ -9,6 +9,7 @@ import (
 
 	"github.com/kardianos/service"
 	"github.com/publysher/d2d-uploader/pkg/uploader/config"
+	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
 	"github.com/publysher/d2d-uploader/pkg/uploader/web"
 )
 
@@ -17,7 +18,6 @@ type Service struct {
 	dev      bool
 	version  string
 	shutdown context.CancelFunc
-	log      service.Logger
 	srv      *http.Server
 }
 
@@ -31,15 +31,8 @@ func NewService(development bool, version string) *Service {
 
 // Start starts running the service. It will return as soon as possible.
 func (s *Service) Start(svc service.Service) error {
-	// obtain logger
-	logger, err := svc.Logger(nil)
-	if err != nil {
-		return err
-	}
-	s.log = logger
-
 	// create HTTP server for configuration purposes
-	handler, err := web.NewServeMux(s.log, s.dev, s.version)
+	handler, err := web.NewServeMux(s.dev, s.version)
 	if err != nil {
 		return err
 	}
@@ -69,11 +62,11 @@ func (s *Service) Start(svc service.Service) error {
 		}
 		addr = "http://" + addr
 
-		_ = s.log.Infof("Starting configuration server on %s", addr)
+		dlog.Info("Starting configuration server on %s", addr)
 		err := s.srv.Serve(ln)
 
 		if err != nil && err != http.ErrServerClosed {
-			_ = logger.Errorf("While running configuration server: %v", err)
+			dlog.Error("While running configuration server: %v", err)
 		}
 	}()
 
@@ -83,9 +76,9 @@ func (s *Service) Start(svc service.Service) error {
 		switch {
 		case err == context.Canceled:
 			// result of shutdown, we're OK
-			_ = logger.Info("Service stopped")
+			dlog.Info("Service stopped")
 		case err != nil:
-			_ = logger.Errorf("While running service: %v", err)
+			dlog.Error("While running service: %v", err)
 			_ = svc.Stop()
 		}
 	}()
@@ -105,15 +98,12 @@ func (s *Service) Stop(svc service.Service) error {
 	defer cancel()
 
 	err := s.srv.Shutdown(ctx)
-	if err == nil {
-		_ = s.log.Info("Configuration server stopped")
-	} else {
-		logger, lErr := svc.Logger(nil)
-		if lErr != nil {
-			_ = logger.Errorf("Failed to stop configuration server: %v", err)
-		}
+	if err != nil {
+		dlog.Error("Failed to stop configuration server: %v", err)
+		return err
 	}
 
+	dlog.Info("Configuration server stopped")
 	return nil
 }
 
@@ -121,22 +111,22 @@ func (s *Service) run(ctx context.Context) error {
 	// obtain latest version of the configuration
 	cfg, err := config.Load(ctx)
 	if err != nil {
-		_ = s.log.Errorf("Failed to load configuration: %v", err)
+		dlog.Error("Failed to load configuration: %v", err)
 		return err
 	}
-	_ = s.log.Infof("Starting service")
+	dlog.Info("Starting service")
 
 	for {
 		// refresh configuration
 		if err := cfg.Refresh(); err != nil {
-			_ = s.log.Errorf("Failed to refresh configuration: %v", err)
+			dlog.Error("Failed to refresh configuration: %v", err)
 		}
 
 		// run the upload, IF the configuration is active
 		sleep := time.Second
 		if cfg.Active {
-			if err := Upload(ctx, s.log, cfg); err != nil {
-				_ = s.log.Errorf("While processing upload: %v", err)
+			if err := Upload(ctx, cfg); err != nil {
+				dlog.Error("While processing upload: %v", err)
 			}
 			sleep = cfg.Interval
 		}

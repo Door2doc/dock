@@ -8,16 +8,12 @@ import (
 	"time"
 
 	"github.com/publysher/d2d-uploader/pkg/uploader/config"
+	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
 )
-
-type Log interface {
-	Errorf(pattern string, args ...interface{}) error
-}
 
 type mux struct {
 	*http.ServeMux
 
-	log     Log
 	fs      http.FileSystem
 	version string
 
@@ -43,7 +39,7 @@ func (m *mux) load(templates ...string) *template.Template {
 			}
 			defer func() {
 				if err := r.Close(); err != nil {
-					_ = m.log.Errorf("Failed to close %s: %v", name, err)
+					dlog.Error("Failed to close %s: %v", name, err)
 				}
 			}()
 
@@ -78,10 +74,9 @@ func (m *mux) initTemplates() {
 }
 
 // NewServeMux generates the toplevel http mux for managing the service.
-func NewServeMux(l Log, dev bool, version string) (http.Handler, error) {
+func NewServeMux(dev bool, version string) (http.Handler, error) {
 	res := &mux{
 		ServeMux: http.NewServeMux(),
-		log:      l,
 		fs:       FS(dev),
 		version:  version,
 	}
@@ -154,7 +149,7 @@ func (m *mux) StatusHandler() http.Handler {
 		}
 
 		if err := m.status.Execute(w, p); err != nil {
-			_ = m.log.Errorf("while serving index page: %v", err)
+			dlog.Error("while serving index page: %v", err)
 		}
 	})
 }
@@ -173,7 +168,7 @@ func (m *mux) DatabaseHandler() http.Handler {
 		}
 
 		if err := m.database.Execute(w, p); err != nil {
-			_ = m.log.Errorf("while serving index page: %v", err)
+			dlog.Error("while serving index page: %v", err)
 		}
 	})
 }
@@ -192,7 +187,7 @@ func (m *mux) UploadHandler() http.Handler {
 		}
 
 		if err := m.upload.Execute(w, p); err != nil {
-			_ = m.log.Errorf("while serving index page: %v", err)
+			dlog.Error("while serving index page: %v", err)
 		}
 	})
 }
@@ -211,7 +206,7 @@ func (m *mux) QueryHandler() http.Handler {
 		}
 
 		if err := m.query.Execute(w, p); err != nil {
-			_ = m.log.Errorf("while serving index page: %v", err)
+			dlog.Error("while serving index page: %v", err)
 		}
 	})
 }

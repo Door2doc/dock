@@ -57,6 +57,7 @@ func (m *mux) load(templates ...string) *template.Template {
 	res := template.New(templates[0])
 	res = res.Funcs(template.FuncMap{
 		"sentence": sentence,
+		"humanize": Humanize,
 	})
 
 	for _, name := range templates {

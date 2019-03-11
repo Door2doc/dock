@@ -81,7 +81,7 @@
                     Upload failed
                 </div>
                 <div class="card-body">
-                    {{ .Validation.D2DCredentials | sentence }}
+                    {{ .Validation.D2DCredentials | humanize }}
                 </div>
                 <div class="card-body border-top">
                     <a href="/upload" class="card-link">Update configuration</a>

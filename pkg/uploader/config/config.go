@@ -8,10 +8,10 @@ import (
 )
 
 var (
-	ErrDatabaseNotConfigured       = errors.New("database connection is not configured")
-	ErrVisitorQueryNotConfigured   = errors.New("visitor query is not configured")
-	ErrD2DConnectionFailed         = errors.New("unable to connect to https://integration.door2doc.net; make sure that the firewall allows access")
-	ErrD2DCredentialsNotConfigured = errors.New("username/password is not configured")
+	ErrDatabaseNotConfigured       = errors.New("database connection not configured")
+	ErrVisitorQueryNotConfigured   = errors.New("visitor query not configured")
+	ErrD2DConnectionFailed         = errors.New("connection failed")
+	ErrD2DCredentialsNotConfigured = errors.New("credentials not configured")
 )
 
 // ValidationResult contains the results of validating the current configuration.
@@ -25,7 +25,7 @@ type ValidationResult struct {
 // IsValid returns true if all possible validation errors are nil.
 func (v *ValidationResult) IsValid() bool {
 	// todo
-	return true
+	return false
 }
 
 // Configuration contains the configuration options for the service.
@@ -57,7 +57,9 @@ func Load(ctx context.Context) (*Configuration, error) {
 // Validate validates the configuration and returns the results of those checks.
 func (c *Configuration) Validate(ctx context.Context) *ValidationResult {
 	// todo
-	return &ValidationResult{}
+	return &ValidationResult{
+		D2DCredentials: ErrD2DCredentialsNotConfigured,
+	}
 }
 
 // Save stores the latest configuration values to a well-known location.

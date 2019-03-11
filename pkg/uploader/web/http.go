@@ -15,7 +15,9 @@ import (
 )
 
 const (
-	pathUpload = "/upload"
+	pathUpload   = "/upload"
+	pathDatabase = "/database"
+	pathQuery    = "/query"
 )
 
 type ServeMux struct {
@@ -123,8 +125,8 @@ func NewServeMux(dev bool, version string, cfg *config.Configuration) (*ServeMux
 
 	res.Handle("/assets/", http.FileServer(res.fs))
 	res.Handle("/", res.StatusHandler())
-	res.Handle("/database", res.DatabaseHandler())
-	res.Handle("/query", res.QueryHandler())
+	res.Handle(pathDatabase, res.DatabaseHandler())
+	res.Handle(pathQuery, res.QueryHandler())
 	res.Handle(pathUpload, res.UploadHandler())
 	return res, nil
 }
@@ -172,6 +174,10 @@ func (m *ServeMux) StatusHandler() http.Handler {
 
 type DatabasePage struct {
 	*Page
+
+	Driver string
+	DSN    string
+	Error  error
 }
 
 func (m *ServeMux) DatabaseHandler() http.Handler {
@@ -179,8 +185,24 @@ func (m *ServeMux) DatabaseHandler() http.Handler {
 		m.mu.RLock()
 		defer m.mu.RUnlock()
 
+		if r.Method == http.MethodPost {
+			m.cfg.SetDSN(r.FormValue("driver"), r.FormValue("dsn"))
+			m.cfg.UpdateValidation(r.Context())
+			if err := m.cfg.Save(); err != nil {
+				dlog.Error("While saving credentials: %v", err)
+			}
+
+			w.Header().Set("Location", pathDatabase)
+			w.WriteHeader(http.StatusFound)
+			return
+		}
+
+		driver, dsn := m.cfg.DSN()
 		runTemplate(w, m.database, DatabasePage{
-			Page: m.page(r.Context(), r.URL.Path),
+			Page:   m.page(r.Context(), r.URL.Path),
+			Driver: driver,
+			DSN:    dsn,
+			Error:  m.cfg.Validate().DatabaseConnection,
 		})
 	})
 }
@@ -212,9 +234,6 @@ func (m *ServeMux) UploadHandler() http.Handler {
 
 		username, password := m.cfg.Credentials()
 		err := m.cfg.Validate().D2DCredentials
-		if err == config.ErrD2DCredentialsNotConfigured {
-			err = nil
-		}
 
 		runTemplate(w, m.upload, UploadPage{
 			Page:     m.page(r.Context(), r.URL.Path),
@@ -227,6 +246,8 @@ func (m *ServeMux) UploadHandler() http.Handler {
 
 type QueryPage struct {
 	*Page
+	Query string
+	Error error
 }
 
 func (m *ServeMux) QueryHandler() http.Handler {
@@ -234,8 +255,22 @@ func (m *ServeMux) QueryHandler() http.Handler {
 		m.mu.RLock()
 		defer m.mu.RUnlock()
 
+		if r.Method == http.MethodPost {
+			m.cfg.SetQuery(r.FormValue("query"))
+			m.cfg.UpdateValidation(r.Context())
+			if err := m.cfg.Save(); err != nil {
+				dlog.Error("While saving query: %v", err)
+			}
+
+			w.Header().Set("Location", pathQuery)
+			w.WriteHeader(http.StatusFound)
+			return
+		}
+
 		runTemplate(w, m.query, QueryPage{
-			Page: m.page(r.Context(), r.URL.Path),
+			Page:  m.page(r.Context(), r.URL.Path),
+			Query: m.cfg.Query(),
+			Error: m.cfg.Validate().VisitorQuery,
 		})
 	})
 }

@@ -26,7 +26,7 @@ func Humanize(err error) interface{} {
 	switch e := err.(type) {
 	case config.ErrD2DCredentialsStatus:
 		return fmt.Sprintf(`Could not verify credentials: the server returned HTTP %d. Please contact door2doc support.`, e.StatusCode)
-	case config.ErrDatabaseInvalid:
+	case *config.ErrDatabaseInvalid:
 		return fmt.Sprintf(`Could not connect to the database. Driver response: %s.`, e.Cause)
 	}
 

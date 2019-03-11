@@ -8,11 +8,13 @@ import (
 
 	"github.com/denisenkom/go-mssqldb"
 	"github.com/kardianos/service"
+	"github.com/lib/pq"
 	"github.com/publysher/d2d-uploader/pkg/uploader"
 	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
 )
 
 var _ mssql.Driver
+var _ pq.Driver
 
 var (
 	DevelopmentMode = flag.Bool("dev", false, "Run in development mode")

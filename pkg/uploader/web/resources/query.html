@@ -1,13 +1,15 @@
 {{ define "title" }}Visitor query{{ end }}
 {{ define "body" }}
-    <form method="post" action="/update-query">
+    <form method="post" action="/query">
         <div class="form-group">
             <label for="db-query">Database query:</label>
-            <textarea id="db-query" class="form-control" rows="10" required></textarea>
+            <textarea id="db-query" class="form-control {{ if .Error }}is-invalid{{ else }}is-valid{{ end }}" rows="10" name="query">{{ .Query }}</textarea>
+            <div class="invalid-feedback">
+                {{ if .Error }}{{ .Error | humanize }}{{ end }}
+            </div>
         </div>
 
         <div class="text-right">
-            <button type="reset" class="btn btn-secondary">Reset</button>
             <button type="submit" class="btn btn-primary">Update</button>
         </div>
     </form>

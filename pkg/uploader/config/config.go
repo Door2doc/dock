@@ -84,12 +84,26 @@ func (c *Configuration) SetCredentials(username, password string) {
 	c.password = password
 }
 
+// DSN returns the database driver and DSN stored in the configuration.
+func (c *Configuration) DSN() (driver, dsn string) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.driver, c.dsn
+}
+
 func (c *Configuration) SetDSN(driver, dsn string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	c.driver = driver
 	c.dsn = dsn
+}
+
+// Query returns the visitor query stored in the configuration.
+func (c *Configuration) Query() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.query
 }
 
 func (c *Configuration) SetQuery(query string) {

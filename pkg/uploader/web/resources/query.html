@@ -7,6 +7,35 @@
             <div class="invalid-feedback">
                 {{ if .Error }}{{ .Error | humanize }}{{ end }}
             </div>
+            <small class="form-text">
+                Deze query dient de laatste N mutaties uit de patiëntenregistratie te selecteren. De volgende kolommen of aliassen dienen aanwezig te zijn:
+                <ul>
+                    <li><code>SEHID</code> - uniek ID voor dit bezoek (niet voor de patiënt)</li>
+                    <li><code>SEHMUTID</code> - uniek ID voor deze mutatie</li>
+                    <li><code>LOCATIECOD</code> - code van de locatie</li>
+                    <li><code>AANMAAKDAT</code> - datum waarop dit bezoek is aangemaakt</li>
+                    <li><code>AANMAAKTIJD</code> - tijdstip waarop dit bezoek is aangemaakt</li>
+                    <li><code>AANKSDATUM</code> - datum van aankomst patiënt</li>
+                    <li><code>AANKSTIJD</code> - tijd van aankomst patiënt</li>
+                    <li><code>TRIADATUM</code> - datum van triage patiënt</li>
+                    <li><code>TRIAGETIJD</code> - tijd van de triage patiënt</li>
+                    <li><code>ARTSBHTIJD</code> - tijd waarop de patiënt naar de behandelkamer is gegaan</li>
+                    <li><code>PATGEZT</code> - tijd waarop de patiënt voor het eerst door een arts is gezien</li>
+                    <li><code>GEBELD</code> - tijd waarop de opname-afdeling is gebeld</li>
+                    <li><code>INSCHRTIJD</code> - tijd waarop de patiënt gereed was voor opname</li>
+                    <li><code>ARBEHETIJD</code> - tijd waarop de patiënt is vertrokken</li>
+                    <li><code>BEHKAMERCO</code> - code van de behandelkamer </li>
+                    <li><code>BEDNR</code> - code van het bednummer, indien van toepassing</li>
+                    <li><code>KLACHT</code> - ingangsklacht(en) van de patiënt</li>
+                    <li><code>SPECIALISM</code> - code van het specialisme waar de patiënt aan toegewezen is</li>
+                    <li><code>TRIANIVCOD</code> - code van de triage</li>
+                    <li><code>VERVOERTYP</code> - code van de herkomst van de patiënt</li>
+                    <li><code>BESTEMMING</code> - code van de ontslagbestemming</li>
+                    <li><code>GEBDAT</code> - geboortedatum van de patiënt. Deze wordt automatisch omgezet naar een leeftijdscategorie voordat deze verstuurd wordt.</li>
+                    <li><code>OPNAMEAFD</code> - code van de opnameafdeling</li>
+                    <li><code>OPNAMESPEC</code> - code van het opnamespecialisme</li>
+                </ul>
+            </small>
         </div>
 
         <div class="text-right">

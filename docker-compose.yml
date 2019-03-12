@@ -7,5 +7,7 @@ services:
       POSTGRES_USER: pguser
       POSTGRES_PASSWORD: pwd
       POSTGRES_DB: pgdb
+    volumes:
+      - "./data/sql:/docker-entrypoint-initdb.d/:ro"
     ports:
       - "5436:5432"

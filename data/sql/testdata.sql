@@ -1,4 +1,7 @@
+DROP TABLE IF EXISTS correct;
+
 CREATE TABLE correct (
+  id          SERIAL,
   sehid       INTEGER,
   sehmutid    INTEGER,
   locatiecod  TEXT,      -- locatie code
@@ -7,7 +10,7 @@ CREATE TABLE correct (
   aanksdatum  TEXT,      -- aankomst datum
   aankstijd   TEXT,      -- aankomst tijd
   triadatum   TEXT,      -- triage datum
-  triatijd    TEXT,      -- triage tijd
+  triagetijd  TEXT,      -- triage tijd
   artsbhtijd  TEXT,      -- tijd begin behandeling
   patgezt     TEXT,      -- tijd patient gezien
   gebeld      TEXT,      -- tijd gebeld
@@ -25,5 +28,8 @@ CREATE TABLE correct (
   opnamespec  TEXT
 );
 
-INSERT INTO correct(sehid, sehmutid, locatiecod, aanmaakdat, aanmaaktijd, aanksdatum, aankstijd, triadatum, triatijd, artsbhtijd, patgezt, gebeld, inschrtijd, arbehetijd, behkamerco, bednr, klacht, specialism, trianivcod, vervoertyp, bestemming, gebdat, opnameafd, opnamespec)
+INSERT INTO correct(sehid, sehmutid, locatiecod, aanmaakdat, aanmaaktijd, aanksdatum, aankstijd, triadatum, triagetijd, artsbhtijd, patgezt, gebeld, inschrtijd, arbehetijd, behkamerco, bednr, klacht, specialism, trianivcod, vervoertyp, bestemming, gebdat, opnameafd, opnamespec)
 VALUES (328996, 1091568, 'A', NULL, NULL, '2017-07-13 00:00:00.000', '23:18', NULL, NULL, '23:18', '02:40', NULL, '02:06', '04:34', '', '', 'Pneumonie', '04', NULL, '2', 'A', '1977-07-24 12:00:00', NULL, NULL);
+
+INSERT INTO correct(sehid, sehmutid, locatiecod, aanmaakdat, aanmaaktijd, aanksdatum, aankstijd, triadatum, triagetijd, artsbhtijd, patgezt, gebeld, inschrtijd, arbehetijd, behkamerco, bednr, klacht, specialism, trianivcod, vervoertyp, bestemming, gebdat, opnameafd, opnamespec)
+VALUES (1, 2, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', NULL, 'u', 'v');

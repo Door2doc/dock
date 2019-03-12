@@ -98,7 +98,7 @@ func TestConfiguration_Validate(t *testing.T) {
 				cfg.SetDSN("postgres", "postgres://postgres:pwd@localhost:5436/pgdb?sslmode=disable")
 			},
 			Want: &ValidationResult{
-				DatabaseConnection: &ErrDatabaseInvalid{
+				DatabaseConnection: &DatabaseInvalidError{
 					Cause: `pq: password authentication failed for user "postgres"`,
 				},
 				D2DCredentials: ErrD2DCredentialsNotConfigured,
@@ -110,7 +110,7 @@ func TestConfiguration_Validate(t *testing.T) {
 				cfg.SetDSN("postgres", "postgres://pguser:password@localhost:5436/pgdb?sslmode=disable")
 			},
 			Want: &ValidationResult{
-				DatabaseConnection: &ErrDatabaseInvalid{
+				DatabaseConnection: &DatabaseInvalidError{
 					Cause: `pq: password authentication failed for user "pguser"`,
 				},
 				D2DCredentials: ErrD2DCredentialsNotConfigured,
@@ -122,7 +122,7 @@ func TestConfiguration_Validate(t *testing.T) {
 				cfg.SetDSN("postgres", "postgres://pguser:pwd@localhost:5436/database?sslmode=disable")
 			},
 			Want: &ValidationResult{
-				DatabaseConnection: &ErrDatabaseInvalid{
+				DatabaseConnection: &DatabaseInvalidError{
 					Cause: `pq: database "database" does not exist`,
 				},
 				D2DCredentials: ErrD2DCredentialsNotConfigured,
@@ -134,7 +134,7 @@ func TestConfiguration_Validate(t *testing.T) {
 				cfg.SetDSN("postgres", "postgres://pguser:pwd@localhost:9999/pgdb?sslmode=disable")
 			},
 			Want: &ValidationResult{
-				DatabaseConnection: &ErrDatabaseInvalid{
+				DatabaseConnection: &DatabaseInvalidError{
 					Cause: `dial tcp [::1]:9999: connect: connection refused`,
 				},
 				D2DCredentials: ErrD2DCredentialsNotConfigured,

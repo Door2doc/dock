@@ -14,18 +14,18 @@ var (
 	ErrD2DCredentialsInvalid       = errors.New("credentials invalid")
 )
 
-type ErrD2DCredentialsStatus struct {
+type D2DCredentialsStatusError struct {
 	StatusCode int
 }
 
-func (err ErrD2DCredentialsStatus) Error() string {
+func (err D2DCredentialsStatusError) Error() string {
 	return fmt.Sprintf("failed to check credentials: %d", err.StatusCode)
 }
 
-type ErrDatabaseInvalid struct {
+type DatabaseInvalidError struct {
 	Cause string
 }
 
-func (err ErrDatabaseInvalid) Error() string {
+func (err DatabaseInvalidError) Error() string {
 	return fmt.Sprintf("database connection failed: %s", err.Cause)
 }

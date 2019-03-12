@@ -198,7 +198,7 @@ func (c *Configuration) checkConnection() (connErr error, credErr error) {
 	case http.StatusUnauthorized:
 		credErr = ErrD2DCredentialsInvalid
 	default:
-		credErr = ErrD2DCredentialsStatus{StatusCode: res.StatusCode}
+		credErr = D2DCredentialsStatusError{StatusCode: res.StatusCode}
 	}
 
 	return
@@ -216,14 +216,14 @@ func (c *Configuration) checkDatabase(ctx context.Context) (connErr, queryErr er
 	db, err := sql.Open(c.driver, c.dsn)
 	if err != nil {
 		dlog.Error("Failed to connect to database: %v", err)
-		connErr = &ErrDatabaseInvalid{Cause: err.Error()}
+		connErr = &DatabaseInvalidError{Cause: err.Error()}
 		return
 	}
 
 	err = db.PingContext(ctx)
 	if err != nil {
 		dlog.Error("Failed to ping database: %v", err)
-		connErr = &ErrDatabaseInvalid{Cause: err.Error()}
+		connErr = &DatabaseInvalidError{Cause: err.Error()}
 		return
 	}
 	dlog.Close(db)

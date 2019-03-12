@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/publysher/d2d-uploader/pkg/uploader/config"
+	"github.com/publysher/d2d-uploader/pkg/uploader/db"
 	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
 )
 
@@ -246,8 +247,10 @@ func (m *ServeMux) UploadHandler() http.Handler {
 
 type QueryPage struct {
 	*Page
-	Query string
-	Error error
+	Query         string
+	Error         error
+	QueryDuration time.Duration
+	QueryResults  []db.Record
 }
 
 func (m *ServeMux) QueryHandler() http.Handler {
@@ -267,10 +270,13 @@ func (m *ServeMux) QueryHandler() http.Handler {
 			return
 		}
 
+		v := m.cfg.Validate()
 		runTemplate(w, m.query, QueryPage{
-			Page:  m.page(r.Context(), r.URL.Path),
-			Query: m.cfg.Query(),
-			Error: m.cfg.Validate().VisitorQuery,
+			Page:          m.page(r.Context(), r.URL.Path),
+			Query:         m.cfg.Query(),
+			Error:         v.VisitorQuery,
+			QueryDuration: v.QueryDuration,
+			QueryResults:  v.QueryResults,
 		})
 	})
 }

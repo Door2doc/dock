@@ -28,6 +28,9 @@ type ValidationResult struct {
 	VisitorQuery       error
 	D2DConnection      error
 	D2DCredentials     error
+
+	QueryDuration time.Duration
+	QueryResults  []db.Record
 }
 
 // IsValid returns true if all possible validation errors are nil.
@@ -137,7 +140,7 @@ func (c *Configuration) UpdateValidation(ctx context.Context) {
 
 	// configure d2d connection
 	res.D2DConnection, res.D2DCredentials = c.checkConnection()
-	res.DatabaseConnection, res.VisitorQuery = c.checkDatabase(ctx)
+	res.QueryDuration, res.QueryResults, res.DatabaseConnection, res.VisitorQuery = c.checkDatabase(ctx)
 
 	c.validationResult = res
 }
@@ -205,7 +208,7 @@ func (c *Configuration) checkConnection() (connErr error, credErr error) {
 	return
 }
 
-func (c *Configuration) checkDatabase(ctx context.Context) (connErr, queryErr error) {
+func (c *Configuration) checkDatabase(ctx context.Context) (queryDuration time.Duration, queryResult []db.Record, connErr, queryErr error) {
 	if c.query == "" {
 		queryErr = ErrVisitorQueryNotConfigured
 	}
@@ -247,11 +250,19 @@ func (c *Configuration) checkDatabase(ctx context.Context) (connErr, queryErr er
 		}
 	}()
 
-	_, err = db.ExecuteQuery(ctx, tx, c.query)
+	queryStart := time.Now()
+	records, err := db.ExecuteQuery(ctx, tx, c.query)
 	if err != nil {
 		queryErr = err
 		return
 	}
+	queryDuration = time.Since(queryStart)
 
-	return nil, nil
+	max := 10
+	if max > len(records) {
+		max = len(records)
+	}
+	queryResult = records[:max]
+
+	return
 }

@@ -171,6 +171,10 @@ func TestConfiguration_Validate(t *testing.T) {
 			cfg.UpdateValidation(ctx)
 			got := cfg.Validate()
 
+			// reset this stuff
+			got.QueryDuration = 0
+			got.QueryResults = nil
+
 			if !reflect.DeepEqual(got, test.Want) {
 				t.Errorf("UpdateValidation() == \n\t%v, got \n\t%v", test.Want, got)
 			}

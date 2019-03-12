@@ -7,6 +7,78 @@
             <div class="invalid-feedback">
                 {{ if .Error }}{{ .Error | humanize }}{{ end }}
             </div>
+            <div class="valid-feedback">
+                <p>
+                Query is correct and took <strong>{{ .QueryDuration.Seconds | printf "%0.3f"}}s</strong>.
+                </p>
+                {{ if .QueryResults }}
+                    <p>
+                    These are the first {{ .QueryResults|len }} results:
+                    </p>
+                    <div style="overflow-x: scroll">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>SEHID</th>
+                                <th>SEHMUTID</th>
+                                <th>LOCATIECOD</th>
+                                <th>AANMAAKDAT</th>
+                                <th>AANMAAKTIJD</th>
+                                <th>AANKSDATUM</th>
+                                <th>AANKSTIJD</th>
+                                <th>TRIADATUM</th>
+                                <th>TRIAGETIJD</th>
+                                <th>ARTSBHTIJD</th>
+                                <th>PATGEZT</th>
+                                <th>GEBELD</th>
+                                <th>INSCHRTIJD</th>
+                                <th>ARBEHETIJD</th>
+                                <th>BEHKAMERCO</th>
+                                <th>BEDNR</th>
+                                <th>KLACHT</th>
+                                <th>SPECIALISM</th>
+                                <th>TRIANIVCOD</th>
+                                <th>VERVOERTYP</th>
+                                <th>BESTEMMING</th>
+                                <th>GEBDAT</th>
+                                <th>OPNAMEAFD</th>
+                                <th>OPNAMESPEC</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{ range $index, $row := .QueryResults }}
+                                <tr>
+                                    <td>{{ $row.ID }}</td>
+                                    <td>{{ $row.MutatieID }}</td>
+                                    <td>{{ $row.Locatie }}</td>
+                                    <td>{{ $row.AanmaakDatum }}</td>
+                                    <td>{{ $row.AanmaakTijd }}</td>
+                                    <td>{{ $row.AankomstDatum }}</td>
+                                    <td>{{ $row.AankomstTijd }}</td>
+                                    <td>{{ $row.TriageDatum }}</td>
+                                    <td>{{ $row.TriageTijd }}</td>
+                                    <td>{{ $row.BehandelTijd }}</td>
+                                    <td>{{ $row.GezienTijd }}</td>
+                                    <td>{{ $row.GebeldTijd }}</td>
+                                    <td>{{ $row.OpnameTijd }}</td>
+                                    <td>{{ $row.VertrekTijd }}</td>
+                                    <td>{{ $row.Kamer }}</td>
+                                    <td>{{ $row.Bed }}</td>
+                                    <td>{{ $row.Klacht }}</td>
+                                    <td>{{ $row.Specialisme }}</td>
+                                    <td>{{ $row.Triage }}</td>
+                                    <td>{{ $row.Vervoer }}</td>
+                                    <td>{{ $row.Bestemming }}</td>
+                                    <td>{{ $row.Geboortedatum }}</td>
+                                    <td>{{ $row.OpnameAfdeling }}</td>
+                                    <td>{{ $row.OpnameSpecialisme }}</td>
+                                </tr>
+                            {{ end }}
+                            </tbody>
+                        </table>
+                    </div>
+                {{ end }}
+            </div>
             <small class="form-text">
                 Deze query dient de laatste N mutaties uit de patiëntenregistratie te selecteren. De volgende kolommen of aliassen dienen aanwezig te zijn:
                 <ul>
@@ -24,7 +96,7 @@
                     <li><code>GEBELD</code> - tijd waarop de opname-afdeling is gebeld</li>
                     <li><code>INSCHRTIJD</code> - tijd waarop de patiënt gereed was voor opname</li>
                     <li><code>ARBEHETIJD</code> - tijd waarop de patiënt is vertrokken</li>
-                    <li><code>BEHKAMERCO</code> - code van de behandelkamer </li>
+                    <li><code>BEHKAMERCO</code> - code van de behandelkamer</li>
                     <li><code>BEDNR</code> - code van het bednummer, indien van toepassing</li>
                     <li><code>KLACHT</code> - ingangsklacht(en) van de patiënt</li>
                     <li><code>SPECIALISM</code> - code van het specialisme waar de patiënt aan toegewezen is</li>

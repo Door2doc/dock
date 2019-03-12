@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/publysher/d2d-uploader/pkg/uploader/db"
 	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
 )
 
@@ -213,22 +214,42 @@ func (c *Configuration) checkDatabase(ctx context.Context) (connErr, queryErr er
 		return
 	}
 
-	db, err := sql.Open(c.driver, c.dsn)
+	conn, err := sql.Open(c.driver, c.dsn)
 	if err != nil {
 		dlog.Error("Failed to connect to database: %v", err)
 		connErr = &DatabaseInvalidError{Cause: err.Error()}
 		return
 	}
 
-	err = db.PingContext(ctx)
+	err = conn.PingContext(ctx)
 	if err != nil {
 		dlog.Error("Failed to ping database: %v", err)
 		connErr = &DatabaseInvalidError{Cause: err.Error()}
 		return
 	}
-	dlog.Close(db)
+	defer func() {
+		dlog.Close(conn)
+	}()
 
 	if queryErr != nil {
+		return
+	}
+
+	tx, err := conn.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
+	if err != nil {
+		dlog.Error("Failed to start read-only transaction: %v", err)
+		connErr = &DatabaseInvalidError{Cause: err.Error()}
+		return
+	}
+	defer func() {
+		if err := tx.Commit(); err != nil {
+			dlog.Error("Failed to commit transaction: %v", err)
+		}
+	}()
+
+	_, err = db.ExecuteQuery(ctx, tx, c.query)
+	if err != nil {
+		queryErr = err
 		return
 	}
 

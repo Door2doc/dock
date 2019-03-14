@@ -19,8 +19,7 @@ SELECT r.sehid,
        r.isrampreg                                       AS ramppatient
 FROM dbo.seh_sehreg AS r
        WITH (NOLOCK)
-       LEFT OUTER JOIN dbo.seh_seh_ext AS e
-                       ON r.sehid = e.objectid1
+       LEFT OUTER JOIN dbo.seh_seh_ext AS e ON r.sehid = e.objectid1
        LEFT OUTER JOIN dbo.opname_opname AS o ON r.opnameid = o.plannr
        LEFT OUTER JOIN dbo.patient_patient AS p ON p.patientnr = r.patientnr
        LEFT OUTER JOIN dbo.seh_sehmut AS m ON r.sehid = m.sehid

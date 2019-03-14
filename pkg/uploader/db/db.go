@@ -85,7 +85,6 @@ func mapRow(rows *sql.Rows, rec *VisitorRecord, allColumns []string, col2index m
 		specialisme        sql.NullString
 		triage             sql.NullString
 		vervoerder         sql.NullString
-		bestemming         sql.NullString
 		geboortedatum      *time.Time
 		opnameAfdeling     sql.NullString
 		opnameSpecialisme  sql.NullString
@@ -93,30 +92,29 @@ func mapRow(rows *sql.Rows, rec *VisitorRecord, allColumns []string, col2index m
 		ontslagbestemming  sql.NullString
 	)
 
-	target[col2index[ColID]] = &id
-	target[col2index[ColMutatieID]] = &mutatieID
-	target[col2index[ColLocatie]] = &locatie
-	target[col2index[ColAangemaakt]] = &aangemaakt
-	target[col2index[ColBinnenkomstDatum]] = &binnenkomstDatum
-	target[col2index[ColBinnenkomstTijd]] = &binnenkomstTijd
-	target[col2index[ColAanvangTriageTijd]] = &aanvangTriageTijd
-	target[col2index[ColNaarKamerTijd]] = &naarKamerTijd
-	target[col2index[ColEersteContactTijd]] = &eersteContactTijd
-	target[col2index[ColAfdelingGebeldTijd]] = &afdelingGebeldTijd
-	target[col2index[ColGereedOpnameTijd]] = &gereedOpnameTijd
-	target[col2index[ColVertrekTijd]] = &vertrekTijd
-	target[col2index[ColKamer]] = &kamer
-	target[col2index[ColBed]] = &bed
-	target[col2index[ColIngangsklacht]] = &ingangsklacht
-	target[col2index[ColSpecialisme]] = &specialisme
-	target[col2index[ColTriage]] = &triage
-	target[col2index[ColVervoerder]] = &vervoerder
-	target[col2index[ColBestemming]] = &bestemming
-	target[col2index[ColGeboortedatum]] = &geboortedatum
-	target[col2index[ColOpnameAfdeling]] = &opnameAfdeling
-	target[col2index[ColOpnameSpecialisme]] = &opnameSpecialisme
-	target[col2index[ColHerkomst]] = &herkomst
-	target[col2index[ColOntslagbestemming]] = &ontslagbestemming
+	target[col2index[ColID.Name]] = &id
+	target[col2index[ColMutatieID.Name]] = &mutatieID
+	target[col2index[ColLocatie.Name]] = &locatie
+	target[col2index[ColAangemaakt.Name]] = &aangemaakt
+	target[col2index[ColBinnenkomstDatum.Name]] = &binnenkomstDatum
+	target[col2index[ColBinnenkomstTijd.Name]] = &binnenkomstTijd
+	target[col2index[ColAanvangTriageTijd.Name]] = &aanvangTriageTijd
+	target[col2index[ColNaarKamerTijd.Name]] = &naarKamerTijd
+	target[col2index[ColEersteContactTijd.Name]] = &eersteContactTijd
+	target[col2index[ColAfdelingGebeldTijd.Name]] = &afdelingGebeldTijd
+	target[col2index[ColGereedOpnameTijd.Name]] = &gereedOpnameTijd
+	target[col2index[ColVertrekTijd.Name]] = &vertrekTijd
+	target[col2index[ColKamer.Name]] = &kamer
+	target[col2index[ColBed.Name]] = &bed
+	target[col2index[ColIngangsklacht.Name]] = &ingangsklacht
+	target[col2index[ColSpecialisme.Name]] = &specialisme
+	target[col2index[ColTriage.Name]] = &triage
+	target[col2index[ColVervoerder.Name]] = &vervoerder
+	target[col2index[ColGeboortedatum.Name]] = &geboortedatum
+	target[col2index[ColOpnameAfdeling.Name]] = &opnameAfdeling
+	target[col2index[ColOpnameSpecialisme.Name]] = &opnameSpecialisme
+	target[col2index[ColHerkomst.Name]] = &herkomst
+	target[col2index[ColOntslagbestemming.Name]] = &ontslagbestemming
 
 	if err := rows.Scan(target...); err != nil {
 		return err
@@ -151,7 +149,6 @@ func mapRow(rows *sql.Rows, rec *VisitorRecord, allColumns []string, col2index m
 		Specialisme:        specialisme.String,
 		Triage:             triage.String,
 		Vervoerder:         vervoerder.String,
-		Bestemming:         bestemming.String,
 		Geboortedatum:      geb,
 		OpnameAfdeling:     opnameAfdeling.String,
 		OpnameSpecialisme:  opnameSpecialisme.String,

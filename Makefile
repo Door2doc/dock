@@ -44,3 +44,4 @@ generate:
 	go get -u github.com/mjibson/esc
 
 	$(shell go env GOPATH)/bin/esc -o pkg/uploader/web/assets.go -pkg web -prefix pkg/uploader/web/resources pkg/uploader/web/resources
+

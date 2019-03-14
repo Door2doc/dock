@@ -249,6 +249,7 @@ type QueryPage struct {
 	*Page
 	Query         string
 	Error         error
+	Columns       []db.Column
 	QueryDuration time.Duration
 	QueryResults  []db.VisitorRecord
 }
@@ -275,6 +276,7 @@ func (m *ServeMux) QueryHandler() http.Handler {
 			Page:          m.page(r.Context(), r.URL.Path),
 			Query:         m.cfg.Query(),
 			Error:         v.VisitorQuery,
+			Columns:       db.VisitorColumns,
 			QueryDuration: v.QueryDuration,
 			QueryResults:  v.QueryResults,
 		})

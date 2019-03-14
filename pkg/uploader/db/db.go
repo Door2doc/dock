@@ -28,7 +28,7 @@ func ExecuteVisitorQuery(ctx context.Context, tx *sql.Tx, query string) ([]Visit
 		return nil, &QueryError{err.Error()}
 	}
 
-	col2index, err := checkColumnNames(names, columns)
+	col2index, err := checkColumnNames(names, VisitorColumns)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +159,7 @@ func mapRow(rows *sql.Rows, rec *VisitorRecord, allColumns []string, col2index m
 	return nil
 }
 
-func checkColumnNames(got, want []string) (map[string]int, error) {
+func checkColumnNames(got []string, want []Column) (map[string]int, error) {
 	got2pos := make(map[string]int)
 	for i, s := range got {
 		got2pos[strings.ToLower(s)] = i
@@ -175,11 +175,11 @@ func checkColumnNames(got, want []string) (map[string]int, error) {
 	)
 
 	for _, w := range want {
-		idx, ok := got2pos[strings.ToLower(w)]
+		idx, ok := got2pos[strings.ToLower(w.Name)]
 		if ok {
-			want2pos[w] = idx
+			want2pos[w.Name] = idx
 		} else {
-			missing = append(missing, w)
+			missing = append(missing, w.Name)
 		}
 	}
 

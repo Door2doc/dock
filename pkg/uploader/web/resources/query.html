@@ -3,46 +3,26 @@
     <form method="post" action="/query">
         <div class="form-group">
             <label for="db-query">Database query:</label>
-            <textarea id="db-query" class="form-control {{ if .Error }}is-invalid{{ else }}is-valid{{ end }}" rows="10" name="query">{{ .Query }}</textarea>
+            <textarea id="db-query" class="form-control {{ if .Error }}is-invalid{{ else }}is-valid{{ end }}" rows="10"
+                      name="query">{{ .Query }}</textarea>
             <div class="invalid-feedback">
                 {{ if .Error }}{{ .Error | humanize }}{{ end }}
             </div>
             <div class="valid-feedback">
                 <p>
-                Query is correct and took <strong>{{ .QueryDuration.Seconds | printf "%0.3f"}}s</strong>.
+                    Query is correct and took <strong>{{ .QueryDuration.Seconds | printf "%0.3f"}}s</strong>.
                 </p>
                 {{ if .QueryResults }}
                     <p>
-                    These are the first {{ .QueryResults|len }} results:
+                        These are the first {{ .QueryResults|len }} results:
                     </p>
                     <div style="overflow-x: scroll">
                         <table class="table">
                             <thead>
                             <tr>
-                                <th>SEHID</th>
-                                <th>SEHMUTID</th>
-                                <th>LOCATIECOD</th>
-                                <th>AANMAAKDAT</th>
-                                <th>AANMAAKTIJD</th>
-                                <th>AANKSDATUM</th>
-                                <th>AANKSTIJD</th>
-                                <th>TRIADATUM</th>
-                                <th>TRIAGETIJD</th>
-                                <th>ARTSBHTIJD</th>
-                                <th>PATGEZT</th>
-                                <th>GEBELD</th>
-                                <th>INSCHRTIJD</th>
-                                <th>ARBEHETIJD</th>
-                                <th>BEHKAMERCO</th>
-                                <th>BEDNR</th>
-                                <th>KLACHT</th>
-                                <th>SPECIALISM</th>
-                                <th>TRIANIVCOD</th>
-                                <th>VERVOERTYP</th>
-                                <th>BESTEMMING</th>
-                                <th>GEBDAT</th>
-                                <th>OPNAMEAFD</th>
-                                <th>OPNAMESPEC</th>
+                                {{ range $i, $row := .Columns }}
+                                <th>{{ $row.Name }}</th>
+                                {{ end }}
                             </tr>
                             </thead>
                             <tbody>
@@ -51,27 +31,26 @@
                                     <td>{{ $row.ID }}</td>
                                     <td>{{ $row.MutatieID }}</td>
                                     <td>{{ $row.Locatie }}</td>
-                                    <td>{{ $row.AanmaakDatum }}</td>
-                                    <td>{{ $row.AanmaakTijd }}</td>
-                                    <td>{{ $row.AankomstDatum }}</td>
-                                    <td>{{ $row.AankomstTijd }}</td>
-                                    <td>{{ $row.TriageDatum }}</td>
-                                    <td>{{ $row.TriageTijd }}</td>
-                                    <td>{{ $row.BehandelTijd }}</td>
-                                    <td>{{ $row.GezienTijd }}</td>
-                                    <td>{{ $row.GebeldTijd }}</td>
-                                    <td>{{ $row.OpnameTijd }}</td>
+                                    <td>{{ $row.Aangemaakt }}</td>
+                                    <td>{{ $row.BinnenkomstDatum }}</td>
+                                    <td>{{ $row.BinnenkomstTijd }}</td>
+                                    <td>{{ $row.AanvangTriageTijd }}</td>
+                                    <td>{{ $row.NaarKamerTijd }}</td>
+                                    <td>{{ $row.EersteContactTijd }}</td>
+                                    <td>{{ $row.AfdelingGebeldTijd }}</td>
+                                    <td>{{ $row.GereedOpnameTijd }}</td>
                                     <td>{{ $row.VertrekTijd }}</td>
                                     <td>{{ $row.Kamer }}</td>
                                     <td>{{ $row.Bed }}</td>
-                                    <td>{{ $row.Klacht }}</td>
+                                    <td>{{ $row.Ingangsklacht }}</td>
                                     <td>{{ $row.Specialisme }}</td>
                                     <td>{{ $row.Triage }}</td>
-                                    <td>{{ $row.Vervoer }}</td>
-                                    <td>{{ $row.Bestemming }}</td>
+                                    <td>{{ $row.Vervoerder }}</td>
                                     <td>{{ $row.Geboortedatum }}</td>
                                     <td>{{ $row.OpnameAfdeling }}</td>
                                     <td>{{ $row.OpnameSpecialisme }}</td>
+                                    <td>{{ $row.Herkomst }}</td>
+                                    <td>{{ $row.Ontslagbestemming }}</td>
                                 </tr>
                             {{ end }}
                             </tbody>
@@ -80,33 +59,28 @@
                 {{ end }}
             </div>
             <small class="form-text">
-                Deze query dient de laatste N mutaties uit de patiëntenregistratie te selecteren. De volgende kolommen of aliassen dienen aanwezig te zijn:
-                <ul>
-                    <li><code>SEHID</code> - uniek ID voor dit bezoek (niet voor de patiënt)</li>
-                    <li><code>SEHMUTID</code> - uniek ID voor deze mutatie</li>
-                    <li><code>LOCATIECOD</code> - code van de locatie</li>
-                    <li><code>AANMAAKDAT</code> - datum waarop dit bezoek is aangemaakt</li>
-                    <li><code>AANMAAKTIJD</code> - tijdstip waarop dit bezoek is aangemaakt</li>
-                    <li><code>AANKSDATUM</code> - datum van aankomst patiënt</li>
-                    <li><code>AANKSTIJD</code> - tijd van aankomst patiënt</li>
-                    <li><code>TRIADATUM</code> - datum van triage patiënt</li>
-                    <li><code>TRIAGETIJD</code> - tijd van de triage patiënt</li>
-                    <li><code>ARTSBHTIJD</code> - tijd waarop de patiënt naar de behandelkamer is gegaan</li>
-                    <li><code>PATGEZT</code> - tijd waarop de patiënt voor het eerst door een arts is gezien</li>
-                    <li><code>GEBELD</code> - tijd waarop de opname-afdeling is gebeld</li>
-                    <li><code>INSCHRTIJD</code> - tijd waarop de patiënt gereed was voor opname</li>
-                    <li><code>ARBEHETIJD</code> - tijd waarop de patiënt is vertrokken</li>
-                    <li><code>BEHKAMERCO</code> - code van de behandelkamer</li>
-                    <li><code>BEDNR</code> - code van het bednummer, indien van toepassing</li>
-                    <li><code>KLACHT</code> - ingangsklacht(en) van de patiënt</li>
-                    <li><code>SPECIALISM</code> - code van het specialisme waar de patiënt aan toegewezen is</li>
-                    <li><code>TRIANIVCOD</code> - code van de triage</li>
-                    <li><code>VERVOERTYP</code> - code van de herkomst van de patiënt</li>
-                    <li><code>BESTEMMING</code> - code van de ontslagbestemming</li>
-                    <li><code>GEBDAT</code> - geboortedatum van de patiënt. Deze wordt automatisch omgezet naar een leeftijdscategorie voordat deze verstuurd wordt.</li>
-                    <li><code>OPNAMEAFD</code> - code van de opnameafdeling</li>
-                    <li><code>OPNAMESPEC</code> - code van het opnamespecialisme</li>
-                </ul>
+                Deze query dient de laatste N mutaties uit de patiëntenregistratie te selecteren. De volgende kolommen
+                of aliassen dienen aanwezig te zijn:
+                <table class="table table-sm table-hover">
+                    <thead>
+                    <tr>
+                        <th>Alias</th>
+                        <th>Type</th>
+                        <th>Gebruikelijke bron</th>
+                        <th>Toelichting</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{ range $i, $row := .Columns }}
+                        <tr>
+                            <td><code>{{.Name}}</code></td>
+                            <td>{{.Type}}</td>
+                            <td><code>{{.Source}}</code></td>
+                            <td>{{.Description}}</td>
+                        </tr>
+                    {{ end }}
+                    </tbody>
+                </table>
             </small>
         </div>
 

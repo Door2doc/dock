@@ -1,4 +1,4 @@
-// Package dlog provides a door2doc logger.
+// Package dlog provides a door2doc logger that can be integrated with service logging.
 package dlog
 
 import (

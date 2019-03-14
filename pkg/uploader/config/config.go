@@ -1,4 +1,3 @@
-// Package config manages the configuration options for the uploader.
 package config
 
 import (
@@ -245,13 +244,13 @@ func (c *Configuration) checkDatabase(ctx context.Context) (queryDuration time.D
 		return
 	}
 	defer func() {
-		if err := tx.Commit(); err != nil {
-			dlog.Error("Failed to commit transaction: %v", err)
+		if err := tx.Rollback(); err != nil {
+			dlog.Error("Failed to roll back transaction: %v", err)
 		}
 	}()
 
 	queryStart := time.Now()
-	records, err := db.ExecuteQuery(ctx, tx, c.query)
+	records, err := db.ExecuteVisitorQuery(ctx, tx, c.query)
 	if err != nil {
 		queryErr = err
 		return

@@ -1,3 +1,4 @@
+// A windows service for uploading Chipsoft extracts to door2doc.
 package main
 
 import (

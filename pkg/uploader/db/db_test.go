@@ -104,12 +104,12 @@ func TestExecuteQuery(t *testing.T) {
 			tx, cancel := setup(ctx, t)
 			defer cancel()
 
-			got, err := ExecuteQuery(ctx, tx, test.Query)
+			got, err := ExecuteVisitorQuery(ctx, tx, test.Query)
 			if !reflect.DeepEqual(got, test.Want) {
-				t.Errorf("ExecuteQuery() == \n\t%#v, got \n\t%#v", test.Want, got)
+				t.Errorf("ExecuteVisitorQuery() == \n\t%#v, got \n\t%#v", test.Want, got)
 			}
 			if !reflect.DeepEqual(err, test.Err) {
-				t.Errorf("ExecuteQuery() == \n\t_, %#v; got \n\t_, %#v", test.Err, err)
+				t.Errorf("ExecuteVisitorQuery() == \n\t_, %#v; got \n\t_, %#v", test.Err, err)
 			}
 		})
 	}
@@ -163,7 +163,7 @@ func TestExecuteQueryPermutations(t *testing.T) {
 		parts[i], parts[j] = parts[j], parts[i]
 	})
 	query := "select " + strings.Join(parts, ",")
-	got, err := ExecuteQuery(ctx, tx, query)
+	got, err := ExecuteVisitorQuery(ctx, tx, query)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -196,11 +196,15 @@ func TestExecuteQueryPermutations(t *testing.T) {
 	}}
 
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("ExecuteQuery() == \n\t%#v, got \n\t%#v", want, got)
+		t.Errorf("ExecuteVisitorQuery() == \n\t%#v, got \n\t%#v", want, got)
 	}
 }
 
 func setup(ctx context.Context, t *testing.T) (*sql.Tx, context.CancelFunc) {
+	if testing.Short() {
+		t.Skip("uses database")
+	}
+
 	db, err := sql.Open("postgres", TestDSN)
 	if err != nil {
 		t.Fatal(err)
@@ -212,7 +216,7 @@ func setup(ctx context.Context, t *testing.T) (*sql.Tx, context.CancelFunc) {
 	}
 
 	return tx, func() {
-		if err := tx.Commit(); err != nil {
+		if err := tx.Rollback(); err != nil {
 			t.Error(err)
 		}
 		if err := db.Close(); err != nil {

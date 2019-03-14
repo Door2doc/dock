@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -41,9 +42,10 @@ func TestConfiguration_Validate(t *testing.T) {
 	failing.Close()
 
 	for name, test := range map[string]struct {
-		Given     func(cfg *Configuration)
-		Want      *ValidationResult
-		WantValid bool
+		Given            func(cfg *Configuration)
+		Want             *ValidationResult
+		WantValid        bool
+		RequiresDatabase bool
 	}{
 		"unconfigured, no access": {
 			Given: func(cfg *Configuration) {
@@ -92,6 +94,7 @@ func TestConfiguration_Validate(t *testing.T) {
 				D2DCredentials: ErrD2DCredentialsNotConfigured,
 				VisitorQuery:   ErrVisitorQueryNotConfigured,
 			},
+			RequiresDatabase: true,
 		},
 		"incorrect user": {
 			Given: func(cfg *Configuration) {
@@ -104,6 +107,7 @@ func TestConfiguration_Validate(t *testing.T) {
 				D2DCredentials: ErrD2DCredentialsNotConfigured,
 				VisitorQuery:   ErrVisitorQueryNotConfigured,
 			},
+			RequiresDatabase: true,
 		},
 		"incorrect password": {
 			Given: func(cfg *Configuration) {
@@ -116,6 +120,7 @@ func TestConfiguration_Validate(t *testing.T) {
 				D2DCredentials: ErrD2DCredentialsNotConfigured,
 				VisitorQuery:   ErrVisitorQueryNotConfigured,
 			},
+			RequiresDatabase: true,
 		},
 		"incorrect database": {
 			Given: func(cfg *Configuration) {
@@ -128,6 +133,7 @@ func TestConfiguration_Validate(t *testing.T) {
 				D2DCredentials: ErrD2DCredentialsNotConfigured,
 				VisitorQuery:   ErrVisitorQueryNotConfigured,
 			},
+			RequiresDatabase: true,
 		},
 		"incorrect host": {
 			Given: func(cfg *Configuration) {
@@ -149,6 +155,7 @@ func TestConfiguration_Validate(t *testing.T) {
 			Want: &ValidationResult{
 				D2DCredentials: ErrD2DCredentialsNotConfigured,
 			},
+			RequiresDatabase: true,
 		},
 		"correct configuration": {
 			Given: func(cfg *Configuration) {
@@ -156,13 +163,18 @@ func TestConfiguration_Validate(t *testing.T) {
 				cfg.SetCredentials(TestUser, TestPassword)
 				cfg.SetQuery(`select * from correct`)
 			},
-			Want:      &ValidationResult{},
-			WantValid: true,
+			Want:             &ValidationResult{},
+			WantValid:        true,
+			RequiresDatabase: true,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			if test.RequiresDatabase && testing.Short() {
+				t.Skip("test requires functioning database")
+			}
+
+			ctx, timeout := context.WithTimeout(context.Background(), time.Second)
+			defer timeout()
 
 			Server = srv.URL
 			cfg := NewConfiguration()

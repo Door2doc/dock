@@ -9,8 +9,8 @@ import (
 	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
 )
 
-// ExecuteQuery tries to execute the query and marshal the result into records.
-func ExecuteQuery(ctx context.Context, tx *sql.Tx, query string) ([]Record, error) {
+// ExecuteVisitorQuery tries to execute the visitor query and marshal the result into records.
+func ExecuteVisitorQuery(ctx context.Context, tx *sql.Tx, query string) ([]Record, error) {
 	// execute query
 	rows, err := tx.QueryContext(ctx, query)
 	if err != nil {

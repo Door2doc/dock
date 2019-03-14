@@ -31,19 +31,15 @@ SELECT sehmut.sehmutid,
        shb.omschrijvi                                              AS bestemming_o,
        oo.afdeling                                                 AS opnameafdeling,
        oo.specialism                                               AS opnamespecialisme,
-       cast(DATEDIFF(year, pat.gebdat, seh.datum) / 10 AS INTEGER) AS leeftijdsgroep,
+       cast(DATEDIFF(YEAR, pat.gebdat, seh.datum) / 10 AS INTEGER) AS leeftijdsgroep,
        NULL                                                        AS "Diagnostische orders"
 FROM seh_sehreg seh
        JOIN seh_sehmut sehmut ON seh.sehid = sehmut.sehid
        LEFT OUTER JOIN klacht ON seh.sehid = klacht.sehid
-       LEFT OUTER JOIN patient_patient pat ON
-  seh.patientnr = pat.patientnr
-       LEFT OUTER JOIN opname_opname oo
-                       ON seh.opnameid = oo.plannr
-       LEFT OUTER JOIN seh_sehherk shh ON
-  seh.vervoertyp = shh.herkmtcode
-       LEFT OUTER JOIN seh_shbestem shb ON
-  seh.bestemming = shb.code
+       LEFT OUTER JOIN patient_patient pat ON seh.patientnr = pat.patientnr
+       LEFT OUTER JOIN opname_opname oo ON seh.opnameid = oo.plannr
+       LEFT OUTER JOIN seh_sehherk shh ON seh.vervoertyp = shh.herkmtcode
+       LEFT OUTER JOIN seh_shbestem shb ON seh.bestemming = shb.code
 WHERE seh.vervall = 0
   AND year(seh.datum) >= 2017
 ORDER BY seh.sehid ASC,

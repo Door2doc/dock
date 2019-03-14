@@ -35,45 +35,48 @@ func TestVisitorRecordFromDB(t *testing.T) {
 	}
 
 	for name, test := range map[string]struct {
-		Given *db.Record
+		Given *db.VisitorRecord
 		Want  *VisitorRecord
 	}{
 		"minimal": {
-			Given: &db.Record{ID: 12, MutatieID: 100, Locatie: "qqq"},
+			Given: &db.VisitorRecord{ID: 12, MutatieID: 100, Locatie: "qqq"},
 			Want:  &VisitorRecord{ID: 12, MutatieID: 100, Locatie: "qqq"},
 		},
-		"Aangemeld": {},
+		"Aangemeld": {
+			Given: &db.VisitorRecord{Aangemaakt: time.Date(2017, time.July, 24, 12, 0, 0, 0, time.UTC)},
+			Want:  &VisitorRecord{Aangemeld: tm("2017-07-24T12:00:00Z")},
+		},
 		"Binnenkomst": {
-			Given: &db.Record{
-				AankomstDatum: "2017-01-01",
-				AankomstTijd:  "00:20:00",
+			Given: &db.VisitorRecord{
+				BinnenkomstDatum: "2017-01-01",
+				BinnenkomstTijd:  "00:20:00",
 			},
 			Want: &VisitorRecord{
 				Binnenkomst: tm("2017-01-01T00:20:00+01:00"),
 			},
 		},
-		"AanvangTriage": {
-			Given: &db.Record{
-				AankomstDatum: "2017-01-01",
-				AankomstTijd:  "00:20:00",
-				TriageTijd:    "00:24",
+		"AanvangTriageTijd": {
+			Given: &db.VisitorRecord{
+				BinnenkomstDatum:  "2017-01-01",
+				BinnenkomstTijd:   "00:20:00",
+				AanvangTriageTijd: "00:24",
 			},
 			Want: &VisitorRecord{
 				Binnenkomst:   tm("2017-01-01T00:20:00+01:00"),
 				AanvangTriage: tm("2017-01-01T00:24:00+01:00"),
 			},
 		},
-		"AanvangTriage, geen aankomst": {
-			Given: &db.Record{
-				TriageTijd: "00:24",
+		"AanvangTriageTijd, geen aankomst": {
+			Given: &db.VisitorRecord{
+				AanvangTriageTijd: "00:24",
 			},
 			Want: &VisitorRecord{},
 		},
-		"AanvangTriage, volgende dag": {
-			Given: &db.Record{
-				AankomstDatum: "2017-01-01",
-				AankomstTijd:  "23:20:00",
-				TriageTijd:    "00:24",
+		"AanvangTriageTijd, volgende dag": {
+			Given: &db.VisitorRecord{
+				BinnenkomstDatum:  "2017-01-01",
+				BinnenkomstTijd:   "23:20:00",
+				AanvangTriageTijd: "00:24",
 			},
 			Want: &VisitorRecord{
 				Binnenkomst:   tm("2017-01-01T23:20:00+01:00"),
@@ -81,10 +84,10 @@ func TestVisitorRecordFromDB(t *testing.T) {
 			},
 		},
 		"NaarKamer": {
-			Given: &db.Record{
-				AankomstDatum: "2017-01-01",
-				AankomstTijd:  "00:20:00",
-				BehandelTijd:  "00:20",
+			Given: &db.VisitorRecord{
+				BinnenkomstDatum: "2017-01-01",
+				BinnenkomstTijd:  "00:20:00",
+				NaarKamerTijd:    "00:20",
 			},
 			Want: &VisitorRecord{
 				Binnenkomst: tm("2017-01-01T00:20:00+01:00"),
@@ -92,10 +95,10 @@ func TestVisitorRecordFromDB(t *testing.T) {
 			},
 		},
 		"EersteContact": {
-			Given: &db.Record{
-				AankomstDatum: "2017-01-01",
-				AankomstTijd:  "00:20:00",
-				GezienTijd:    "03:06",
+			Given: &db.VisitorRecord{
+				BinnenkomstDatum:  "2017-01-01",
+				BinnenkomstTijd:   "00:20:00",
+				EersteContactTijd: "03:06",
 			},
 			Want: &VisitorRecord{
 				Binnenkomst:   tm("2017-01-01T00:20:00+01:00"),
@@ -103,10 +106,10 @@ func TestVisitorRecordFromDB(t *testing.T) {
 			},
 		},
 		"AfdelingGebeld": {
-			Given: &db.Record{
-				AankomstDatum: "2017-01-01",
-				AankomstTijd:  "00:20:00",
-				GebeldTijd:    "02:23",
+			Given: &db.VisitorRecord{
+				BinnenkomstDatum:   "2017-01-01",
+				BinnenkomstTijd:    "00:20:00",
+				AfdelingGebeldTijd: "02:23",
 			},
 			Want: &VisitorRecord{
 				Binnenkomst:    tm("2017-01-01T00:20:00+01:00"),
@@ -114,10 +117,10 @@ func TestVisitorRecordFromDB(t *testing.T) {
 			},
 		},
 		"GereedOpname": {
-			Given: &db.Record{
-				AankomstDatum: "2017-01-01",
-				AankomstTijd:  "00:20:00",
-				OpnameTijd:    "04:52",
+			Given: &db.VisitorRecord{
+				BinnenkomstDatum: "2017-01-01",
+				BinnenkomstTijd:  "00:20:00",
+				GereedOpnameTijd: "04:52",
 			},
 			Want: &VisitorRecord{
 				Binnenkomst:  tm("2017-01-01T00:20:00+01:00"),
@@ -125,10 +128,10 @@ func TestVisitorRecordFromDB(t *testing.T) {
 			},
 		},
 		"Vertrek": {
-			Given: &db.Record{
-				AankomstDatum: "2017-01-01",
-				AankomstTijd:  "00:20:00",
-				VertrekTijd:   "07:21",
+			Given: &db.VisitorRecord{
+				BinnenkomstDatum: "2017-01-01",
+				BinnenkomstTijd:  "00:20:00",
+				VertrekTijd:      "07:21",
 			},
 			Want: &VisitorRecord{
 				Binnenkomst: tm("2017-01-01T00:20:00+01:00"),
@@ -136,7 +139,7 @@ func TestVisitorRecordFromDB(t *testing.T) {
 			},
 		},
 		"Kamer": {
-			Given: &db.Record{
+			Given: &db.VisitorRecord{
 				Kamer: "D12",
 			},
 			Want: &VisitorRecord{
@@ -144,7 +147,7 @@ func TestVisitorRecordFromDB(t *testing.T) {
 			},
 		},
 		"Bed": {
-			Given: &db.Record{
+			Given: &db.VisitorRecord{
 				Bed: "01",
 			},
 			Want: &VisitorRecord{
@@ -152,15 +155,15 @@ func TestVisitorRecordFromDB(t *testing.T) {
 			},
 		},
 		"Ingangsklacht": {
-			Given: &db.Record{
-				Klacht: "kortademigheid volwassene",
+			Given: &db.VisitorRecord{
+				Ingangsklacht: "kortademigheid volwassene",
 			},
 			Want: &VisitorRecord{
 				Ingangsklacht: "kortademigheid volwassene",
 			},
 		},
 		"Specialisme": {
-			Given: &db.Record{
+			Given: &db.VisitorRecord{
 				Specialisme: "INT",
 			},
 			Want: &VisitorRecord{
@@ -168,7 +171,7 @@ func TestVisitorRecordFromDB(t *testing.T) {
 			},
 		},
 		"Triage": {
-			Given: &db.Record{
+			Given: &db.VisitorRecord{
 				Triage: "04",
 			},
 			Want: &VisitorRecord{
@@ -176,7 +179,7 @@ func TestVisitorRecordFromDB(t *testing.T) {
 			},
 		},
 		"Herkomst": {
-			Given: &db.Record{
+			Given: &db.VisitorRecord{
 				Herkomst: "EIG",
 			},
 			Want: &VisitorRecord{
@@ -184,15 +187,15 @@ func TestVisitorRecordFromDB(t *testing.T) {
 			},
 		},
 		"Vervoerder": {
-			Given: &db.Record{
-				Vervoer: "AMB",
+			Given: &db.VisitorRecord{
+				Vervoerder: "AMB",
 			},
 			Want: &VisitorRecord{
 				Vervoerder: "AMB",
 			},
 		},
 		"Ontslagbestemming": {
-			Given: &db.Record{
+			Given: &db.VisitorRecord{
 				Ontslagbestemming: "NH",
 			},
 			Want: &VisitorRecord{
@@ -200,7 +203,7 @@ func TestVisitorRecordFromDB(t *testing.T) {
 			},
 		},
 		"OpnameAfdeling": {
-			Given: &db.Record{
+			Given: &db.VisitorRecord{
 				OpnameAfdeling: "HAOA",
 			},
 			Want: &VisitorRecord{
@@ -208,7 +211,7 @@ func TestVisitorRecordFromDB(t *testing.T) {
 			},
 		},
 		"OpnameSpecialisme": {
-			Given: &db.Record{
+			Given: &db.VisitorRecord{
 				OpnameSpecialisme: "INT",
 			},
 			Want: &VisitorRecord{
@@ -216,10 +219,10 @@ func TestVisitorRecordFromDB(t *testing.T) {
 			},
 		},
 		"Leeftijd": {
-			Given: &db.Record{
-				AankomstDatum: "2017-01-01",
-				AankomstTijd:  "00:20:00",
-				Geboortedatum: time.Date(1977, time.July, 24, 12, 0, 0, 0, time.UTC),
+			Given: &db.VisitorRecord{
+				BinnenkomstDatum: "2017-01-01",
+				BinnenkomstTijd:  "00:20:00",
+				Geboortedatum:    time.Date(1977, time.July, 24, 12, 0, 0, 0, time.UTC),
 			},
 			Want: &VisitorRecord{
 				Binnenkomst: tm("2017-01-01T00:20:00+01:00"),

@@ -38,7 +38,7 @@ type VisitorRecord struct {
 }
 
 // VisitorRecordFromDB converts a database record to a visitor record.
-func VisitorRecordFromDB(r *db.Record, loc *time.Location) (*VisitorRecord, error) {
+func VisitorRecordFromDB(r *db.VisitorRecord, loc *time.Location) (*VisitorRecord, error) {
 	var err error
 	res := &VisitorRecord{
 		ID:                r.ID,
@@ -46,36 +46,39 @@ func VisitorRecordFromDB(r *db.Record, loc *time.Location) (*VisitorRecord, erro
 		Locatie:           r.Locatie,
 		Kamer:             r.Kamer,
 		Bed:               r.Bed,
-		Ingangsklacht:     r.Klacht,
+		Ingangsklacht:     r.Ingangsklacht,
 		Specialisme:       r.Specialisme,
 		Triage:            r.Triage,
 		Herkomst:          r.Herkomst,
-		Vervoerder:        r.Vervoer,
+		Vervoerder:        r.Vervoerder,
 		Ontslagbestemming: r.Ontslagbestemming,
 		OpnameAfdeling:    r.OpnameAfdeling,
 		OpnameSpecialisme: r.OpnameSpecialisme,
 	}
-	res.Binnenkomst, err = datumTijd(r.AankomstDatum, r.AankomstTijd, loc)
+	if !r.Aangemaakt.IsZero() {
+		res.Aangemeld = &r.Aangemaakt
+	}
+	res.Binnenkomst, err = datumTijd(r.BinnenkomstDatum, r.BinnenkomstTijd, loc)
 	if err != nil {
 		return nil, err
 	}
-	res.AanvangTriage, err = datumTijdRef(res.Binnenkomst, r.TriageTijd, loc)
+	res.AanvangTriage, err = datumTijdRef(res.Binnenkomst, r.AanvangTriageTijd, loc)
 	if err != nil {
 		return nil, err
 	}
-	res.NaarKamer, err = datumTijdRef(res.Binnenkomst, r.BehandelTijd, loc)
+	res.NaarKamer, err = datumTijdRef(res.Binnenkomst, r.NaarKamerTijd, loc)
 	if err != nil {
 		return nil, err
 	}
-	res.EersteContact, err = datumTijdRef(res.Binnenkomst, r.GezienTijd, loc)
+	res.EersteContact, err = datumTijdRef(res.Binnenkomst, r.EersteContactTijd, loc)
 	if err != nil {
 		return nil, err
 	}
-	res.AfdelingGebeld, err = datumTijdRef(res.Binnenkomst, r.GebeldTijd, loc)
+	res.AfdelingGebeld, err = datumTijdRef(res.Binnenkomst, r.AfdelingGebeldTijd, loc)
 	if err != nil {
 		return nil, err
 	}
-	res.GereedOpname, err = datumTijdRef(res.Binnenkomst, r.OpnameTijd, loc)
+	res.GereedOpname, err = datumTijdRef(res.Binnenkomst, r.GereedOpnameTijd, loc)
 	if err != nil {
 		return nil, err
 	}

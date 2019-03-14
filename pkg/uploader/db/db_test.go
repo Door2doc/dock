@@ -20,80 +20,81 @@ var (
 	_ pq.Driver
 )
 
+func u(t time.Time) time.Time {
+	if t.IsZero() {
+		return t
+	}
+	return t.In(time.UTC)
+}
+
 func TestExecuteQuery(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
 	for name, test := range map[string]struct {
 		Query string
-		Want  []Record
+		Want  []VisitorRecord
 		Err   error
 	}{
 		"correct": {
 			Query: `select * from correct where id = 1`,
-			Want: []Record{{
-				ID:                328996,
-				MutatieID:         1091568,
-				Locatie:           "A",
-				AanmaakDatum:      "",
-				AanmaakTijd:       "",
-				AankomstDatum:     "2017-07-13 00:00:00.000",
-				AankomstTijd:      "23:18",
-				TriageDatum:       "",
-				TriageTijd:        "",
-				BehandelTijd:      "23:18",
-				GezienTijd:        "02:40",
-				GebeldTijd:        "",
-				OpnameTijd:        "02:06",
-				VertrekTijd:       "04:34",
-				Kamer:             "",
-				Bed:               "",
-				Klacht:            "Pneumonie",
-				Specialisme:       "04",
-				Triage:            "",
-				Vervoer:           "2",
-				Bestemming:        "A",
-				Geboortedatum:     time.Date(1977, time.July, 24, 12, 0, 0, 0, time.UTC),
-				OpnameAfdeling:    "",
-				OpnameSpecialisme: "",
+			Want: []VisitorRecord{{
+				ID:                 328996,
+				MutatieID:          1091568,
+				Locatie:            "A",
+				Aangemaakt:         time.Date(2017, time.July, 13, 13, 0, 0, 0, time.UTC),
+				BinnenkomstDatum:   "2017-07-13 00:00:00.000",
+				BinnenkomstTijd:    "23:18",
+				AanvangTriageTijd:  "",
+				NaarKamerTijd:      "23:18",
+				EersteContactTijd:  "02:40",
+				AfdelingGebeldTijd: "",
+				GereedOpnameTijd:   "02:06",
+				VertrekTijd:        "04:34",
+				Kamer:              "",
+				Bed:                "",
+				Ingangsklacht:      "Pneumonie",
+				Specialisme:        "04",
+				Triage:             "",
+				Vervoerder:         "2",
+				Bestemming:         "A",
+				Geboortedatum:      time.Date(1977, time.July, 24, 12, 0, 0, 0, time.UTC),
+				OpnameAfdeling:     "",
+				OpnameSpecialisme:  "",
 			}},
 		},
 		"check all columns": {
 			Query: `select * from correct where id = 2`,
-			Want: []Record{{
-				ID:                1,
-				MutatieID:         2,
-				Locatie:           "a",
-				AanmaakDatum:      "b",
-				AanmaakTijd:       "c",
-				AankomstDatum:     "d",
-				AankomstTijd:      "e",
-				TriageDatum:       "f",
-				TriageTijd:        "g",
-				BehandelTijd:      "h",
-				GezienTijd:        "i",
-				GebeldTijd:        "j",
-				OpnameTijd:        "k",
-				VertrekTijd:       "l",
-				Kamer:             "m",
-				Bed:               "n",
-				Klacht:            "o",
-				Specialisme:       "p",
-				Triage:            "q",
-				Vervoer:           "r",
-				Bestemming:        "s",
-				Geboortedatum:     time.Time{},
-				OpnameAfdeling:    "u",
-				OpnameSpecialisme: "v",
+			Want: []VisitorRecord{{
+				ID:                 1,
+				MutatieID:          2,
+				Aangemaakt:         time.Date(2018, time.July, 4, 12, 4, 0, 0, time.UTC),
+				Locatie:            "locatie",
+				BinnenkomstDatum:   "binnenkomstdatum",
+				BinnenkomstTijd:    "binnenkomsttijd",
+				AanvangTriageTijd:  "aanvangtriagetijd",
+				NaarKamerTijd:      "naarkamertijd",
+				EersteContactTijd:  "eerstecontacttijd",
+				AfdelingGebeldTijd: "afdelinggebeldtijd",
+				GereedOpnameTijd:   "gereedopnametijd",
+				VertrekTijd:        "vertrektijd",
+				Kamer:              "kamer",
+				Bed:                "bed",
+				Ingangsklacht:      "ingangsklacht",
+				Specialisme:        "specialisme",
+				Triage:             "triage",
+				Vervoerder:         "vervoerder",
+				Bestemming:         "bestemming",
+				Geboortedatum:      time.Date(1977, time.July, 24, 12, 0, 0, 0, time.UTC),
+				OpnameAfdeling:     "opnameafdeling",
+				OpnameSpecialisme:  "opnamespecialisme",
+				Herkomst:           "herkomst",
+				Ontslagbestemming:  "ontslagbestemming",
 			}},
 		},
 		"missing columns": {
 			Query: `select null as hello`,
-			Err:   &SelectionError{Missing: []string{"SEHID", "SEHMUTID", "LOCATIECOD", "AANMAAKDAT", "AANMAAKTIJD", "AANKSDATUM", "AANKSTIJD", "TRIADATUM", "TRIAGETIJD", "ARTSBHTIJD", "PATGEZT", "GEBELD", "INSCHRTIJD", "ARBEHETIJD", "BEHKAMERCO", "BEDNR", "KLACHT", "SPECIALISM", "TRIANIVCOD", "VERVOERTYP", "BESTEMMING", "GEBDAT", "OPNAMEAFD", "OPNAMESPEC"}},
-		},
-		"some missing columns": {
-			Query: `select 1 as sehid, 2 as sehmutid, '' as locatiecod, '' as aanmaakdat, null as opnameafd, null as opnamespec`,
-			Err:   &SelectionError{Missing: []string{"AANMAAKTIJD", "AANKSDATUM", "AANKSTIJD", "TRIADATUM", "TRIAGETIJD", "ARTSBHTIJD", "PATGEZT", "GEBELD", "INSCHRTIJD", "ARBEHETIJD", "BEHKAMERCO", "BEDNR", "KLACHT", "SPECIALISM", "TRIANIVCOD", "VERVOERTYP", "BESTEMMING", "GEBDAT"}},
+			Err:   &SelectionError{Missing: columns},
 		},
 		"duplicate columns": {
 			Query: `select null as hello, null as hello`,
@@ -105,8 +106,14 @@ func TestExecuteQuery(t *testing.T) {
 			defer cancel()
 
 			got, err := ExecuteVisitorQuery(ctx, tx, test.Query)
+
+			for i := range got {
+				got[i].Aangemaakt = u(got[i].Aangemaakt)
+				got[i].Geboortedatum = u(got[i].Geboortedatum)
+			}
+
 			if !reflect.DeepEqual(got, test.Want) {
-				t.Errorf("ExecuteVisitorQuery() == \n\t%#v, got \n\t%#v", test.Want, got)
+				t.Errorf("ExecuteVisitorQuery() == \n\t%v, got \n\t%v", test.Want, got)
 			}
 			if !reflect.DeepEqual(err, test.Err) {
 				t.Errorf("ExecuteVisitorQuery() == \n\t_, %#v; got \n\t_, %#v", test.Err, err)
@@ -123,39 +130,39 @@ func TestExecuteQueryPermutations(t *testing.T) {
 	defer cancel()
 
 	parts := []string{
-		"1 as sehid",
-		"2 as sehmutid",
-		"'a' as locatiecod",
-		"'b' as aanmaakdat",
-		"'c' as aanmaaktijd",
-		"'d' as aanksdatum",
-		"'e' as aankstijd",
-		"'f' as triadatum",
-		"'g' as triagetijd",
-		"'h' as artsbhtijd",
-		"'i' as patgezt",
-		"'j' as gebeld",
-		"'k' as inschrtijd",
-		"'l' as arbehetijd",
-		"'m' as behkamerco",
-		"'n' as bednr",
-		"'o' as klacht",
-		"'p' as specialism",
-		"'q' as trianivcod",
-		"'r' as vervoertyp",
-		"'s' as bestemming",
-		"NULL as gebdat",
-		"'u' as opnameafd",
-		"'v' as opnamespec",
-		"'x' as ignoreme_1",
-		"'x' as ignoreme_2",
-		"'x' as ignoreme_3",
-		"2 as ignoreme_4",
-		"3 as ignoreme_5",
-		"4 as ignoreme_6",
-		"'x' as ignoreme_7",
-		"'x' as ignoreme_8",
-		"'x' as ignoreme_9",
+		"1 AS sehid",
+		"2 AS sehmutid",
+		"'locatie' AS locatie",
+		"NULL AS aangemaakt",
+		"'binnenkomstdatum' AS binnenkomstdatum",
+		"'binnenkomsttijd' AS binnenkomsttijd",
+		"'aanvangtriagetijd' AS aanvangtriagetijd",
+		"'naarkamertijd' AS naarkamertijd",
+		"'eerstecontacttijd' AS eerstecontacttijd",
+		"'afdelinggebeldtijd' AS afdelinggebeldtijd",
+		"'gereedopnametijd' AS gereedopnametijd",
+		"'vertrektijd' AS vertrektijd",
+		"'kamer' AS kamer",
+		"'bed' AS bed",
+		"'ingangsklacht' AS ingangsklacht",
+		"'specialisme' AS specialisme",
+		"'triage' AS triage",
+		"'vervoerder' AS vervoerder",
+		"'bestemming' AS bestemming",
+		"NULL AS geboortedatum",
+		"'opnameafdeling' AS opnameafdeling",
+		"'opnamespecialisme' AS opnamespecialisme",
+		"'herkomst' AS herkomst",
+		"'ontslagbestemming' AS ontslagbestemming",
+		"'x' AS ignoreme_1",
+		"'x' AS ignoreme_2",
+		"'x' AS ignoreme_3",
+		"2 AS ignoreme_4",
+		"3 AS ignoreme_5",
+		"4 AS ignoreme_6",
+		"'x' AS ignoreme_7",
+		"'x' AS ignoreme_8",
+		"'x' AS ignoreme_9",
 	}
 
 	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -168,31 +175,30 @@ func TestExecuteQueryPermutations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want := []Record{{
-		ID:                1,
-		MutatieID:         2,
-		Locatie:           "a",
-		AanmaakDatum:      "b",
-		AanmaakTijd:       "c",
-		AankomstDatum:     "d",
-		AankomstTijd:      "e",
-		TriageDatum:       "f",
-		TriageTijd:        "g",
-		BehandelTijd:      "h",
-		GezienTijd:        "i",
-		GebeldTijd:        "j",
-		OpnameTijd:        "k",
-		VertrekTijd:       "l",
-		Kamer:             "m",
-		Bed:               "n",
-		Klacht:            "o",
-		Specialisme:       "p",
-		Triage:            "q",
-		Vervoer:           "r",
-		Bestemming:        "s",
-		Geboortedatum:     time.Time{},
-		OpnameAfdeling:    "u",
-		OpnameSpecialisme: "v",
+	want := []VisitorRecord{{
+		ID:                 1,
+		MutatieID:          2,
+		Locatie:            "locatie",
+		BinnenkomstDatum:   "binnenkomstdatum",
+		BinnenkomstTijd:    "binnenkomsttijd",
+		AanvangTriageTijd:  "aanvangtriagetijd",
+		NaarKamerTijd:      "naarkamertijd",
+		EersteContactTijd:  "eerstecontacttijd",
+		AfdelingGebeldTijd: "afdelinggebeldtijd",
+		GereedOpnameTijd:   "gereedopnametijd",
+		VertrekTijd:        "vertrektijd",
+		Kamer:              "kamer",
+		Bed:                "bed",
+		Ingangsklacht:      "ingangsklacht",
+		Specialisme:        "specialisme",
+		Triage:             "triage",
+		Vervoerder:         "vervoerder",
+		Bestemming:         "bestemming",
+		Geboortedatum:      time.Time{},
+		OpnameAfdeling:     "opnameafdeling",
+		OpnameSpecialisme:  "opnamespecialisme",
+		Herkomst:           "herkomst",
+		Ontslagbestemming:  "ontslagbestemming",
 	}}
 
 	if !reflect.DeepEqual(got, want) {

@@ -29,7 +29,7 @@ type ValidationResult struct {
 	D2DCredentials     error
 
 	QueryDuration time.Duration
-	QueryResults  []db.Record
+	QueryResults  []db.VisitorRecord
 }
 
 // IsValid returns true if all possible validation errors are nil.
@@ -207,7 +207,7 @@ func (c *Configuration) checkConnection() (connErr error, credErr error) {
 	return
 }
 
-func (c *Configuration) checkDatabase(ctx context.Context) (queryDuration time.Duration, queryResult []db.Record, connErr, queryErr error) {
+func (c *Configuration) checkDatabase(ctx context.Context) (queryDuration time.Duration, queryResult []db.VisitorRecord, connErr, queryErr error) {
 	if c.query == "" {
 		queryErr = ErrVisitorQueryNotConfigured
 	}

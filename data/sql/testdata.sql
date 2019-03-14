@@ -1,35 +1,45 @@
 DROP TABLE IF EXISTS correct;
 
 CREATE TABLE correct (
-  id          SERIAL,
-  sehid       INTEGER,
-  sehmutid    INTEGER,
-  locatiecod  TEXT,      -- locatie code
-  aanmaakdat  TEXT,      -- aanmaak datum
-  aanmaaktijd TEXT,      -- aanmaak tijd
-  aanksdatum  TEXT,      -- aankomst datum
-  aankstijd   TEXT,      -- aankomst tijd
-  triadatum   TEXT,      -- triage datum
-  triagetijd  TEXT,      -- triage tijd
-  artsbhtijd  TEXT,      -- tijd begin behandeling
-  patgezt     TEXT,      -- tijd patient gezien
-  gebeld      TEXT,      -- tijd gebeld
-  inschrtijd  TEXT,      -- tijd opname
-  arbehetijd  TEXT,      -- tijd vertrek
-  behkamerco  TEXT,      -- behandelkamer
-  bednr       TEXT,      -- bed
-  klacht      TEXT,      -- ingangsklacht
-  specialism  TEXT,      -- specialisme
-  trianivcod  TEXT,      -- triage
-  vervoertyp  TEXT,      -- vervoer
-  bestemming  TEXT,      -- bestemming
-  gebdat      TIMESTAMP, -- geboortedatum
-  opnameafd   TEXT,
-  opnamespec  TEXT
+  id                 SERIAL,
+  sehid              INTEGER,
+  sehmutid           INTEGER,
+  locatie            TEXT,      -- locatie code
+  aangemaakt         TIMESTAMP, -- aanmaak datum
+  binnenkomstdatum   TEXT,      -- aankomst datum
+  binnenkomsttijd    TEXT,      -- aankomst tijd
+  aanvangtriagetijd  TEXT,      -- triage tijd
+  naarkamertijd      TEXT,      -- tijd begin behandeling
+  eerstecontacttijd  TEXT,      -- tijd patient gezien
+  afdelinggebeldtijd TEXT,      -- tijd gebeld
+  gereedopnametijd   TEXT,      -- tijd opname
+  vertrektijd        TEXT,      -- tijd vertrek
+  kamer              TEXT,      -- behandelkamer
+  bed                TEXT,      -- bed
+  ingangsklacht      TEXT,      -- ingangsklacht
+  specialisme        TEXT,      -- specialisme
+  triage             TEXT,      -- triage
+  vervoerder         TEXT,      -- vervoer
+  bestemming         TEXT,      -- bestemming
+  geboortedatum      TIMESTAMP, -- geboortedatum
+  opnameafdeling     TEXT,
+  opnamespecialisme  TEXT,
+  herkomst           TEXT,
+  ontslagbestemming  TEXT
 );
 
-INSERT INTO correct(sehid, sehmutid, locatiecod, aanmaakdat, aanmaaktijd, aanksdatum, aankstijd, triadatum, triagetijd, artsbhtijd, patgezt, gebeld, inschrtijd, arbehetijd, behkamerco, bednr, klacht, specialism, trianivcod, vervoertyp, bestemming, gebdat, opnameafd, opnamespec)
-VALUES (328996, 1091568, 'A', NULL, NULL, '2017-07-13 00:00:00.000', '23:18', NULL, NULL, '23:18', '02:40', NULL, '02:06', '04:34', '', '', 'Pneumonie', '04', NULL, '2', 'A', '1977-07-24 12:00:00', NULL, NULL);
+INSERT INTO correct(sehid, sehmutid, locatie, aangemaakt, binnenkomstdatum, binnenkomsttijd, aanvangtriagetijd,
+                    naarkamertijd, eerstecontacttijd, afdelinggebeldtijd, gereedopnametijd, vertrektijd, kamer, bed,
+                    ingangsklacht, specialisme, triage, vervoerder, bestemming, geboortedatum, opnameafdeling,
+                    opnamespecialisme, herkomst, ontslagbestemming)
+VALUES (328996, 1091568, 'A', '2017-07-13 13:00:00', '2017-07-13 00:00:00.000', '23:18', NULL, '23:18', '02:40', NULL,
+        '02:06', '04:34', '', '', 'Pneumonie', '04', NULL, '2', 'A', '1977-07-24 12:00:00', NULL, NULL, NULL, NULL);
 
-INSERT INTO correct(sehid, sehmutid, locatiecod, aanmaakdat, aanmaaktijd, aanksdatum, aankstijd, triadatum, triagetijd, artsbhtijd, patgezt, gebeld, inschrtijd, arbehetijd, behkamerco, bednr, klacht, specialism, trianivcod, vervoertyp, bestemming, gebdat, opnameafd, opnamespec)
-VALUES (1, 2, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', NULL, 'u', 'v');
+INSERT INTO correct(sehid, sehmutid, locatie, aangemaakt, binnenkomstdatum, binnenkomsttijd, aanvangtriagetijd,
+                    naarkamertijd, eerstecontacttijd, afdelinggebeldtijd, gereedopnametijd, vertrektijd, kamer, bed,
+                    ingangsklacht, specialisme, triage, vervoerder, bestemming, geboortedatum, opnameafdeling,
+                    opnamespecialisme, herkomst, ontslagbestemming)
+VALUES (1, 2, 'locatie', '2018-07-04 12:04:00', 'binnenkomstdatum', 'binnenkomsttijd', 'aanvangtriagetijd',
+        'naarkamertijd', 'eerstecontacttijd', 'afdelinggebeldtijd', 'gereedopnametijd', 'vertrektijd', 'kamer', 'bed',
+        'ingangsklacht', 'specialisme', 'triage', 'vervoerder', 'bestemming', '1977-07-24 12:00:00', 'opnameafdeling',
+        'opnamespecialisme', 'herkomst', 'ontslagbestemming');

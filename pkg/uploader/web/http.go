@@ -250,7 +250,7 @@ type QueryPage struct {
 	Query         string
 	Error         error
 	QueryDuration time.Duration
-	QueryResults  []db.Record
+	QueryResults  []db.VisitorRecord
 }
 
 func (m *ServeMux) QueryHandler() http.Handler {

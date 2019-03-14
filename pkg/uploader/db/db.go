@@ -37,7 +37,8 @@ func ExecuteVisitorQuery(ctx context.Context, tx *sql.Tx, query string) ([]Recor
 	var res []Record
 
 	for rows.Next() {
-		rec, err := mapRow(rows, names, col2index)
+		var rec Record
+		err := mapRow(rows, &rec, names, col2index)
 		if err != nil {
 			return nil, &QueryError{err.Error()}
 		}
@@ -50,7 +51,7 @@ func ExecuteVisitorQuery(ctx context.Context, tx *sql.Tx, query string) ([]Recor
 			return nil, &QueryError{err.Error()}
 		}
 
-		res = append(res, *rec)
+		res = append(res, rec)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, &QueryError{err.Error()}
@@ -59,7 +60,7 @@ func ExecuteVisitorQuery(ctx context.Context, tx *sql.Tx, query string) ([]Recor
 	return res, nil
 }
 
-func mapRow(rows *sql.Rows, allColumns []string, col2index map[string]int) (*Record, error) {
+func mapRow(rows *sql.Rows, rec *Record, allColumns []string, col2index map[string]int) error {
 	target := make([]interface{}, len(allColumns))
 	for i := range target {
 		target[i] = new(sql.RawBytes)
@@ -118,7 +119,7 @@ func mapRow(rows *sql.Rows, allColumns []string, col2index map[string]int) (*Rec
 	target[col2index[ColOpnameSpecialisme]] = &opnameSpecialisme
 
 	if err := rows.Scan(target...); err != nil {
-		return nil, err
+		return err
 	}
 
 	var geb time.Time
@@ -126,7 +127,7 @@ func mapRow(rows *sql.Rows, allColumns []string, col2index map[string]int) (*Rec
 		geb = geboortedatum.UTC()
 	}
 
-	rec := &Record{
+	*rec = Record{
 		ID:                id,
 		MutatieID:         mutatieID,
 		Locatie:           locatie.String,
@@ -153,7 +154,7 @@ func mapRow(rows *sql.Rows, allColumns []string, col2index map[string]int) (*Rec
 		OpnameSpecialisme: opnameSpecialisme.String,
 	}
 
-	return rec, nil
+	return nil
 }
 
 func checkColumnNames(got, want []string) (map[string]int, error) {

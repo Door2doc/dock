@@ -11,16 +11,15 @@ ifeq "$(VERSION)" ""
 	$(error There is no version specified)
 endif
 	git push origin master
-	$(MAKE) installer
-#	hub release create -d -a d2d-upload_windows_amd64.exe -m"$(VERSION)" $(VERSION)
+	$(MAKE) Door2doc_Upload_Service_$(VERSION).msi
 	hub release create -d -a Door2doc_Upload_Service_$(VERSION).msi -m"$(VERSION)" $(VERSION)
 
-.PHONY: installer
-installer:	compile
+Door2doc_Upload_Service_$(VERSION).msi:	d2d-upload_windows_amd64.exe installer.wxs
 	wixl -v -o "Door2doc_Upload_Service_$(VERSION).msi" installer.wxs
 
-.PHONY:	compile
-compile:	generate
+
+d2d-upload_windows_amd64.exe:
+	$(MAKE) generate
 	docker run --rm \
 		-v "$(shell pwd)":/gopath/src/github.com/publysher/d2d-uploader \
 		-w /gopath/src/github.com/publysher/d2d-uploader tcnksm/gox:1.10.3 \

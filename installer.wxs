@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="windows-1252"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
     <Product Name="Door2doc Upload Service"
              Id="655EA53A-1129-4F16-93EF-4EBB004E5A30"
              Language="1033"
@@ -14,41 +14,46 @@
                  InstallerVersion="100"
                  Languages="1033"
                  Compressed="yes"
-                 SummaryCodepage="1252" />
+                 SummaryCodepage="1252"/>
 
         <Media Id="1"
                Cabinet="Sample.cab"
                EmbedCab="yes"
-               DiskPrompt="CD-ROM #1" />
+               DiskPrompt="CD-ROM #1"/>
         <Property Id="DiskPrompt"
-                  Value="Door2doc Upload Service 1.0 Installation [1]" />
+                  Value="Door2doc Upload Service 1.0 Installation [1]"/>
 
         <Directory Id="TARGETDIR" Name="SourceDir">
             <Directory Id="ProgramFilesFolder" Name="PFiles">
                 <Directory Id="Door2doc" Name="Door2doc">
                     <Directory Id="INSTALLDIR" Name="UploadService">
-
-                        <Component Id="MainExecutable" Guid="1BF74336-7E66-4F92-80DE-9D6258243A97">
-                            <File Id="UploadService" Name="UploadService.exe" DiskId="1" Source="d2d-upload_windows_amd64.exe" KeyPath="yes"/>
-                            <ServiceInstall
-                                Id="ServiceInstaller"
-                                Type="ownProcess"
-                                Name="Door2docUploader"
-                                DisplayName="Door2doc Upload Service"
-                                Description="This service takes care of regular uploads to door2doc"
-                                Start="auto"
-                                ErrorControl="normal"/>
-                            <ServiceControl Id="StartService" Name="Door2docUploader" Start="install" Stop="both" Remove="uninstall" Wait="yes"/>
-                        </Component>
-
                     </Directory>
                 </Directory>
             </Directory>
+            <Directory Id="ProgramMenuFolder">
+                <Directory Id="ApplicationProgramsFolder" Name="Door2doc Upload Service"/>
+            </Directory>
         </Directory>
 
-        <Feature Id="Complete" Level="1">
-            <ComponentRef Id="MainExecutable" />
-        </Feature>
+        <DirectoryRef Id="INSTALLDIR">
+            <Component Id="MainExecutable" Guid="1BF74336-7E66-4F92-80DE-9D6258243A97">
+                <File Id="UploadService" Name="UploadService.exe" DiskId="1"
+                      Source="d2d-upload_windows_amd64.exe" KeyPath="yes"/>
+                <ServiceInstall
+                        Id="ServiceInstaller"
+                        Type="ownProcess"
+                        Name="Door2docUploader"
+                        DisplayName="Door2doc Upload Service"
+                        Description="This service takes care of regular uploads to door2doc"
+                        Start="auto"
+                        ErrorControl="normal"/>
+                <ServiceControl Id="StartService" Name="Door2docUploader" Start="install" Stop="both"
+                                Remove="uninstall" Wait="yes"/>
+            </Component>
+        </DirectoryRef>
 
+        <Feature Id="Complete" Level="1">
+            <ComponentRef Id="MainExecutable"/>
+v        </Feature>
     </Product>
 </Wix>

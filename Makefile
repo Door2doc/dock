@@ -11,8 +11,13 @@ ifeq "$(VERSION)" ""
 	$(error There is no version specified)
 endif
 	git push origin master
-	$(MAKE) compile
-	hub release create -d -a d2d-upload_windows_amd64.exe -m"$(VERSION)" $(VERSION)
+	$(MAKE) installer
+#	hub release create -d -a d2d-upload_windows_amd64.exe -m"$(VERSION)" $(VERSION)
+	hub release create -d -a Door2doc_Upload_Service_$(VERSION).msi -m"$(VERSION)" $(VERSION)
+
+.PHONY: installer
+installer:	compile
+	wixl -v -o "Door2doc_Upload_Service_$(VERSION).msi" installer.wxs
 
 .PHONY:	compile
 compile:	generate

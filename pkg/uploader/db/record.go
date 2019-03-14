@@ -57,13 +57,15 @@ var columns = []string{
 }
 
 type Record struct {
-	ID                int
-	MutatieID         int
-	Locatie           string
-	AanmaakDatum      string
-	AanmaakTijd       string
-	AankomstDatum     string
-	AankomstTijd      string
+	ID            int
+	MutatieID     int
+	Locatie       string
+	AanmaakDatum  string
+	AanmaakTijd   string
+	AankomstDatum string
+	AankomstTijd  string
+
+	// Deprecated
 	TriageDatum       string
 	TriageTijd        string
 	BehandelTijd      string
@@ -81,4 +83,8 @@ type Record struct {
 	Geboortedatum     time.Time
 	OpnameAfdeling    string
 	OpnameSpecialisme string
+
+	// TODO
+	Herkomst          string
+	Ontslagbestemming string
 }

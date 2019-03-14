@@ -142,6 +142,7 @@ func (c *Configuration) UpdateValidation(ctx context.Context) {
 	res.QueryDuration, res.QueryResults, res.DatabaseConnection, res.VisitorQuery = c.checkDatabase(ctx)
 
 	c.validationResult = res
+	c.active = c.validationResult.IsValid()
 }
 
 // Validate returns the result of the last validation.

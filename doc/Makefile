@@ -6,7 +6,7 @@ STD_OPTS = \
 	-f markdown \
 	-t latex
 
-%.pdf:	%.md
+%.pdf:	%.md *.png
 	docker run --rm -v `pwd`:/source jagregory/pandoc $(STD_OPTS) \
 		$< \
 		-o $@

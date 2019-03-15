@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/publysher/d2d-uploader/pkg/uploader/assets"
 	"github.com/publysher/d2d-uploader/pkg/uploader/config"
 	"github.com/publysher/d2d-uploader/pkg/uploader/db"
 	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
@@ -105,7 +106,7 @@ func runTemplate(w http.ResponseWriter, tmpl *template.Template, data interface{
 func NewServeMux(dev bool, version string, cfg *config.Configuration, h *history.History) (*ServeMux, error) {
 	res := &ServeMux{
 		ServeMux: http.NewServeMux(),
-		fs:       FS(dev),
+		fs:       assets.FS(dev),
 		version:  version,
 		cfg:      cfg,
 		history:  h,

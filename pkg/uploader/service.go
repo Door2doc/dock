@@ -2,12 +2,14 @@ package uploader
 
 import (
 	"context"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/kardianos/service"
+	"github.com/publysher/d2d-uploader/pkg/uploader/assets"
 	"github.com/publysher/d2d-uploader/pkg/uploader/config"
 	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
 	"github.com/publysher/d2d-uploader/pkg/uploader/history"
@@ -34,7 +36,16 @@ func NewService(development bool, version string) *Service {
 // Start starts running the service. It will return as soon as possible.
 func (s *Service) Start(svc service.Service) error {
 	// determine time zone
-	location, err := time.LoadLocation("Europe/Amsterdam")
+	tzdata, err := assets.FS(false).Open("/zoneinfo/Europe/Amsterdam")
+	if err != nil {
+		return err
+	}
+	defer func() {
+		dlog.Close(tzdata)
+	}()
+	bs, err := ioutil.ReadAll(tzdata)
+
+	location, err := time.LoadLocationFromTZData("Europe/Amsterdam", bs)
 	if err != nil {
 		return err
 	}

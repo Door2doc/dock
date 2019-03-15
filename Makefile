@@ -16,6 +16,8 @@ endif
 	$(MAKE) -C doc handleiding.pdf
 	hub release create -d -a Door2doc_Upload_Service_$(VERSION).msi -m"$(VERSION)" $(VERSION)
 
+installer:	Door2doc_Upload_Service_$(VERSION).msi
+
 Door2doc_Upload_Service_$(VERSION).msi:	d2d-upload_windows_amd64.exe installer.wxs
 	wixl -v -o "Door2doc_Upload_Service_$(VERSION).msi" installer.wxs
 
@@ -26,7 +28,7 @@ d2d-upload_windows_amd64.exe:	$(SOURCES)
 		-v "$(shell pwd)":/gopath/src/github.com/publysher/d2d-uploader \
 		-w /gopath/src/github.com/publysher/d2d-uploader tcnksm/gox:1.10.3 \
 		gox \
-			-osarch="windows/amd64 darwin/amd64" \
+			-osarch="windows/amd64" \
 			-ldflags '-X "main.GitCommit=$(COMMIT)" \
 					  -X main.Version=$(VERSION) \
 					  -X "main.Built=$(NOW)" \
@@ -45,5 +47,5 @@ test:
 generate:
 	go get -u github.com/mjibson/esc
 
-	$(shell go env GOPATH)/bin/esc -o pkg/uploader/web/assets.go -pkg web -prefix pkg/uploader/web/resources pkg/uploader/web/resources
+	$(shell go env GOPATH)/bin/esc -o pkg/uploader/assets/assets.go -pkg assets -prefix pkg/uploader/assets/resources pkg/uploader/assets/resources
 

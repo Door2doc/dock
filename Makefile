@@ -1,6 +1,7 @@
 COMMIT =	$(shell git rev-list -1 HEAD | head -c 8)
 NOW = 		$(shell date +"%Y-%m-%d %H:%M:%S")
 CLEAN =		$(shell git status -s)
+SOURCES = 	$(shell find . -name '*.go')
 
 .PHONY:	release
 release:
@@ -19,7 +20,7 @@ Door2doc_Upload_Service_$(VERSION).msi:	d2d-upload_windows_amd64.exe installer.w
 	wixl -v -o "Door2doc_Upload_Service_$(VERSION).msi" installer.wxs
 
 
-d2d-upload_windows_amd64.exe:
+d2d-upload_windows_amd64.exe:	$(SOURCES)
 	$(MAKE) generate
 	docker run --rm \
 		-v "$(shell pwd)":/gopath/src/github.com/publysher/d2d-uploader \

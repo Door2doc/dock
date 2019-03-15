@@ -12,6 +12,14 @@
                         Most recent events:
                     </p>
                     <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Query</th>
+                            <th>Upload</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
                         <tbody>
                         {{ range $i, $evt := .History.Events }}
                             {{ if $evt.Error }}

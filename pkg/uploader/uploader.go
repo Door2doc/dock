@@ -128,6 +128,8 @@ func (u *Uploader) upload(ctx context.Context, json *bytes.Buffer) error {
 	user, pass := u.Configuration.Credentials()
 	req.SetBasicAuth(user, pass)
 	req = req.WithContext(ctx)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Connection", "close")
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -135,6 +137,9 @@ func (u *Uploader) upload(ctx context.Context, json *bytes.Buffer) error {
 	}
 
 	var resBuf bytes.Buffer
+	_ = res.Header.Write(&resBuf)
+	_, _ = resBuf.WriteRune('\n')
+
 	_, _ = io.Copy(&resBuf, res.Body)
 	_ = res.Body.Close()
 

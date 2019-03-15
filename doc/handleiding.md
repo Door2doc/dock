@@ -5,6 +5,9 @@ author: door2doc
 
 # Overzicht
 
+Dit document beschrijft de installatie van de door2doc Upload Service -- een Windows service die op regelmatige basis 
+data uitleest uit het HIS en deze doorzet naar de door2doc Cloud omgeving.  
+
 # Voorbereidingen
 
 Voordat u aan de installatie kunt beginnen, dient over het volgende te beschikken:
@@ -58,13 +61,26 @@ Installatie vindt plaats door een dubbelklik op het `.msi` bestand:
 
 ![Installatie van door2doc Upload Service](install-software-1.png){height=50%}\   
 
-Dit moet in enkele seconden afgerond zijn. 
+Dit moet in enkele seconden afgerond zijn. U kunt de installatie verifiëren via Administrative Tools > Services. 
+Hier is nu de service Door2doc Upload Service te zien in de status Running. 
 
-# Beheer 
-
-
+![Services overzicht](running-service.png){height=50%}\ 
 
 # Configuratie
 
-# Monitoring
+De service dient nu geconfigureerd te worden. Dit gebeurt via een web interface op `http://localhost:17226`.
 
+![Configuratiescherm](config-scherm.png){height=50%}\ 
+
+Vul hier de gegevens in die u aan het begin verzameld hebt. Wanneer alle gegevens correct zijn ingevoerd, zal 
+de service de volgende status geven. 
+
+![Succes](configured-ok.png){height=50%}\ 
+
+# Beheer
+
+De service kan gepauzeerd worden via Administrative Tools > Services. 
+
+Foutmeldingen worden naar de Windows event log gestuurd, en kunnen worden gemonitord via de Windows Event Viewer:
+
+![Event viewer](eventviewer.png){height=50%}\

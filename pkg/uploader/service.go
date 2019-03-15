@@ -32,6 +32,12 @@ func NewService(development bool, version string) *Service {
 
 // Start starts running the service. It will return as soon as possible.
 func (s *Service) Start(svc service.Service) error {
+	// determine time zone
+	location, err := time.LoadLocation("Europe/Amsterdam")
+	if err != nil {
+		return err
+	}
+
 	// load configuration
 	s.cfg = config.NewConfiguration()
 	if err := s.cfg.Reload(); err != nil {
@@ -82,7 +88,7 @@ func (s *Service) Start(svc service.Service) error {
 
 	// run service
 	go func() {
-		err := s.run(ctx)
+		err := s.run(ctx, location)
 		switch {
 		case err == context.Canceled:
 			// result of shutdown, we're OK
@@ -117,14 +123,16 @@ func (s *Service) Stop(svc service.Service) error {
 	return nil
 }
 
-func (s *Service) run(ctx context.Context) error {
+func (s *Service) run(ctx context.Context, location *time.Location) error {
 	dlog.Info("Starting service")
+
+	uploader := &Uploader{Configuration: s.cfg, Location: location}
 
 	for {
 		// run the upload, IF the configuration is active
 		sleep := time.Second
 		if s.cfg.Active() {
-			if err := Upload(ctx, s.cfg); err != nil {
+			if err := uploader.Upload(ctx); err != nil {
 				dlog.Error("While processing upload: %v", err)
 			}
 			sleep = s.cfg.Interval()

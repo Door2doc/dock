@@ -37,60 +37,80 @@ type VisitorRecord struct {
 	Leeftijd          string     `json:"cat_leeftijd,omitempty"`
 }
 
-// VisitorRecordFromDB converts a database record to a visitor record.
-func VisitorRecordFromDB(r *db.VisitorRecord, loc *time.Location) (*VisitorRecord, error) {
+func (v *VisitorRecord) fromDB(r *db.VisitorRecord, loc *time.Location) error {
 	var err error
-	res := &VisitorRecord{
-		ID:                r.ID,
-		MutatieID:         r.MutatieID,
-		Locatie:           r.Locatie,
-		Kamer:             r.Kamer,
-		Bed:               r.Bed,
-		Ingangsklacht:     r.Ingangsklacht,
-		Specialisme:       r.Specialisme,
-		Triage:            r.Triage,
-		Herkomst:          r.Herkomst,
-		Vervoerder:        r.Vervoerder,
-		Ontslagbestemming: r.Ontslagbestemming,
-		OpnameAfdeling:    r.OpnameAfdeling,
-		OpnameSpecialisme: r.OpnameSpecialisme,
-	}
+	v.ID = r.ID
+	v.MutatieID = r.MutatieID
+	v.Locatie = r.Locatie
+	v.Kamer = r.Kamer
+	v.Bed = r.Bed
+	v.Ingangsklacht = r.Ingangsklacht
+	v.Specialisme = r.Specialisme
+	v.Triage = r.Triage
+	v.Herkomst = r.Herkomst
+	v.Vervoerder = r.Vervoerder
+	v.Ontslagbestemming = r.Ontslagbestemming
+	v.OpnameAfdeling = r.OpnameAfdeling
+	v.OpnameSpecialisme = r.OpnameSpecialisme
+
 	if !r.Aangemaakt.IsZero() {
-		res.Aangemeld = &r.Aangemaakt
+		v.Aangemeld = &r.Aangemaakt
 	}
-	res.Binnenkomst, err = datumTijd(r.BinnenkomstDatum, r.BinnenkomstTijd, loc)
+	v.Binnenkomst, err = datumTijd(r.BinnenkomstDatum, r.BinnenkomstTijd, loc)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	res.AanvangTriage, err = datumTijdRef(res.Binnenkomst, r.AanvangTriageTijd, loc)
+	v.AanvangTriage, err = datumTijdRef(v.Binnenkomst, r.AanvangTriageTijd, loc)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	res.NaarKamer, err = datumTijdRef(res.Binnenkomst, r.NaarKamerTijd, loc)
+	v.NaarKamer, err = datumTijdRef(v.Binnenkomst, r.NaarKamerTijd, loc)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	res.EersteContact, err = datumTijdRef(res.Binnenkomst, r.EersteContactTijd, loc)
+	v.EersteContact, err = datumTijdRef(v.Binnenkomst, r.EersteContactTijd, loc)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	res.AfdelingGebeld, err = datumTijdRef(res.Binnenkomst, r.AfdelingGebeldTijd, loc)
+	v.AfdelingGebeld, err = datumTijdRef(v.Binnenkomst, r.AfdelingGebeldTijd, loc)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	res.GereedOpname, err = datumTijdRef(res.Binnenkomst, r.GereedOpnameTijd, loc)
+	v.GereedOpname, err = datumTijdRef(v.Binnenkomst, r.GereedOpnameTijd, loc)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	res.Vertrek, err = datumTijdRef(res.Binnenkomst, r.VertrekTijd, loc)
+	v.Vertrek, err = datumTijdRef(v.Binnenkomst, r.VertrekTijd, loc)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	if res.Binnenkomst != nil && !r.Geboortedatum.IsZero() {
-		leeftijd := age(res.Binnenkomst, r.Geboortedatum)
+	if v.Binnenkomst != nil && !r.Geboortedatum.IsZero() {
+		leeftijd := age(v.Binnenkomst, r.Geboortedatum)
 		leeftijd = leeftijd / 10
-		res.Leeftijd = strconv.Itoa(leeftijd)
+		v.Leeftijd = strconv.Itoa(leeftijd)
+	}
+
+	return nil
+}
+
+// VisitorRecordFromDB converts a database record to a visitor record.
+func VisitorRecordFromDB(r *db.VisitorRecord, loc *time.Location) (*VisitorRecord, error) {
+	res := &VisitorRecord{}
+	if err := res.fromDB(r, loc); err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+// VisitorRecordsFromDB converts multiple database records into visitor records.
+func VisitorRecordsFromDB(rs []db.VisitorRecord, loc *time.Location) ([]VisitorRecord, error) {
+	res := make([]VisitorRecord, len(rs))
+	for i := range rs {
+		err := res[i].fromDB(&rs[i], loc)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return res, nil

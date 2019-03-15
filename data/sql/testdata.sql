@@ -32,7 +32,7 @@ INSERT INTO correct(sehid, sehmutid, locatie, aangemaakt, binnenkomstdatum, binn
                     naarkamertijd, eerstecontacttijd, afdelinggebeldtijd, gereedopnametijd, vertrektijd, kamer, bed,
                     ingangsklacht, specialisme, triage, vervoerder, bestemming, geboortedatum, opnameafdeling,
                     opnamespecialisme, herkomst, ontslagbestemming)
-VALUES (328996, 1091568, 'A', '2017-07-13 13:00:00', '2017-07-13 00:00:00.000', '23:18', NULL, '23:18', '02:40', NULL,
+VALUES (328996, 1091568, 'A', '2017-07-13 13:00:00', '2017-07-13', '23:18', NULL, '23:18', '02:40', NULL,
         '02:06', '04:34', '', '', 'Pneumonie', '04', NULL, '2', 'A', '1977-07-24 12:00:00', NULL, NULL, NULL, NULL);
 
 INSERT INTO correct(sehid, sehmutid, locatie, aangemaakt, binnenkomstdatum, binnenkomsttijd, aanvangtriagetijd,

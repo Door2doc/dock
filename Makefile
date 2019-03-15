@@ -12,6 +12,7 @@ ifeq "$(VERSION)" ""
 endif
 	git push origin master
 	$(MAKE) Door2doc_Upload_Service_$(VERSION).msi
+	$(MAKE) -C doc handleiding.pdf
 	hub release create -d -a Door2doc_Upload_Service_$(VERSION).msi -m"$(VERSION)" $(VERSION)
 
 Door2doc_Upload_Service_$(VERSION).msi:	d2d-upload_windows_amd64.exe installer.wxs

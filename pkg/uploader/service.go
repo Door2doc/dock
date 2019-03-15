@@ -10,6 +10,7 @@ import (
 	"github.com/kardianos/service"
 	"github.com/publysher/d2d-uploader/pkg/uploader/config"
 	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
+	"github.com/publysher/d2d-uploader/pkg/uploader/history"
 	"github.com/publysher/d2d-uploader/pkg/uploader/web"
 )
 
@@ -38,14 +39,24 @@ func (s *Service) Start(svc service.Service) error {
 		return err
 	}
 
+	// set up history
+	h := history.New()
+
 	// load configuration
 	s.cfg = config.NewConfiguration()
 	if err := s.cfg.Reload(); err != nil {
 		return err
 	}
 
+	// set up uploader
+	uploader := &Uploader{
+		Configuration: s.cfg,
+		Location:      location,
+		History:       h,
+	}
+
 	// create HTTP server for configuration purposes
-	handler, err := web.NewServeMux(s.dev, s.version, s.cfg)
+	handler, err := web.NewServeMux(s.dev, s.version, s.cfg, h)
 	if err != nil {
 		return err
 	}
@@ -88,7 +99,7 @@ func (s *Service) Start(svc service.Service) error {
 
 	// run service
 	go func() {
-		err := s.run(ctx, location)
+		err := s.run(ctx, uploader)
 		switch {
 		case err == context.Canceled:
 			// result of shutdown, we're OK
@@ -123,10 +134,8 @@ func (s *Service) Stop(svc service.Service) error {
 	return nil
 }
 
-func (s *Service) run(ctx context.Context, location *time.Location) error {
+func (s *Service) run(ctx context.Context, uploader *Uploader) error {
 	dlog.Info("Starting service")
-
-	uploader := &Uploader{Configuration: s.cfg, Location: location}
 
 	for {
 		// run the upload, IF the configuration is active

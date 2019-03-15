@@ -13,6 +13,7 @@ import (
 	"github.com/publysher/d2d-uploader/pkg/uploader/config"
 	"github.com/publysher/d2d-uploader/pkg/uploader/db"
 	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
+	"github.com/publysher/d2d-uploader/pkg/uploader/history"
 )
 
 const (
@@ -27,6 +28,7 @@ type ServeMux struct {
 	fs      http.FileSystem
 	version string
 	cfg     *config.Configuration
+	history *history.History
 
 	mu       sync.RWMutex
 	err      error
@@ -100,12 +102,13 @@ func runTemplate(w http.ResponseWriter, tmpl *template.Template, data interface{
 }
 
 // NewServeMux generates the toplevel http mux for managing the service.
-func NewServeMux(dev bool, version string, cfg *config.Configuration) (*ServeMux, error) {
+func NewServeMux(dev bool, version string, cfg *config.Configuration, h *history.History) (*ServeMux, error) {
 	res := &ServeMux{
 		ServeMux: http.NewServeMux(),
 		fs:       FS(dev),
 		version:  version,
 		cfg:      cfg,
+		history:  h,
 	}
 
 	res.initTemplates()
@@ -160,6 +163,7 @@ func (m *ServeMux) page(ctx context.Context, path string) *Page {
 
 type StatusPage struct {
 	*Page
+	History *history.History
 }
 
 func (m *ServeMux) StatusHandler() http.Handler {
@@ -168,7 +172,8 @@ func (m *ServeMux) StatusHandler() http.Handler {
 		defer m.mu.RUnlock()
 
 		runTemplate(w, m.status, StatusPage{
-			Page: m.page(r.Context(), r.URL.Path),
+			Page:    m.page(r.Context(), r.URL.Path),
+			History: m.history,
 		})
 	})
 }

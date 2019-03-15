@@ -9,19 +9,34 @@
                 </div>
                 <div class="card-body">
                     <p>
-                        Most recent uploads:
+                        Most recent events:
                     </p>
-                    <ul class="list-unstyled">
-                        <li>7 Mar 2019, 12:17 - Uploaded 129 items.</li>
-                        <li>7 Mar 2019, 12:16 - Uploaded 129 items.</li>
-                        <li>7 Mar 2019, 12:15 - Uploaded 127 items.</li>
-                        <li>7 Mar 2019, 12:14 - Uploaded 125 items.</li>
-                    </ul>
-
+                    <table class="table">
+                        <tbody>
+                        {{ range $i, $evt := .History.Events }}
+                            {{ if $evt.Error }}
+                                <tr class="table-danger">
+                                    <td>{{ $evt.Time.Format "Jan _2 15:04:05" }}</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td><pre>{{ $evt.Error }}</pre></td>
+                                </tr>
+                            {{ else }}
+                                <tr>
+                                    <td>{{ $evt.Time.Format "Jan _2 15:04:05" }}</td>
+                                    <td>{{ $evt.QueryDuration.Seconds|printf "%0.3fs" }}</td>
+                                    <td>{{ $evt.UploadDuration.Seconds|printf "%0.3fs" }}</td>
+                                    <td><pre>{{ $evt.JSON }}</pre></td>
+                                </tr>
+                            {{ end }}
+                        {{ else }}
+                            <tr>
+                                <td class="table-warning" colspan="4">No events</td>
+                            </tr>
+                        {{ end }}
+                        </tbody>
+                    </table>
                 </div>
-                {{/*<div class="card-body border-top">*/}}
-                    {{/*<a href="/pause" class="card-link">Pause upload</a>*/}}
-                {{/*</div>*/}}
             </div>
         {{ else }}
             <div class="card my-4">
@@ -29,7 +44,7 @@
                     Service is paused
                 </div>
                 {{/*<div class="card-body">*/}}
-                    {{/*<a href="/resume" class="card-link">Resume upload</a>*/}}
+                {{/*<a href="/resume" class="card-link">Resume upload</a>*/}}
                 {{/*</div>*/}}
             </div>
         {{ end }}

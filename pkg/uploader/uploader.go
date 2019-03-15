@@ -14,12 +14,14 @@ import (
 	"github.com/publysher/d2d-uploader/pkg/uploader/config"
 	"github.com/publysher/d2d-uploader/pkg/uploader/db"
 	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
+	"github.com/publysher/d2d-uploader/pkg/uploader/history"
 	"github.com/publysher/d2d-uploader/pkg/uploader/rest"
 )
 
 type Uploader struct {
 	Configuration *config.Configuration
 	Location      *time.Location
+	History       *history.History
 
 	mu         sync.Mutex
 	lastDriver string
@@ -33,27 +35,45 @@ func (u *Uploader) Upload(ctx context.Context) error {
 	u.mu.Lock()
 	defer u.mu.Unlock()
 
+	evt := u.History.NewEvent()
+
 	// ensure DB connection
 	if err := u.ensureDB(); err != nil {
+		evt.Error = err
 		return err
 	}
 
 	// run query
+	start := time.Now()
 	records, err := u.executeQuery(ctx)
 	if err != nil {
+		evt.Error = err
 		return err
 	}
+	evt.QueryDuration = time.Since(start)
 
 	// convert query to JSON
 	vRecs, err := rest.VisitorRecordsFromDB(records, u.Location)
 	if err != nil {
+		evt.Error = err
 		return err
 	}
 
-	// upload JSON to upload service
-	if err := u.upload(ctx, vRecs); err != nil {
+	buf := new(bytes.Buffer)
+	enc := json.NewEncoder(buf)
+	enc.SetIndent("", "  ")
+	if err := enc.Encode(vRecs); err != nil {
 		return err
 	}
+	evt.JSON = buf.String()
+
+	// upload JSON to upload service
+	start = time.Now()
+	if err := u.upload(ctx, buf); err != nil {
+		evt.Error = err
+		return err
+	}
+	evt.UploadDuration = time.Since(start)
 
 	return nil
 }
@@ -100,13 +120,8 @@ func (u *Uploader) executeQuery(ctx context.Context) ([]db.VisitorRecord, error)
 	return records, nil
 }
 
-func (u *Uploader) upload(ctx context.Context, recs []rest.VisitorRecord) error {
-	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(recs); err != nil {
-		return err
-	}
-
-	req, err := http.NewRequest(http.MethodPost, "https://integration.door2doc.net/services/v1/upload/bezoeken", &buf)
+func (u *Uploader) upload(ctx context.Context, json *bytes.Buffer) error {
+	req, err := http.NewRequest(http.MethodPost, "https://integration.door2doc.net/services/v1/upload/bezoeken", json)
 	if err != nil {
 		return err
 	}

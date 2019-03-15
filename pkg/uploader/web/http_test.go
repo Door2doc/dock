@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/publysher/d2d-uploader/pkg/uploader/config"
+	"github.com/publysher/d2d-uploader/pkg/uploader/history"
 )
 
 func TestTemplatesDontFail(t *testing.T) {
@@ -17,7 +18,7 @@ func TestTemplatesDontFail(t *testing.T) {
 	cfg := config.NewConfiguration()
 	cfg.UpdateValidation(ctx)
 
-	m, err := NewServeMux(false, "testing", cfg)
+	m, err := NewServeMux(false, "testing", cfg, history.New())
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -14,7 +14,8 @@ endif
 	git push origin master
 	$(MAKE) Door2doc_Upload_Service_$(VERSION).msi
 	$(MAKE) -C doc handleiding.pdf
-	hub release create -d -a Door2doc_Upload_Service_$(VERSION).msi -m"$(VERSION)" $(VERSION)
+	hub release create -d -a "Door2doc_Upload_Service_$(VERSION).msi#Windows installer" -m"$(VERSION)" $(VERSION)
+	hub release edit -d -a "doc/handleiding.pdf#Handleiding" -m"$(VERSION)" $(VERSION)
 
 installer:	Door2doc_Upload_Service_$(VERSION).msi
 

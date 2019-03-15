@@ -35,3 +35,4 @@ fabric.properties
 /d2d-upload_darwin_amd64
 .vagrant
 *.msi
+doc/*.pdf

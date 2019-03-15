@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -192,6 +193,33 @@ func TestConfiguration_Validate(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got.IsValid(), test.WantValid) {
 				t.Errorf("UpdateValidation().IsValid() == %t, got %t", test.WantValid, got.IsValid())
+			}
+		})
+	}
+}
+
+func TestConfigurationJSON(t *testing.T) {
+	for name, test := range map[string]*Configuration{
+		"empty":    {},
+		"username": {username: "user"},
+		"password": {password: "pass"},
+		"driver":   {driver: "driver"},
+		"dsn":      {dsn: "dsn"},
+		"query":    {query: "query"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			bs, err := json.Marshal(test)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			got := &Configuration{}
+			if err := json.Unmarshal(bs, &got); err != nil {
+				t.Fatal(err)
+			}
+
+			if !reflect.DeepEqual(got, test) {
+				t.Errorf("Marshal/Unmarshal == %v, got %v", test, got)
 			}
 		})
 	}

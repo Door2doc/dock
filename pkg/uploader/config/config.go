@@ -3,22 +3,29 @@ package config
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/publysher/d2d-uploader/pkg/uploader/db"
 	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
+	"github.com/shibukawa/configdir"
 )
 
 var (
-	Server = "https://integration.door2doc.net/"
+	Server     = "https://integration.door2doc.net/"
+	configDirs = configdir.New("door2doc", "Upload Service")
 )
 
 const (
 	PathPing = "/services/v1/upload/ping"
+
+	config = "door2doc.json"
 )
 
 // ValidationResult contains the results of validating the current configuration.
@@ -154,13 +161,73 @@ func (c *Configuration) Validate() *ValidationResult {
 
 // Reload loads the configuration form a well-known location and updates the values accordingly.
 func (c *Configuration) Reload() error {
-	// todo
+	folders := configDirs.QueryFolders(configdir.System)
+	if len(folders) == 0 {
+		return nil
+	}
+	bs, err := folders[0].ReadFile(config)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	if err := json.Unmarshal(bs, &c); err != nil {
+		return err
+	}
 	return nil
 }
 
 // Save stores the latest configuration values to a well-known location.
 func (c *Configuration) Save() error {
-	// todo
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	bs, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+
+	folders := configDirs.QueryFolders(configdir.System)
+	if len(folders) == 0 {
+		return errors.New("failed to find configuration folder")
+	}
+	if err := folders[0].WriteFile(config, bs); err != nil {
+		return errors.Wrap(err, "while writing configuration file")
+	}
+	dlog.Info("Updated %s/%s", folders[0].Path, config)
+	return nil
+}
+
+func (c *Configuration) MarshalJSON() ([]byte, error) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	vars := map[string]string{
+		"username": c.username,
+		"password": c.password,
+		"driver":   c.driver,
+		"dsn":      c.dsn,
+		"query":    c.query,
+	}
+	return json.Marshal(vars)
+}
+
+func (c *Configuration) UnmarshalJSON(v []byte) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	vars := make(map[string]string)
+	if err := json.Unmarshal(v, &vars); err != nil {
+		return err
+	}
+
+	c.username = vars["username"]
+	c.password = vars["password"]
+	c.driver = vars["driver"]
+	c.dsn = vars["dsn"]
+	c.query = vars["query"]
+
 	return nil
 }
 

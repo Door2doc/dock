@@ -6,7 +6,7 @@ author: door2doc
 # Overzicht
 
 Dit document beschrijft de installatie van de door2doc Upload Service -- een Windows service die op regelmatige basis 
-data uitleest uit het HIS en deze doorzet naar de door2doc Cloud omgeving.  
+data uitleest uit het ZIS en deze doorzet naar de door2doc Cloud omgeving.  
 
 # Voorbereidingen
 
@@ -14,7 +14,7 @@ Voordat u aan de installatie kunt beginnen, dient over het volgende te beschikke
 
 ## Server 
 Een server waarop de Upload Service geïnstalleerd kan worden. Dit hoeft geen dedicated server te zijn. Deze server
-moet connectie kunnen maken met de HIS database, en moet connectie kunnen maken met `https://integration.door2doc.net`.
+moet connectie kunnen maken met de ZIS database, en moet connectie kunnen maken met `https://integration.door2doc.net`.
 
 ## Database gegevens
 Om verbinding te maken met de database is er een connectie string nodig. De Upload Service ondersteunt zowel ADO als ODBC 

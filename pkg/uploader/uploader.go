@@ -99,7 +99,7 @@ func (u *Uploader) ensureDB() error {
 }
 
 func (u *Uploader) executeQuery(ctx context.Context) ([]db.VisitorRecord, error) {
-	tx, err := u.db.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
+	tx, err := u.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}

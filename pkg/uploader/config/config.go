@@ -305,7 +305,7 @@ func (c *Configuration) checkDatabase(ctx context.Context) (queryDuration time.D
 		return
 	}
 
-	tx, err := conn.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
+	tx, err := conn.BeginTx(ctx, nil)
 	if err != nil {
 		dlog.Error("Failed to start read-only transaction: %v", err)
 		connErr = &DatabaseInvalidError{Cause: err.Error()}

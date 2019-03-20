@@ -89,9 +89,6 @@ func (s *Service) Start(svc service.Service) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	s.shutdown = cancel
 
-	// validate configuration
-	s.cfg.UpdateValidation(ctx)
-
 	// run HTTP server
 	go func() {
 		addr := s.srv.Addr
@@ -110,6 +107,9 @@ func (s *Service) Start(svc service.Service) error {
 
 	// run service
 	go func() {
+		// validate configuration
+		s.cfg.UpdateValidation(ctx)
+
 		err := s.run(ctx, uploader)
 		switch {
 		case err == context.Canceled:

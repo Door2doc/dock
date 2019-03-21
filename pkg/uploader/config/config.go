@@ -23,7 +23,8 @@ var (
 )
 
 const (
-	PathPing = "/services/v1/upload/ping"
+	PathPing            = "/services/v1/upload/ping"
+	DBValidationTimeout = 5 * time.Second
 
 	config = "door2doc.json"
 )
@@ -144,8 +145,12 @@ func (c *Configuration) UpdateValidation(ctx context.Context) {
 
 	res := &ValidationResult{}
 
-	// configure d2d connection
+	// check d2d connection
 	res.D2DConnection, res.D2DCredentials = c.checkConnection()
+
+	// check db connection
+	ctx, timeout := context.WithTimeout(ctx, DBValidationTimeout)
+	defer timeout()
 	res.QueryDuration, res.QueryResults, res.DatabaseConnection, res.VisitorQuery = c.checkDatabase(ctx)
 
 	c.validationResult = res

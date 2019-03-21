@@ -43,7 +43,7 @@ func TestExecuteQuery(t *testing.T) {
 				MutatieID:          1091568,
 				Locatie:            "A",
 				Aangemaakt:         time.Date(2017, time.July, 13, 13, 0, 0, 0, time.UTC),
-				BinnenkomstDatum:   "2017-07-13 00:00:00.000",
+				BinnenkomstDatum:   "2017-07-13",
 				BinnenkomstTijd:    "23:18",
 				AanvangTriageTijd:  "",
 				NaarKamerTijd:      "23:18",

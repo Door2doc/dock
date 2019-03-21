@@ -1,7 +1,7 @@
 version: "3"
 
 services:
-  database:
+  postgres:
     image: postgres:11.2-alpine
     environment:
       POSTGRES_USER: pguser
@@ -11,3 +11,11 @@ services:
       - "./data/sql:/docker-entrypoint-initdb.d/:ro"
     ports:
       - "5436:5432"
+
+  mssql:
+    image: microsoft/mssql-server-linux:2017-CU12
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: MyPassw0rd
+    ports:
+      - "1433:1433"

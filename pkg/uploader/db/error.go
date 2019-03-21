@@ -1,15 +1,12 @@
 package db
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
-// QueryError indicates a general error while executing the query.
-type QueryError struct {
-	Cause string
-}
-
-func (e *QueryError) Error() string {
-	return fmt.Sprintf("general query error: %s", e.Cause)
-}
+// ErrDuplicateColumns indicates that the query contains duplicate column names.
+var ErrDuplicateColumnNames = errors.New("query contains duplicate column names")
 
 // SelectionError indicates that not all required columns are present in the result set
 type SelectionError struct {

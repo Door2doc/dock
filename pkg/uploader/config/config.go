@@ -319,10 +319,21 @@ func (c *Configuration) checkDatabase(ctx context.Context) (queryDuration time.D
 
 	queryStart := time.Now()
 	records, err := db.ExecuteVisitorQuery(ctx, tx, c.query)
-	if err != nil {
+	_, errIsSelection := err.(*db.SelectionError)
+
+	switch {
+	case err == nil:
+	case errIsSelection:
 		queryErr = err
 		return
+	case err == context.DeadlineExceeded:
+		queryErr = err
+		return
+	default:
+		queryErr = &QueryError{Cause: err.Error()}
+		return
 	}
+
 	queryDuration = time.Since(queryStart)
 
 	max := 10

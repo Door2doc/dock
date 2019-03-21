@@ -30,7 +30,7 @@ func Humanize(err error) interface{} {
 		return fmt.Sprintf(`Could not verify credentials: the server returned HTTP %d. Please contact door2doc support.`, e.StatusCode)
 	case *config.DatabaseInvalidError:
 		return fmt.Sprintf(`Could not connect to the database. The database driver responded with: %s.`, e.Cause)
-	case *db.QueryError:
+	case *config.QueryError:
 		return fmt.Sprintf(`Failed to execute query. The database responsed with: %s.`, e.Cause)
 	case *db.SelectionError:
 		missing := strings.Join(e.Missing, "</code></li><li><code>")

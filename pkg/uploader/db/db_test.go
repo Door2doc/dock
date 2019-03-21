@@ -120,7 +120,7 @@ func TestExecuteQuery(t *testing.T) {
 		},
 		"duplicate columns": {
 			Query: `select null as hello, null as hello`,
-			Err:   &QueryError{Cause: "query contains duplicate column names"},
+			Err:   ErrDuplicateColumnNames,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {

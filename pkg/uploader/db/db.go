@@ -14,7 +14,7 @@ func ExecuteVisitorQuery(ctx context.Context, tx *sql.Tx, query string) ([]Visit
 	// execute query
 	rows, err := tx.QueryContext(ctx, query)
 	if err != nil {
-		return nil, &QueryError{err.Error()}
+		return nil, err
 	}
 	defer func() {
 		if err := rows.Close(); err != nil {
@@ -25,7 +25,7 @@ func ExecuteVisitorQuery(ctx context.Context, tx *sql.Tx, query string) ([]Visit
 	// determine column names
 	names, err := rows.Columns()
 	if err != nil {
-		return nil, &QueryError{err.Error()}
+		return nil, err
 	}
 
 	col2index, err := checkColumnNames(names, VisitorColumns)
@@ -40,7 +40,7 @@ func ExecuteVisitorQuery(ctx context.Context, tx *sql.Tx, query string) ([]Visit
 		var rec VisitorRecord
 		err := mapRow(rows, &rec, names, col2index)
 		if err != nil {
-			return nil, &QueryError{err.Error()}
+			return nil, err
 		}
 
 		target := make([]interface{}, len(names))
@@ -48,13 +48,13 @@ func ExecuteVisitorQuery(ctx context.Context, tx *sql.Tx, query string) ([]Visit
 			target[i] = new(sql.RawBytes)
 		}
 		if err := rows.Scan(target...); err != nil {
-			return nil, &QueryError{err.Error()}
+			return nil, err
 		}
 
 		res = append(res, rec)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, &QueryError{err.Error()}
+		return nil, err
 	}
 
 	return res, nil
@@ -166,7 +166,7 @@ func checkColumnNames(got []string, want []Column) (map[string]int, error) {
 	}
 
 	if len(got) != len(got2pos) {
-		return nil, &QueryError{"query contains duplicate column names"}
+		return nil, ErrDuplicateColumnNames
 	}
 
 	var (

@@ -195,10 +195,12 @@ func (m *ServeMux) DatabaseHandler() http.Handler {
 		if r.Method == http.MethodPost {
 			m.cfg.SetDSN(r.FormValue("driver"), r.FormValue("dsn"))
 			m.cfg.UpdateValidation(r.Context())
-			if err := m.cfg.Save(); err != nil {
-				dlog.Error("While saving credentials: %v", err)
-			}
 
+			if m.cfg.Validate().IsValid() {
+				if err := m.cfg.Save(); err != nil {
+					dlog.Error("While saving credentials: %v", err)
+				}
+			}
 			w.Header().Set("Location", pathDatabase)
 			w.WriteHeader(http.StatusFound)
 			return
@@ -268,8 +270,10 @@ func (m *ServeMux) QueryHandler() http.Handler {
 		if r.Method == http.MethodPost {
 			m.cfg.SetQuery(r.FormValue("query"))
 			m.cfg.UpdateValidation(r.Context())
-			if err := m.cfg.Save(); err != nil {
-				dlog.Error("While saving query: %v", err)
+			if m.cfg.Validate().IsValid() {
+				if err := m.cfg.Save(); err != nil {
+					dlog.Error("While saving query: %v", err)
+				}
 			}
 
 			w.Header().Set("Location", pathQuery)

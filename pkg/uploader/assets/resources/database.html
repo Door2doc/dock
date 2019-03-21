@@ -15,6 +15,9 @@
             <div class="invalid-feedback">
                 {{ if .Error }}{{ .Error | humanize }}{{ end }}
             </div>
+            <div class="valid-feedback">
+                Connection to database is OK.
+            </div>
             <small class="form-text">
                 Example: <code>Server=127.0.0.1; Database=myDB; User Id=username; Password=password</code> <br/>
                 Refer to <a href="https://www.connectionstrings.com/sql-server/" target="_blank">this site</a> for more

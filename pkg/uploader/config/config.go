@@ -188,7 +188,7 @@ func (c *Configuration) Save() error {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	bs, err := json.Marshal(c)
+	bs, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
 		return err
 	}

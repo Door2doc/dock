@@ -79,7 +79,8 @@ func (u *Uploader) Upload(ctx context.Context) error {
 }
 
 func (u *Uploader) ensureDB() error {
-	driver, dsn := u.Configuration.DSN()
+	conn := u.Configuration.Connection()
+	driver, dsn := conn.Driver, conn.DSN()
 	if driver == u.lastDriver && dsn == u.lastDSN && u.db != nil {
 		return nil
 	}

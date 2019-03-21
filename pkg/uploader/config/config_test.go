@@ -10,6 +10,7 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+	"github.com/publysher/d2d-uploader/pkg/uploader/db"
 )
 
 const (
@@ -200,12 +201,19 @@ func TestConfiguration_Validate(t *testing.T) {
 
 func TestConfigurationJSON(t *testing.T) {
 	for name, test := range map[string]*Configuration{
-		"empty":    {},
-		"username": {username: "user"},
-		"password": {password: "pass"},
-		"driver":   {driver: "driver"},
-		"dsn":      {dsn: "dsn"},
-		"query":    {query: "query"},
+		"empty":    {connection: db.ConnectionData{Driver: "sqlserver"}},
+		"username": {username: "user", connection: db.ConnectionData{Driver: "sqlserver"}},
+		"password": {password: "pass", connection: db.ConnectionData{Driver: "sqlserver"}},
+		"dsn": {connection: db.ConnectionData{
+			Driver:   "postgres",
+			Host:     "localhost",
+			Port:     "5436",
+			Database: "pgdb",
+			Username: "pguser",
+			Password: "pass",
+			Params:   "sslmode=disable",
+		}},
+		"query": {query: "query", connection: db.ConnectionData{Driver: "sqlserver"}},
 	} {
 		t.Run(name, func(t *testing.T) {
 			bs, err := json.Marshal(test)

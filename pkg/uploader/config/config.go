@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"sync"
@@ -56,10 +57,8 @@ type Configuration struct {
 	username string
 	// password to connect to the d2d upload service
 	password string
-	// Driver for the database connection
-	driver string
-	// DSN for the database connection to retrieve visitor information from
-	dsn string
+	// database connection data
+	connection db.ConnectionData
 	// Query to execute to retrieve visitor information
 	query string
 	// Set to true if the service should be active
@@ -75,7 +74,6 @@ func NewConfiguration() *Configuration {
 	return &Configuration{
 		active:   true,
 		interval: time.Minute,
-		driver:   "sqlserver",
 	}
 }
 
@@ -95,19 +93,25 @@ func (c *Configuration) SetCredentials(username, password string) {
 	c.password = password
 }
 
-// DSN returns the database driver and DSN stored in the configuration.
-func (c *Configuration) DSN() (driver, dsn string) {
+// Connection returns the connection data stored in the configuration.
+func (c *Configuration) Connection() db.ConnectionData {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return c.driver, c.dsn
+	return c.connection
+}
+
+func (c *Configuration) SetConnection(cd db.ConnectionData) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.connection = cd
 }
 
 func (c *Configuration) SetDSN(driver, dsn string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.driver = driver
-	c.dsn = dsn
+	_ = c.connection.UnmarshalText([]byte(dsn))
 }
 
 // Query returns the visitor query stored in the configuration.
@@ -146,12 +150,15 @@ func (c *Configuration) UpdateValidation(ctx context.Context) {
 	res := &ValidationResult{}
 
 	// check d2d connection
-	res.D2DConnection, res.D2DCredentials = c.checkConnection()
+	connCtx, timeout := context.WithTimeout(ctx, DBValidationTimeout)
+	defer timeout()
+
+	res.D2DConnection, res.D2DCredentials = c.checkConnection(connCtx)
 
 	// check db connection
-	ctx, timeout := context.WithTimeout(ctx, DBValidationTimeout)
+	dbCtx, timeout := context.WithTimeout(ctx, DBValidationTimeout)
 	defer timeout()
-	res.QueryDuration, res.QueryResults, res.DatabaseConnection, res.VisitorQuery = c.checkDatabase(ctx)
+	res.QueryDuration, res.QueryResults, res.DatabaseConnection, res.VisitorQuery = c.checkDatabase(dbCtx)
 
 	c.validationResult = res
 	c.active = c.validationResult.IsValid()
@@ -204,16 +211,22 @@ func (c *Configuration) Save() error {
 	return nil
 }
 
+type persistentConfig struct {
+	Username string            `json:"username"`
+	Password string            `json:"password"`
+	Dsn      db.ConnectionData `json:"dsn"`
+	Query    string            `json:"query"`
+}
+
 func (c *Configuration) MarshalJSON() ([]byte, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	vars := map[string]string{
-		"username": c.username,
-		"password": c.password,
-		"driver":   c.driver,
-		"dsn":      c.dsn,
-		"query":    c.query,
+	vars := persistentConfig{
+		Username: c.username,
+		Password: c.password,
+		Dsn:      c.connection,
+		Query:    c.query,
 	}
 	return json.Marshal(vars)
 }
@@ -222,21 +235,20 @@ func (c *Configuration) UnmarshalJSON(v []byte) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	vars := make(map[string]string)
+	vars := &persistentConfig{}
 	if err := json.Unmarshal(v, &vars); err != nil {
 		return err
 	}
 
-	c.username = vars["username"]
-	c.password = vars["password"]
-	c.driver = vars["driver"]
-	c.dsn = vars["dsn"]
-	c.query = vars["query"]
+	c.username = vars.Username
+	c.password = vars.Password
+	c.connection = vars.Dsn
+	c.query = vars.Query
 
 	return nil
 }
 
-func (c *Configuration) checkConnection() (connErr error, credErr error) {
+func (c *Configuration) checkConnection(ctx context.Context) (connErr error, credErr error) {
 	if c.username == "" || c.password == "" {
 		credErr = ErrD2DCredentialsNotConfigured
 	}
@@ -249,6 +261,7 @@ func (c *Configuration) checkConnection() (connErr error, credErr error) {
 	}
 	req.URL.Path = PathPing
 	req.SetBasicAuth(c.username, c.password)
+	req = req.WithContext(ctx)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -284,12 +297,15 @@ func (c *Configuration) checkDatabase(ctx context.Context) (queryDuration time.D
 	if c.query == "" {
 		queryErr = ErrVisitorQueryNotConfigured
 	}
-	if c.dsn == "" || c.driver == "" {
+
+	log.Println("checking connection")
+	if !c.connection.IsValid() {
 		connErr = ErrDatabaseNotConfigured
 		return
 	}
 
-	conn, err := sql.Open(c.driver, c.dsn)
+	log.Println(c.connection.Driver, c.connection.DSN())
+	conn, err := sql.Open(c.connection.Driver, c.connection.DSN())
 	if err != nil {
 		dlog.Error("Failed to connect to database: %v", err)
 		connErr = &DatabaseInvalidError{Cause: err.Error()}

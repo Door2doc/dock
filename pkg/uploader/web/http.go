@@ -182,8 +182,7 @@ func (m *ServeMux) StatusHandler() http.Handler {
 type DatabasePage struct {
 	*Page
 
-	Driver string
-	DSN    string
+	Config db.ConnectionData
 	Error  error
 }
 
@@ -193,7 +192,18 @@ func (m *ServeMux) DatabaseHandler() http.Handler {
 		defer m.mu.RUnlock()
 
 		if r.Method == http.MethodPost {
-			m.cfg.SetDSN(r.FormValue("driver"), r.FormValue("dsn"))
+			c := db.ConnectionData{
+				Driver:   r.FormValue("driver"),
+				Host:     r.FormValue("host"),
+				Port:     r.FormValue("port"),
+				Instance: r.FormValue("instance"),
+				Database: r.FormValue("database"),
+				Username: r.FormValue("username"),
+				Password: r.FormValue("password"),
+				Params:   r.FormValue("params"),
+			}
+
+			m.cfg.SetConnection(c)
 			m.cfg.UpdateValidation(r.Context())
 
 			if m.cfg.Validate().IsValid() {
@@ -206,11 +216,10 @@ func (m *ServeMux) DatabaseHandler() http.Handler {
 			return
 		}
 
-		driver, dsn := m.cfg.DSN()
+		connectionData := m.cfg.Connection()
 		runTemplate(w, m.database, DatabasePage{
 			Page:   m.page(r.Context(), r.URL.Path),
-			Driver: driver,
-			DSN:    dsn,
+			Config: connectionData,
 			Error:  m.cfg.Validate().DatabaseConnection,
 		})
 	})

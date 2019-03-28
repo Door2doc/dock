@@ -79,8 +79,16 @@ de service de volgende status geven.
 
 # Beheer
 
+## Starten/Stoppen service
+
 De service kan gepauzeerd worden via Administrative Tools > Services. 
+
+## Logs 
 
 Foutmeldingen worden naar de Windows event log gestuurd, en kunnen worden gemonitord via de Windows Event Viewer:
 
 ![Event viewer](eventviewer.png){height=50%}\
+
+## Configuratie
+
+Het configuratiebestand is te vinden in `C:\ProgramData\Door2doc`.

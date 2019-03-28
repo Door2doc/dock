@@ -122,7 +122,7 @@ func (u *Uploader) executeQuery(ctx context.Context) ([]db.VisitorRecord, error)
 }
 
 func (u *Uploader) upload(ctx context.Context, json *bytes.Buffer) error {
-	req, err := http.NewRequest(http.MethodPost, "https://integration.door2doc.net/services/v1/upload/bezoeken", json)
+	req, err := http.NewRequest(http.MethodPost, "https://integration.door2doc.net/services/v2/upload/bezoeken", json)
 	if err != nil {
 		return err
 	}

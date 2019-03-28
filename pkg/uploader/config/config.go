@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"sync"
@@ -24,7 +23,7 @@ var (
 )
 
 const (
-	PathPing            = "/services/v1/upload/ping"
+	PathPing            = "/services/v2/upload/ping"
 	DBValidationTimeout = 5 * time.Second
 
 	config = "door2doc.json"
@@ -298,13 +297,11 @@ func (c *Configuration) checkDatabase(ctx context.Context) (queryDuration time.D
 		queryErr = ErrVisitorQueryNotConfigured
 	}
 
-	log.Println("checking connection")
 	if !c.connection.IsValid() {
 		connErr = ErrDatabaseNotConfigured
 		return
 	}
 
-	log.Println(c.connection.Driver, c.connection.DSN())
 	conn, err := sql.Open(c.connection.Driver, c.connection.DSN())
 	if err != nil {
 		dlog.Error("Failed to connect to database: %v", err)

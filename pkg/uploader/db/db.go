@@ -136,13 +136,13 @@ func mapRow(rows *sql.Rows, rec *VisitorRecord, allColumns []string, col2index m
 		Locatie:            locatie.String,
 		Aangemaakt:         created,
 		BinnenkomstDatum:   binnenkomstDatum.String,
-		BinnenkomstTijd:    binnenkomstTijd.String,
-		AanvangTriageTijd:  aanvangTriageTijd.String,
-		NaarKamerTijd:      naarKamerTijd.String,
-		EersteContactTijd:  eersteContactTijd.String,
-		AfdelingGebeldTijd: afdelingGebeldTijd.String,
-		GereedOpnameTijd:   gereedOpnameTijd.String,
-		VertrekTijd:        vertrekTijd.String,
+		BinnenkomstTijd:    asTime(binnenkomstTijd.String),
+		AanvangTriageTijd:  asTime(aanvangTriageTijd.String),
+		NaarKamerTijd:      asTime(naarKamerTijd.String),
+		EersteContactTijd:  asTime(eersteContactTijd.String),
+		AfdelingGebeldTijd: asTime(afdelingGebeldTijd.String),
+		GereedOpnameTijd:   asTime(gereedOpnameTijd.String),
+		VertrekTijd:        asTime(vertrekTijd.String),
 		Kamer:              kamer.String,
 		Bed:                bed.String,
 		Ingangsklacht:      ingangsklacht.String,
@@ -157,6 +157,12 @@ func mapRow(rows *sql.Rows, rec *VisitorRecord, allColumns []string, col2index m
 	}
 
 	return nil
+}
+
+func asTime(s string) string {
+	s = strings.TrimPrefix(s, "0001-01-01T")
+	s = strings.TrimSuffix(s, ":00Z")
+	return s
 }
 
 func checkColumnNames(got []string, want []Column) (map[string]int, error) {

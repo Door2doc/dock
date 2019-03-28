@@ -9,15 +9,20 @@ import (
 	"testing"
 	"time"
 
+	"github.com/denisenkom/go-mssqldb"
 	"github.com/lib/pq"
 )
 
 const (
-	TestDSN = "postgres://pguser:pwd@localhost:5436/pgdb?sslmode=disable"
+	PqlDSN = "postgres://pguser:pwd@localhost:5436/pgdb?sslmode=disable"
+	MssDSN = "sqlserver://sa:MyPassw0rd@localhost:1433/?database=upload"
+
+	TestDSN = PqlDSN
 )
 
 var (
 	_ pq.Driver
+	_ mssql.Driver
 )
 
 func u(t time.Time) time.Time {
@@ -232,12 +237,13 @@ func setup(ctx context.Context, t *testing.T) (*sql.Tx, context.CancelFunc) {
 		t.Skip("uses database")
 	}
 
-	db, err := sql.Open("postgres", TestDSN)
+	driver := TestDSN[:strings.Index(TestDSN, "://")]
+	db, err := sql.Open(driver, TestDSN)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	tx, err := db.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

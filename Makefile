@@ -14,13 +14,14 @@ endif
 	git push origin master
 	$(MAKE) Door2doc_Upload_Service_$(VERSION).msi
 	$(MAKE) -C doc handleiding.pdf
-	hub release create -d -a "Door2doc_Upload_Service_$(VERSION).msi#Windows installer" -m"$(VERSION)" $(VERSION)
+	hub release create -d -a "Door2doc_Upload_Service_$(VERSION).exe#Windows installer" -m"$(VERSION)" $(VERSION)
 	hub release edit -d -a "doc/handleiding.pdf#Handleiding" -m"$(VERSION)" $(VERSION)
 
-installer:	Door2doc_Upload_Service_$(VERSION).msi
+installer: Door2doc_Upload_Service_$(VERSION).exe 
 
-Door2doc_Upload_Service_$(VERSION).msi:	d2d-upload_windows_amd64.exe installer.wxs
-	wixl -v -o "Door2doc_Upload_Service_$(VERSION).msi" installer.wxs
+Door2doc_Upload_Service_$(VERSION).exe: d2d-upload_windows_amd64.exe installer.nsi
+	docker run -it -v "$(shell pwd)":/app hp41/nsis:3.01-1 -DVERSION=$(VERSION) /app/installer.nsi
+	mv _installer.exe $@
 
 
 d2d-upload_windows_amd64.exe:	$(SOURCES)

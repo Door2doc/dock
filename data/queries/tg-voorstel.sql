@@ -1,7 +1,7 @@
 SELECT TOP 100 mut.sehid      AS sehid,
                mut.sehmutid   AS sehmutid,
                reg.locatiecod AS locatie,
-               reg.datum      AS datum,
+               reg.datum      AS aangemaakt,
                reg.aanksdatum AS binnenkomstdatum,
                reg.aankstijd  AS binnenkomsttijd,
                reg.triagetijd AS aanvangtriagetijd,

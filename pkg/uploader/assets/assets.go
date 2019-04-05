@@ -6,6 +6,8 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/base64"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -100,7 +102,24 @@ func (f *_escFile) Close() error {
 }
 
 func (f *_escFile) Readdir(count int) ([]os.FileInfo, error) {
-	return nil, nil
+	if !f.isDir {
+		return nil, fmt.Errorf(" escFile.Readdir: '%s' is not directory", f.name)
+	}
+
+	fis, ok := _escDirs[f.local]
+	if !ok {
+		return nil, fmt.Errorf(" escFile.Readdir: '%s' is directory, but we have no info about content of this dir, local=%s", f.name, f.local)
+	}
+	limit := count
+	if count <= 0 || limit > len(fis) {
+		limit = len(fis)
+	}
+
+	if len(fis) == 0 && count > 0 {
+		return nil, io.EOF
+	}
+
+	return fis[0:limit], nil
 }
 
 func (f *_escFile) Stat() (os.FileInfo, error) {
@@ -191,6 +210,7 @@ func FSMustString(useLocal bool, name string) string {
 var _escData = map[string]*_escFile{
 
 	"/_layout.html": {
+		name:    "_layout.html",
 		local:   "pkg/uploader/assets/resources/_layout.html",
 		size:    3371,
 		modtime: 1552660668,
@@ -215,6 +235,7 @@ LK+gLeS1WL9UIdfX55Oc2MaSWUCydClLI6P1siJbnQdift0fX2Mhnvb/jf4OAAD//21BcvsrDQAA
 	},
 
 	"/assets/bootstrap.min.css": {
+		name:    "bootstrap.min.css",
 		local:   "pkg/uploader/assets/resources/assets/bootstrap.min.css",
 		size:    155758,
 		modtime: 1550069270,
@@ -610,6 +631,7 @@ AA==
 	},
 
 	"/assets/bootstrap.min.css.map": {
+		name:    "bootstrap.min.css.map",
 		local:   "pkg/uploader/assets/resources/assets/bootstrap.min.css.map",
 		size:    625953,
 		modtime: 1550069270,
@@ -2300,6 +2322,7 @@ w5rSETf/9vD/BwAA//9003TYIY0JAA==
 	},
 
 	"/assets/custom.css": {
+		name:    "custom.css",
 		local:   "pkg/uploader/assets/resources/assets/custom.css",
 		size:    82,
 		modtime: 1552040883,
@@ -2310,6 +2333,7 @@ AAD//0xhMXJSAAAA
 	},
 
 	"/assets/logo.png": {
+		name:    "logo.png",
 		local:   "pkg/uploader/assets/resources/assets/logo.png",
 		size:    4562,
 		modtime: 1552036596,
@@ -2395,6 +2419,7 @@ AIBqGmo0qNnH/b8AAAD///H03wfSEQAA
 	},
 
 	"/database.html": {
+		name:    "database.html",
 		local:   "pkg/uploader/assets/resources/database.html",
 		size:    4014,
 		modtime: 1553175842,
@@ -2418,6 +2443,7 @@ APyFNLu84uNre24l5Faua80rql9J9rVm1FUZnE5WTDi63mer1TDL/wQAAP//H2JexK4PAAA=
 	},
 
 	"/query.html": {
+		name:    "query.html",
 		local:   "pkg/uploader/assets/resources/query.html",
 		size:    4380,
 		modtime: 1552647000,
@@ -2443,6 +2469,7 @@ BXkoaRr5Kim0vHznJ2IhETsqWRcYPsT/KhUKxZPWaQe6vQ0T5+LstdT/AgAA///tGDM9HBEAAA==
 	},
 
 	"/status.html": {
+		name:    "status.html",
 		local:   "pkg/uploader/assets/resources/status.html",
 		size:    4446,
 		modtime: 1552658426,
@@ -2464,6 +2491,7 @@ KUF+BQAA///T9pW9XhEAAA==
 	},
 
 	"/upload.html": {
+		name:    "upload.html",
 		local:   "pkg/uploader/assets/resources/upload.html",
 		size:    1067,
 		modtime: 1553166403,
@@ -2479,6 +2507,7 @@ hPV+sEZpV56bnqZzV84pqDc3OD8DAAD//1brqsUrBAAA
 	},
 
 	"/zoneinfo/Africa/Abidjan": {
+		name:    "Abidjan",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Abidjan",
 		size:    84,
 		modtime: 1528710319,
@@ -2489,6 +2518,7 @@ H4sIAAAAAAAC/wqJykwzYsAATFCMzOZoYGBgmPRskgcD4///fyygsiw+viEM7r4hYA6Xu2+IARcgAAD/
 	},
 
 	"/zoneinfo/Africa/Accra": {
+		name:    "Accra",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Accra",
 		size:    328,
 		modtime: 1528710319,
@@ -2502,6 +2532,7 @@ UACwbGBkAYcEl49vCIO2gYGRAYO7bwg0eLjcfUMMuAABAAD//xslCuZIAQAA
 	},
 
 	"/zoneinfo/Africa/Addis_Ababa": {
+		name:    "Addis_Ababa",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Addis_Ababa",
 		size:    136,
 		modtime: 1528710319,
@@ -2512,6 +2543,7 @@ GBiUNRg4GBjU1jDwQUR8fEMYXB1DGLQNjIwNQKSJKZJNXK6OIbrGXIAAAAD//+k60qmIAAAA
 	},
 
 	"/zoneinfo/Africa/Algiers": {
+		name:    "Algiers",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Algiers",
 		size:    311,
 		modtime: 1528710319,
@@ -2525,6 +2557,7 @@ GsLAwMDIiBwwXM6uIbqGXIAAAAD//zKF6Og3AQAA
 	},
 
 	"/zoneinfo/Africa/Asmara": {
+		name:    "Asmara",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Asmara",
 		size:    136,
 		modtime: 1528710319,
@@ -2535,6 +2568,7 @@ GBiUNRg4GBjU1jDwQUR8fEMYXB1DGLQNjIwNQKSJKZJNXK6OIbrGXIAAAAD//+k60qmIAAAA
 	},
 
 	"/zoneinfo/Africa/Asmera": {
+		name:    "Asmera",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Asmera",
 		size:    136,
 		modtime: 1528710319,
@@ -2545,6 +2579,7 @@ GBiUNRg4GBjU1jDwQUR8fEMYXB1DGLQNjIwNQKSJKZJNXK6OIbrGXIAAAAD//+k60qmIAAAA
 	},
 
 	"/zoneinfo/Africa/Bamako": {
+		name:    "Bamako",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Bamako",
 		size:    84,
 		modtime: 1528710319,
@@ -2555,6 +2590,7 @@ H4sIAAAAAAAC/wqJykwzYsAATFCMzOZoYGBgmPRskgcD4///fyygsiw+viEM7r4hYA6Xu2+IARcgAAD/
 	},
 
 	"/zoneinfo/Africa/Bangui": {
+		name:    "Bangui",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Bangui",
 		size:    85,
 		modtime: 1528710319,
@@ -2565,6 +2601,7 @@ CAAA//8wLDreVQAAAA==
 	},
 
 	"/zoneinfo/Africa/Banjul": {
+		name:    "Banjul",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Banjul",
 		size:    84,
 		modtime: 1528710319,
@@ -2575,6 +2612,7 @@ H4sIAAAAAAAC/wqJykwzYsAATFCMzOZoYGBgmPRskgcD4///fyygsiw+viEM7r4hYA6Xu2+IARcgAAD/
 	},
 
 	"/zoneinfo/Africa/Bissau": {
+		name:    "Bissau",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Bissau",
 		size:    101,
 		modtime: 1528710319,
@@ -2585,6 +2623,7 @@ gSGDu28IAwMjCHG5+4YYcAECAAD//xDnpFplAAAA
 	},
 
 	"/zoneinfo/Africa/Blantyre": {
+		name:    "Blantyre",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Blantyre",
 		size:    85,
 		modtime: 1528710319,
@@ -2595,6 +2634,7 @@ CAAA//8NlkyeVQAAAA==
 	},
 
 	"/zoneinfo/Africa/Brazzaville": {
+		name:    "Brazzaville",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Brazzaville",
 		size:    85,
 		modtime: 1528710319,
@@ -2605,6 +2645,7 @@ CAAA//8wLDreVQAAAA==
 	},
 
 	"/zoneinfo/Africa/Bujumbura": {
+		name:    "Bujumbura",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Bujumbura",
 		size:    85,
 		modtime: 1528710319,
@@ -2615,6 +2656,7 @@ CAAA//8NlkyeVQAAAA==
 	},
 
 	"/zoneinfo/Africa/Cairo": {
+		name:    "Cairo",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Cairo",
 		size:    731,
 		modtime: 1528710319,
@@ -2634,6 +2676,7 @@ CC5X1xBdIy5AAAAA//8WIwYn2wIAAA==
 	},
 
 	"/zoneinfo/Africa/Casablanca": {
+		name:    "Casablanca",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Casablanca",
 		size:    633,
 		modtime: 1528710319,
@@ -2651,6 +2694,7 @@ N4Qh3DUYRIQwOLuGICUjrnDXEAOQnI6vsZ6pnoGOr6EBiNY35gIEAAD//+TK1LZ5AgAA
 	},
 
 	"/zoneinfo/Africa/Ceuta": {
+		name:    "Ceuta",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Ceuta",
 		size:    785,
 		modtime: 1528710319,
@@ -2670,6 +2714,7 @@ peDQ0ESu4NDQ3CxFKOrPEkW5yBV0qIT7EKkjwqLCxCK1RMy94REuvwMAAP//e0Uc5REDAAA=
 	},
 
 	"/zoneinfo/Africa/Conakry": {
+		name:    "Conakry",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Conakry",
 		size:    84,
 		modtime: 1528710319,
@@ -2680,6 +2725,7 @@ H4sIAAAAAAAC/wqJykwzYsAATFCMzOZoYGBgmPRskgcD4///fyygsiw+viEM7r4hYA6Xu2+IARcgAAD/
 	},
 
 	"/zoneinfo/Africa/Dakar": {
+		name:    "Dakar",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Dakar",
 		size:    84,
 		modtime: 1528710319,
@@ -2690,6 +2736,7 @@ H4sIAAAAAAAC/wqJykwzYsAATFCMzOZoYGBgmPRskgcD4///fyygsiw+viEM7r4hYA6Xu2+IARcgAAD/
 	},
 
 	"/zoneinfo/Africa/Dar_es_Salaam": {
+		name:    "Dar_es_Salaam",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Dar_es_Salaam",
 		size:    136,
 		modtime: 1528710319,
@@ -2700,6 +2747,7 @@ GBiUNRg4GBjU1jDwQUR8fEMYXB1DGLQNjIwNQKSJKZJNXK6OIbrGXIAAAAD//+k60qmIAAAA
 	},
 
 	"/zoneinfo/Africa/Djibouti": {
+		name:    "Djibouti",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Djibouti",
 		size:    136,
 		modtime: 1528710319,
@@ -2710,6 +2758,7 @@ GBiUNRg4GBjU1jDwQUR8fEMYXB1DGLQNjIwNQKSJKZJNXK6OIbrGXIAAAAD//+k60qmIAAAA
 	},
 
 	"/zoneinfo/Africa/Douala": {
+		name:    "Douala",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Douala",
 		size:    85,
 		modtime: 1528710319,
@@ -2720,6 +2769,7 @@ CAAA//8wLDreVQAAAA==
 	},
 
 	"/zoneinfo/Africa/El_Aaiun": {
+		name:    "El_Aaiun",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/El_Aaiun",
 		size:    570,
 		modtime: 1528710319,
@@ -2737,6 +2787,7 @@ OgIAAA==
 	},
 
 	"/zoneinfo/Africa/Freetown": {
+		name:    "Freetown",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Freetown",
 		size:    84,
 		modtime: 1528710319,
@@ -2747,6 +2798,7 @@ H4sIAAAAAAAC/wqJykwzYsAATFCMzOZoYGBgmPRskgcD4///fyygsiw+viEM7r4hYA6Xu2+IARcgAAD/
 	},
 
 	"/zoneinfo/Africa/Gaborone": {
+		name:    "Gaborone",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Gaborone",
 		size:    85,
 		modtime: 1528710319,
@@ -2757,6 +2809,7 @@ CAAA//8NlkyeVQAAAA==
 	},
 
 	"/zoneinfo/Africa/Harare": {
+		name:    "Harare",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Harare",
 		size:    85,
 		modtime: 1528710319,
@@ -2767,6 +2820,7 @@ CAAA//8NlkyeVQAAAA==
 	},
 
 	"/zoneinfo/Africa/Johannesburg": {
+		name:    "Johannesburg",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Johannesburg",
 		size:    123,
 		modtime: 1528710319,
@@ -2777,6 +2831,7 @@ AaRcVAKkWsuAkYWBQUaBgcXHN4Qh2DE4BG42F4ina8QFCAAA//9pFj8IewAAAA==
 	},
 
 	"/zoneinfo/Africa/Juba": {
+		name:    "Juba",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Juba",
 		size:    275,
 		modtime: 1528710319,
@@ -2789,6 +2844,7 @@ JSD3axkwsjAwyCgwcILYDLw+viEMzo7BICKEwdUxBO5pLlfHEF1jLkAAAAD//3AlZ3sTAQAA
 	},
 
 	"/zoneinfo/Africa/Kampala": {
+		name:    "Kampala",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Kampala",
 		size:    136,
 		modtime: 1528710319,
@@ -2799,6 +2855,7 @@ GBiUNRg4GBjU1jDwQUR8fEMYXB1DGLQNjIwNQKSJKZJNXK6OIbrGXIAAAAD//+k60qmIAAAA
 	},
 
 	"/zoneinfo/Africa/Khartoum": {
+		name:    "Khartoum",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Khartoum",
 		size:    288,
 		modtime: 1528710319,
@@ -2812,6 +2869,7 @@ AA==
 	},
 
 	"/zoneinfo/Africa/Kigali": {
+		name:    "Kigali",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Kigali",
 		size:    85,
 		modtime: 1528710319,
@@ -2822,6 +2880,7 @@ CAAA//8NlkyeVQAAAA==
 	},
 
 	"/zoneinfo/Africa/Kinshasa": {
+		name:    "Kinshasa",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Kinshasa",
 		size:    85,
 		modtime: 1528710319,
@@ -2832,6 +2891,7 @@ CAAA//8wLDreVQAAAA==
 	},
 
 	"/zoneinfo/Africa/Lagos": {
+		name:    "Lagos",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Lagos",
 		size:    85,
 		modtime: 1528710319,
@@ -2842,6 +2902,7 @@ CAAA//8wLDreVQAAAA==
 	},
 
 	"/zoneinfo/Africa/Libreville": {
+		name:    "Libreville",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Libreville",
 		size:    85,
 		modtime: 1528710319,
@@ -2852,6 +2913,7 @@ CAAA//8wLDreVQAAAA==
 	},
 
 	"/zoneinfo/Africa/Lome": {
+		name:    "Lome",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Lome",
 		size:    84,
 		modtime: 1528710319,
@@ -2862,6 +2924,7 @@ H4sIAAAAAAAC/wqJykwzYsAATFCMzOZoYGBgmPRskgcD4///fyygsiw+viEM7r4hYA6Xu2+IARcgAAD/
 	},
 
 	"/zoneinfo/Africa/Luanda": {
+		name:    "Luanda",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Luanda",
 		size:    85,
 		modtime: 1528710319,
@@ -2872,6 +2935,7 @@ CAAA//8wLDreVQAAAA==
 	},
 
 	"/zoneinfo/Africa/Lubumbashi": {
+		name:    "Lubumbashi",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Lubumbashi",
 		size:    85,
 		modtime: 1528710319,
@@ -2882,6 +2946,7 @@ CAAA//8NlkyeVQAAAA==
 	},
 
 	"/zoneinfo/Africa/Lusaka": {
+		name:    "Lusaka",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Lusaka",
 		size:    85,
 		modtime: 1528710319,
@@ -2892,6 +2957,7 @@ CAAA//8NlkyeVQAAAA==
 	},
 
 	"/zoneinfo/Africa/Malabo": {
+		name:    "Malabo",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Malabo",
 		size:    85,
 		modtime: 1528710319,
@@ -2902,6 +2968,7 @@ CAAA//8wLDreVQAAAA==
 	},
 
 	"/zoneinfo/Africa/Maputo": {
+		name:    "Maputo",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Maputo",
 		size:    85,
 		modtime: 1528710319,
@@ -2912,6 +2979,7 @@ CAAA//8NlkyeVQAAAA==
 	},
 
 	"/zoneinfo/Africa/Maseru": {
+		name:    "Maseru",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Maseru",
 		size:    123,
 		modtime: 1528710319,
@@ -2922,6 +2990,7 @@ AaRcVAKkWsuAkYWBQUaBgcXHN4Qh2DE4BG42F4ina8QFCAAA//9pFj8IewAAAA==
 	},
 
 	"/zoneinfo/Africa/Mbabane": {
+		name:    "Mbabane",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Mbabane",
 		size:    123,
 		modtime: 1528710319,
@@ -2932,6 +3001,7 @@ AaRcVAKkWsuAkYWBQUaBgcXHN4Qh2DE4BG42F4ina8QFCAAA//9pFj8IewAAAA==
 	},
 
 	"/zoneinfo/Africa/Mogadishu": {
+		name:    "Mogadishu",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Mogadishu",
 		size:    136,
 		modtime: 1528710319,
@@ -2942,6 +3012,7 @@ GBiUNRg4GBjU1jDwQUR8fEMYXB1DGLQNjIwNQKSJKZJNXK6OIbrGXIAAAAD//+k60qmIAAAA
 	},
 
 	"/zoneinfo/Africa/Monrovia": {
+		name:    "Monrovia",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Monrovia",
 		size:    109,
 		modtime: 1528710319,
@@ -2952,6 +3023,7 @@ CIOvbwiDu28I3Dwud98QAy5AAAAA///mJobJbQAAAA==
 	},
 
 	"/zoneinfo/Africa/Nairobi": {
+		name:    "Nairobi",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Nairobi",
 		size:    136,
 		modtime: 1528710319,
@@ -2962,6 +3034,7 @@ GBiUNRg4GBjU1jDwQUR8fEMYXB1DGLQNjIwNQKSJKZJNXK6OIbrGXIAAAAD//+k60qmIAAAA
 	},
 
 	"/zoneinfo/Africa/Ndjamena": {
+		name:    "Ndjamena",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Ndjamena",
 		size:    108,
 		modtime: 1528710319,
@@ -2972,6 +3045,7 @@ fHxDGMIdQTg4BGoCV7hjiK4hFyAAAP//Tk4D92wAAAA=
 	},
 
 	"/zoneinfo/Africa/Niamey": {
+		name:    "Niamey",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Niamey",
 		size:    85,
 		modtime: 1528710319,
@@ -2982,6 +3056,7 @@ CAAA//8wLDreVQAAAA==
 	},
 
 	"/zoneinfo/Africa/Nouakchott": {
+		name:    "Nouakchott",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Nouakchott",
 		size:    84,
 		modtime: 1528710319,
@@ -2992,6 +3067,7 @@ H4sIAAAAAAAC/wqJykwzYsAATFCMzOZoYGBgmPRskgcD4///fyygsiw+viEM7r4hYA6Xu2+IARcgAAD/
 	},
 
 	"/zoneinfo/Africa/Ouagadougou": {
+		name:    "Ouagadougou",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Ouagadougou",
 		size:    84,
 		modtime: 1528710319,
@@ -3002,6 +3078,7 @@ H4sIAAAAAAAC/wqJykwzYsAATFCMzOZoYGBgmPRskgcD4///fyygsiw+viEM7r4hYA6Xu2+IARcgAAD/
 	},
 
 	"/zoneinfo/Africa/Porto-Novo": {
+		name:    "Porto-Novo",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Porto-Novo",
 		size:    85,
 		modtime: 1528710319,
@@ -3012,6 +3089,7 @@ CAAA//8wLDreVQAAAA==
 	},
 
 	"/zoneinfo/Africa/Sao_Tome": {
+		name:    "Sao_Tome",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Sao_Tome",
 		size:    110,
 		modtime: 1528710319,
@@ -3022,6 +3100,7 @@ YXD3DWEIdwxhYGBgBGOucMcQXUMuQAAAAP//Nzfpgm4AAAA=
 	},
 
 	"/zoneinfo/Africa/Timbuktu": {
+		name:    "Timbuktu",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Timbuktu",
 		size:    84,
 		modtime: 1528710319,
@@ -3032,6 +3111,7 @@ H4sIAAAAAAAC/wqJykwzYsAATFCMzOZoYGBgmPRskgcD4///fyygsiw+viEM7r4hYA6Xu2+IARcgAAD/
 	},
 
 	"/zoneinfo/Africa/Tripoli": {
+		name:    "Tripoli",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Tripoli",
 		size:    265,
 		modtime: 1528710319,
@@ -3044,6 +3124,7 @@ xIBcLaPAyMLAwCfAwAliM/D6+IYwOLsGg4gQBlfXELhXuVxdQ3SNuAABAAD//3bIgfAJAQAA
 	},
 
 	"/zoneinfo/Africa/Tunis": {
+		name:    "Tunis",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Tunis",
 		size:    286,
 		modtime: 1528710319,
@@ -3057,6 +3138,7 @@ ZaLDgR4BAAA=
 	},
 
 	"/zoneinfo/Africa/Windhoek": {
+		name:    "Windhoek",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Africa/Windhoek",
 		size:    387,
 		modtime: 1528710319,
@@ -3071,6 +3153,7 @@ Z4hcHSLAyMTMxMpCImRgEOAAhYyoBAMLA4OMAgMXA4OWASMXAwOfACM/WETYxzeEQdvA0NiAIdgxOIQh
 	},
 
 	"/zoneinfo/America/Adak": {
+		name:    "Adak",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Adak",
 		size:    894,
 		modtime: 1528710319,
@@ -3092,6 +3175,7 @@ B1TegGjhXrdo8tnMVjM3+SwWs8XMVX8HAAD//3Bv0lB+AwAA
 	},
 
 	"/zoneinfo/America/Anchorage": {
+		name:    "Anchorage",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Anchorage",
 		size:    902,
 		modtime: 1528710319,
@@ -3113,6 +3197,7 @@ cIHELUEqdHyN9Yz0DHR8DQ31DPUMuAABAAD//xcrEiWGAwAA
 	},
 
 	"/zoneinfo/America/Anguilla": {
+		name:    "Anguilla",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Anguilla",
 		size:    84,
 		modtime: 1528710319,
@@ -3123,6 +3208,7 @@ wgUIAAD//7pnGTNUAAAA
 	},
 
 	"/zoneinfo/America/Antigua": {
+		name:    "Antigua",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Antigua",
 		size:    84,
 		modtime: 1528710319,
@@ -3133,6 +3219,7 @@ wgUIAAD//7pnGTNUAAAA
 	},
 
 	"/zoneinfo/America/Araguaina": {
+		name:    "Araguaina",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Araguaina",
 		size:    353,
 		modtime: 1528710319,
@@ -3147,6 +3234,7 @@ BoEKlgvq////z8DESDJk+v//0gUGhv//Hz9gZPn//+oFBg4f3xAGXQMjBl0DY2iocdnoGhjbGXMBAgAA
 	},
 
 	"/zoneinfo/America/Argentina/Buenos_Aires": {
+		name:    "Buenos_Aires",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Argentina/Buenos_Aires",
 		size:    430,
 		modtime: 1528710319,
@@ -3162,6 +3250,7 @@ bHQNjO2MuQABAAD//+sNJCyuAQAA
 	},
 
 	"/zoneinfo/America/Argentina/Catamarca": {
+		name:    "Catamarca",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Argentina/Catamarca",
 		size:    430,
 		modtime: 1528710319,
@@ -3177,6 +3266,7 @@ oMYJl42ugbGdMRcgAAD//9g/buWuAQAA
 	},
 
 	"/zoneinfo/America/Argentina/ComodRivadavia": {
+		name:    "ComodRivadavia",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Argentina/ComodRivadavia",
 		size:    430,
 		modtime: 1528710319,
@@ -3192,6 +3282,7 @@ oMYJl42ugbGdMRcgAAD//9g/buWuAQAA
 	},
 
 	"/zoneinfo/America/Argentina/Cordoba": {
+		name:    "Cordoba",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Argentina/Cordoba",
 		size:    430,
 		modtime: 1528710319,
@@ -3207,6 +3298,7 @@ ugbGdsZcgAAAAP//h5F+5a4BAAA=
 	},
 
 	"/zoneinfo/America/Argentina/Jujuy": {
+		name:    "Jujuy",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Argentina/Jujuy",
 		size:    420,
 		modtime: 1528710319,
@@ -3222,6 +3314,7 @@ A2M7Yy5AAAAA//8qQ5qLpAEAAA==
 	},
 
 	"/zoneinfo/America/Argentina/La_Rioja": {
+		name:    "La_Rioja",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Argentina/La_Rioja",
 		size:    435,
 		modtime: 1528710319,
@@ -3237,6 +3330,7 @@ ZtA1QI0YLhtdA2M7Yy5AAAAA//+L1sWKswEAAA==
 	},
 
 	"/zoneinfo/America/Argentina/Mendoza": {
+		name:    "Mendoza",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Argentina/Mendoza",
 		size:    430,
 		modtime: 1528710319,
@@ -3252,6 +3346,7 @@ a4AaJ1w2ugbGdsZcgAAAAP//hGmj+a4BAAA=
 	},
 
 	"/zoneinfo/America/Argentina/Rio_Gallegos": {
+		name:    "Rio_Gallegos",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Argentina/Rio_Gallegos",
 		size:    430,
 		modtime: 1528710319,
@@ -3267,6 +3362,7 @@ cNnoGhjbGXMBAgAA//8KMOEargEAAA==
 	},
 
 	"/zoneinfo/America/Argentina/Salta": {
+		name:    "Salta",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Argentina/Salta",
 		size:    420,
 		modtime: 1528710319,
@@ -3282,6 +3378,7 @@ zpgLEAAA//+6Gm08pAEAAA==
 	},
 
 	"/zoneinfo/America/Argentina/San_Juan": {
+		name:    "San_Juan",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Argentina/San_Juan",
 		size:    435,
 		modtime: 1528710319,
@@ -3297,6 +3394,7 @@ ZtA1QI0YLhtdA2M7Yy5AAAAA///xIUaGswEAAA==
 	},
 
 	"/zoneinfo/America/Argentina/San_Luis": {
+		name:    "San_Luis",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Argentina/San_Luis",
 		size:    443,
 		modtime: 1528710319,
@@ -3312,6 +3410,7 @@ BiYMugbGDLoG6NHDZaNrYGxnzAUIAAD//zixNf67AQAA
 	},
 
 	"/zoneinfo/America/Argentina/Tucuman": {
+		name:    "Tucuman",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Argentina/Tucuman",
 		size:    440,
 		modtime: 1528710319,
@@ -3327,6 +3426,7 @@ AxMGXQNjBl0D1NjhstE1MLYz5gIEAAD//1KaI1+4AQAA
 	},
 
 	"/zoneinfo/America/Argentina/Ushuaia": {
+		name:    "Ushuaia",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Argentina/Ushuaia",
 		size:    430,
 		modtime: 1528710319,
@@ -3342,6 +3442,7 @@ cNnoGhjbGXMBAgAA//+0R3PKrgEAAA==
 	},
 
 	"/zoneinfo/America/Aruba": {
+		name:    "Aruba",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Aruba",
 		size:    103,
 		modtime: 1528710319,
@@ -3352,6 +3453,7 @@ hjDoGpgYGzA4BodAdXM5BoeYcAECAAD//+ZuLoZnAAAA
 	},
 
 	"/zoneinfo/America/Asuncion": {
+		name:    "Asuncion",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Asuncion",
 		size:    790,
 		modtime: 1528710319,
@@ -3371,6 +3473,7 @@ gvzYPvL7F5PZIuSYLYIaREENugfeW5apBjFLzFSDLivZrAWNVgMpkGzWacTjkN0NAAD//wYPsxAWAwAA
 	},
 
 	"/zoneinfo/America/Atikokan": {
+		name:    "Atikokan",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Atikokan",
 		size:    157,
 		modtime: 1528710319,
@@ -3382,6 +3485,7 @@ NTjElAsQAAD//1wqUdqdAAAA
 	},
 
 	"/zoneinfo/America/Atka": {
+		name:    "Atka",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Atka",
 		size:    894,
 		modtime: 1528710319,
@@ -3403,6 +3507,7 @@ B1TegGjhXrdo8tnMVjM3+SwWs8XMVX8HAAD//3Bv0lB+AwAA
 	},
 
 	"/zoneinfo/America/Bahia": {
+		name:    "Bahia",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Bahia",
 		size:    403,
 		modtime: 1528710319,
@@ -3417,6 +3522,7 @@ wOx8xgLzb8c2WOxoVbC8/9jAql9ngfWJ/xts8vkW2B6ZaGDn92GB3yyPDf6ekxTq////z8DESAFk+v//
 	},
 
 	"/zoneinfo/America/Bahia_Banderas": {
+		name:    "Bahia_Banderas",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Bahia_Banderas",
 		size:    618,
 		modtime: 1528710319,
@@ -3434,6 +3540,7 @@ gkMYfF1CGJxdQtCSDpdzcIiZs0uIjq+JnqGegY6voYGeqZ4BFyAAAP//RwZmMWoCAAA=
 	},
 
 	"/zoneinfo/America/Barbados": {
+		name:    "Barbados",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Barbados",
 		size:    153,
 		modtime: 1528710319,
@@ -3445,6 +3552,7 @@ mHABAgAA///Hr4kBmQAAAA==
 	},
 
 	"/zoneinfo/America/Belem": {
+		name:    "Belem",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Belem",
 		size:    243,
 		modtime: 1528710319,
@@ -3457,6 +3565,7 @@ Fxg4fHxDGHQNjBh0DYyh/uCy0TUwtjPmAgQAAP//iYpNlvMAAAA=
 	},
 
 	"/zoneinfo/America/Belize": {
+		name:    "Belize",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Belize",
 		size:    380,
 		modtime: 1528710319,
@@ -3471,6 +3580,7 @@ ceZg6IOzBcsi2JNuJ7DvvBAgkViYILHaPICBiZFkyMzEzPT//9oABob//zetYGT5/3/1Agau//93bmDk
 	},
 
 	"/zoneinfo/America/Blanc-Sablon": {
+		name:    "Blanc-Sablon",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Blanc-Sablon",
 		size:    140,
 		modtime: 1528710319,
@@ -3482,6 +3592,7 @@ qoSB4f//qxcYWf7/P36AgQPM5gGTAj6+IQyOLiEMjsEhDI7hIQyOASFgwxnBBJdjcIgJFyAAAP//LNVB
 	},
 
 	"/zoneinfo/America/Boa_Vista": {
+		name:    "Boa_Vista",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Boa_Vista",
 		size:    263,
 		modtime: 1528710319,
@@ -3494,6 +3605,7 @@ Hcn3B+7sTDe4+1vZ4d7sNwb3765weBDiaPBlBu+Br6w5Bt8OFDl859PZ8CPQyuHH8csGv7geHPi1km3D
 	},
 
 	"/zoneinfo/America/Bogota": {
+		name:    "Bogota",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Bogota",
 		size:    125,
 		modtime: 1528710319,
@@ -3504,6 +3616,7 @@ H4sIAAAAAAAC/wqJykwzYsAALFAMAqxQtkADAwPDjIjQAi3m4gDtfbEO9f///2dkZmJm/v9/1wQGBjDJ
 	},
 
 	"/zoneinfo/America/Boise": {
+		name:    "Boise",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Boise",
 		size:    907,
 		modtime: 1528710319,
@@ -3525,6 +3638,7 @@ F1skg/+eSqgRtwpe0SJstjltdovgcNgcNrvq3wAAAP//Kul5W4sDAAA=
 	},
 
 	"/zoneinfo/America/Buenos_Aires": {
+		name:    "Buenos_Aires",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Buenos_Aires",
 		size:    430,
 		modtime: 1528710319,
@@ -3540,6 +3654,7 @@ bHQNjO2MuQABAAD//+sNJCyuAQAA
 	},
 
 	"/zoneinfo/America/Cambridge_Bay": {
+		name:    "Cambridge_Bay",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Cambridge_Bay",
 		size:    813,
 		modtime: 1528710319,
@@ -3560,6 +3675,7 @@ XQMDBt/wEAbfgBAG3+AQBl8XFxARwuAMwsEhDK7BIQwMDIyIRA9ncvkGh5j7uoTo+BrrGekZ6PgaGuoZ
 	},
 
 	"/zoneinfo/America/Campo_Grande": {
+		name:    "Campo_Grande",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Campo_Grande",
 		size:    757,
 		modtime: 1528710319,
@@ -3579,6 +3695,7 @@ akWkGORqkU4qlUglEAYinUwiXxX+nwAAAP//BprxB/UCAAA=
 	},
 
 	"/zoneinfo/America/Cancun": {
+		name:    "Cancun",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Cancun",
 		size:    325,
 		modtime: 1528710319,
@@ -3592,6 +3709,7 @@ gEhGAR/fEAbn4BAGV5cQBtfgEAZnlxCkcOJyDQ4x5QIEAAD//yC5BkpFAQAA
 	},
 
 	"/zoneinfo/America/Caracas": {
+		name:    "Caracas",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Caracas",
 		size:    132,
 		modtime: 1528710319,
@@ -3603,6 +3721,7 @@ AA==
 	},
 
 	"/zoneinfo/America/Catamarca": {
+		name:    "Catamarca",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Catamarca",
 		size:    430,
 		modtime: 1528710319,
@@ -3618,6 +3737,7 @@ oMYJl42ugbGdMRcgAAD//9g/buWuAQAA
 	},
 
 	"/zoneinfo/America/Cayenne": {
+		name:    "Cayenne",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Cayenne",
 		size:    108,
 		modtime: 1528710319,
@@ -3628,6 +3748,7 @@ H4sIAAAAAAAC/wqJykwzYsAAzFAMAixQNk8DAwPDxC/aE34fNj1Q////fwZGJqb//899YGD4///4AQaW
 	},
 
 	"/zoneinfo/America/Cayman": {
+		name:    "Cayman",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Cayman",
 		size:    96,
 		modtime: 1528710319,
@@ -3638,6 +3759,7 @@ H4sIAAAAAAAC/wqJykwzYsAAzFAMAkxQNk8DAwND95fEF4xM//9vLWBg+P9/qwQDy///OzcwcPj4hjA4
 	},
 
 	"/zoneinfo/America/Chicago": {
+		name:    "Chicago",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Chicago",
 		size:    1328,
 		modtime: 1528710319,
@@ -3664,6 +3786,7 @@ xXwBFLOFZ10n+vs4KyKEiYpQQaae4Bvo6y9TBwT4Bvj6O/8VAAD//7AmRkswBQAA
 	},
 
 	"/zoneinfo/America/Chihuahua": {
+		name:    "Chihuahua",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Chihuahua",
 		size:    591,
 		modtime: 1528710319,
@@ -3681,6 +3804,7 @@ Ax1fQwM9Uz0DLkAAAAD//2xQRbJPAgAA
 	},
 
 	"/zoneinfo/America/Coral_Harbour": {
+		name:    "Coral_Harbour",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Coral_Harbour",
 		size:    157,
 		modtime: 1528710319,
@@ -3692,6 +3816,7 @@ NTjElAsQAAD//1wqUdqdAAAA
 	},
 
 	"/zoneinfo/America/Cordoba": {
+		name:    "Cordoba",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Cordoba",
 		size:    430,
 		modtime: 1528710319,
@@ -3707,6 +3832,7 @@ ugbGdsZcgAAAAP//h5F+5a4BAAA=
 	},
 
 	"/zoneinfo/America/Costa_Rica": {
+		name:    "Costa_Rica",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Costa_Rica",
 		size:    149,
 		modtime: 1528710319,
@@ -3718,6 +3844,7 @@ AAD//28a9yqVAAAA
 	},
 
 	"/zoneinfo/America/Creston": {
+		name:    "Creston",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Creston",
 		size:    109,
 		modtime: 1528710319,
@@ -3728,6 +3855,7 @@ AWH7+IYw+AaHMAQEh8DN4/INDjHnAgQAAP//e1wcNG0AAAA=
 	},
 
 	"/zoneinfo/America/Cuiaba": {
+		name:    "Cuiaba",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Cuiaba",
 		size:    747,
 		modtime: 1528710319,
@@ -3747,6 +3875,7 @@ BrlcJpdBKEgMCplyRYR/AgAA//9+HDCP6wIAAA==
 	},
 
 	"/zoneinfo/America/Curacao": {
+		name:    "Curacao",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Curacao",
 		size:    103,
 		modtime: 1528710319,
@@ -3757,6 +3886,7 @@ hjDoGpgYGzA4BodAdXM5BoeYcAECAAD//+ZuLoZnAAAA
 	},
 
 	"/zoneinfo/America/Danmarkshavn": {
+		name:    "Danmarkshavn",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Danmarkshavn",
 		size:    289,
 		modtime: 1528710319,
@@ -3770,6 +3900,7 @@ o6UhAQAA
 	},
 
 	"/zoneinfo/America/Dawson": {
+		name:    "Dawson",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Dawson",
 		size:    800,
 		modtime: 1528710319,
@@ -3790,6 +3921,7 @@ z0DH19BQz1DPgAsQAAD//8B19w0gAwAA
 	},
 
 	"/zoneinfo/America/Dawson_Creek": {
+		name:    "Dawson_Creek",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Dawson_Creek",
 		size:    412,
 		modtime: 1528710319,
@@ -3804,6 +3936,7 @@ YOAAs3nApACIZBDx8Q1hCHAJYQgIDmEICA9hCAgIYfANDgEHNSOU5PINDjHnAgQAAP//HflowJwBAAA=
 	},
 
 	"/zoneinfo/America/Denver": {
+		name:    "Denver",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Denver",
 		size:    918,
 		modtime: 1528710319,
@@ -3825,6 +3958,7 @@ KHzczdt//IN29DThU1eK4WnJhc+cmIC2Rj22d6dgp3MGd7Wdhd0lI7intgf25LIsVZ4mKf017y2N097B
 	},
 
 	"/zoneinfo/America/Detroit": {
+		name:    "Detroit",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Detroit",
 		size:    830,
 		modtime: 1528710319,
@@ -3845,6 +3979,7 @@ wfTjDquwF0sWu03Kdp3Rm/XGbJfJpDfpjYp/AwAA//9fnGFePgMAAA==
 	},
 
 	"/zoneinfo/America/Dominica": {
+		name:    "Dominica",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Dominica",
 		size:    84,
 		modtime: 1528710319,
@@ -3855,6 +3990,7 @@ wgUIAAD//7pnGTNUAAAA
 	},
 
 	"/zoneinfo/America/Edmonton": {
+		name:    "Edmonton",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Edmonton",
 		size:    903,
 		modtime: 1528710319,
@@ -3876,6 +4012,7 @@ MbGipATkgkPcKdhEnZBrMBuMOsFkMpgMRvnfAQAA///dE59DhwMAAA==
 	},
 
 	"/zoneinfo/America/Eirunepe": {
+		name:    "Eirunepe",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Eirunepe",
 		size:    279,
 		modtime: 1528710319,
@@ -3889,6 +4026,7 @@ AA==
 	},
 
 	"/zoneinfo/America/El_Salvador": {
+		name:    "El_Salvador",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/El_Salvador",
 		size:    116,
 		modtime: 1528710319,
@@ -3899,6 +4037,7 @@ JDAw/P+/cwMjy///qxcwcPj4hjA4u4QwOAeHQI3icg4OMeMCBAAA///e1hfodAAAAA==
 	},
 
 	"/zoneinfo/America/Ensenada": {
+		name:    "Ensenada",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Ensenada",
 		size:    890,
 		modtime: 1528710319,
@@ -3920,6 +4059,7 @@ sdl5vc3AqyxVaq26UmXRaNQadaXkvwAAAP//P8PrbnoDAAA=
 	},
 
 	"/zoneinfo/America/Fort_Nelson": {
+		name:    "Fort_Nelson",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Fort_Nelson",
 		size:    837,
 		modtime: 1528710319,
@@ -3940,6 +4080,7 @@ LpCE2SIJ872SMJslYbJIR5uQHVthskjpin8DAAD//9cvz61FAwAA
 	},
 
 	"/zoneinfo/America/Fort_Wayne": {
+		name:    "Fort_Wayne",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Fort_Wayne",
 		size:    647,
 		modtime: 1528710319,
@@ -3958,6 +4099,7 @@ CoBIBpH//48fYJTw8Q1hcHYJYXAODmFwDg9hcA4IYXANDmFwdQkBpyBGBhjF5RocYurqEqLja6xnpGeg
 	},
 
 	"/zoneinfo/America/Fortaleza": {
+		name:    "Fortaleza",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Fortaleza",
 		size:    293,
 		modtime: 1528710319,
@@ -3971,6 +4113,7 @@ ja6BsZ0xFyAAAP//HocjlSUBAAA=
 	},
 
 	"/zoneinfo/America/Glace_Bay": {
+		name:    "Glace_Bay",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Glace_Bay",
 		size:    833,
 		modtime: 1528710319,
@@ -3991,6 +4134,7 @@ q+E5HfDB/QuCEurMfK5Oz8tMOXKVXCEzKZVypVwhvBYAAP//bbjf2UEDAAA=
 	},
 
 	"/zoneinfo/America/Godthab": {
+		name:    "Godthab",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Godthab",
 		size:    725,
 		modtime: 1528710319,
@@ -4009,6 +4153,7 @@ AI1f31DTwjk0Tdyj5ulJHL46SEfsNrT03EGrtQ9Hmwdg6bLAIooik3h5eP73eYjikzbGRNExwbz+2vla
 	},
 
 	"/zoneinfo/America/Goose_Bay": {
+		name:    "Goose_Bay",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Goose_Bay",
 		size:    1209,
 		modtime: 1528710319,
@@ -4035,6 +4180,7 @@ drc2j7kEAAA=
 	},
 
 	"/zoneinfo/America/Grand_Turk": {
+		name:    "Grand_Turk",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Grand_Turk",
 		size:    716,
 		modtime: 1528710319,
@@ -4054,6 +4200,7 @@ rcaoAcwCAAA=
 	},
 
 	"/zoneinfo/America/Grenada": {
+		name:    "Grenada",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Grenada",
 		size:    84,
 		modtime: 1528710319,
@@ -4064,6 +4211,7 @@ wgUIAAD//7pnGTNUAAAA
 	},
 
 	"/zoneinfo/America/Guadeloupe": {
+		name:    "Guadeloupe",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Guadeloupe",
 		size:    84,
 		modtime: 1528710319,
@@ -4074,6 +4222,7 @@ wgUIAAD//7pnGTNUAAAA
 	},
 
 	"/zoneinfo/America/Guatemala": {
+		name:    "Guatemala",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Guatemala",
 		size:    136,
 		modtime: 1528710319,
@@ -4085,6 +4234,7 @@ AAAA
 	},
 
 	"/zoneinfo/America/Guayaquil": {
+		name:    "Guayaquil",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Guayaquil",
 		size:    125,
 		modtime: 1528710319,
@@ -4095,6 +4245,7 @@ H4sIAAAAAAAC/wqJykwzYsAALFAMAqxQtkADAwPDtiVOEtpify5oFz5zqP///z8jMxMz8///WzUYGP7/
 	},
 
 	"/zoneinfo/America/Guyana": {
+		name:    "Guyana",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Guyana",
 		size:    127,
 		modtime: 1528710319,
@@ -4105,6 +4256,7 @@ n3ZhYPn//+oFBq7//48fYODz8Q1h0DUwNjEFkQy6BiZw87lsdA1M7Ey4AAEAAP//FNRebn8AAAA=
 	},
 
 	"/zoneinfo/America/Halifax": {
+		name:    "Halifax",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Halifax",
 		size:    1273,
 		modtime: 1528710319,
@@ -4131,6 +4283,7 @@ O4WTxFHC2ikcHCQOElb4dwAAAP//d4U9ffkEAAA=
 	},
 
 	"/zoneinfo/America/Havana": {
+		name:    "Havana",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Havana",
 		size:    916,
 		modtime: 1528710319,
@@ -4152,6 +4305,7 @@ Jh7v76hEWjOr1urYbGOOTCVTyBXZRqVSppQp5ErRnwEAAP//2SlceZQDAAA=
 	},
 
 	"/zoneinfo/America/Hermosillo": {
+		name:    "Hermosillo",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Hermosillo",
 		size:    198,
 		modtime: 1528710319,
@@ -4163,6 +4317,7 @@ jv//+xsYeEBsRgGIuI9vCINvcAiDc3AIQ0BwCIOvSwiKQ7l8g0PMuQABAAD//yZyAHTGAAAA
 	},
 
 	"/zoneinfo/America/Indiana/Indianapolis": {
+		name:    "Indianapolis",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Indiana/Indianapolis",
 		size:    647,
 		modtime: 1528710319,
@@ -4181,6 +4336,7 @@ CoBIBpH//48fYJTw8Q1hcHYJYXAODmFwDg9hcA4IYXANDmFwdQkBpyBGBhjF5RocYurqEqLja6xnpGeg
 	},
 
 	"/zoneinfo/America/Indiana/Knox": {
+		name:    "Knox",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Indiana/Knox",
 		size:    918,
 		modtime: 1528710319,
@@ -4202,6 +4358,7 @@ S7w9WAQvtyV5h0cJeOgq77SkYdeO93m3KgqB8jAHMikKFrdiMH6d9qgbcE/HWQqNb8W9kSO0r8uJ++vr
 	},
 
 	"/zoneinfo/America/Indiana/Marengo": {
+		name:    "Marengo",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Indiana/Marengo",
 		size:    667,
 		modtime: 1528710319,
@@ -4220,6 +4377,7 @@ FSMDjOJyDQ4xdXUJ0fE11jPSM9DxNTTUM9Qz4AIEAAD//wxvNh2bAgAA
 	},
 
 	"/zoneinfo/America/Indiana/Petersburg": {
+		name:    "Petersburg",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Indiana/Petersburg",
 		size:    732,
 		modtime: 1528710319,
@@ -4239,6 +4397,7 @@ XK7BIaauLiE6vsZ6RnoGOr6GhnqGegZcgAAAAP//8NEUuNwCAAA=
 	},
 
 	"/zoneinfo/America/Indiana/Tell_City": {
+		name:    "Tell_City",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Indiana/Tell_City",
 		size:    673,
 		modtime: 1528710319,
@@ -4257,6 +4416,7 @@ F42sRFQzuf6gokhRKNcrlQqlojD9VwAAAP//RjUiwqECAAA=
 	},
 
 	"/zoneinfo/America/Indiana/Vevay": {
+		name:    "Vevay",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Indiana/Vevay",
 		size:    557,
 		modtime: 1528710319,
@@ -4274,6 +4434,7 @@ AAA=
 	},
 
 	"/zoneinfo/America/Indiana/Vincennes": {
+		name:    "Vincennes",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Indiana/Vincennes",
 		size:    657,
 		modtime: 1528710319,
@@ -4292,6 +4453,7 @@ LtfgEFNXlxAdX2M9Iz0DHV9DQz1DPQMuQAAAAP//d++tZ5ECAAA=
 	},
 
 	"/zoneinfo/America/Indiana/Winamac": {
+		name:    "Winamac",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Indiana/Winamac",
 		size:    687,
 		modtime: 1528710319,
@@ -4311,6 +4473,7 @@ AgAA
 	},
 
 	"/zoneinfo/America/Indianapolis": {
+		name:    "Indianapolis",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Indianapolis",
 		size:    647,
 		modtime: 1528710319,
@@ -4329,6 +4492,7 @@ CoBIBpH//48fYJTw8Q1hcHYJYXAODmFwDg9hcA4IYXANDmFwdQkBpyBGBhjF5RocYurqEqLja6xnpGeg
 	},
 
 	"/zoneinfo/America/Inuvik": {
+		name:    "Inuvik",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Inuvik",
 		size:    734,
 		modtime: 1528710319,
@@ -4348,6 +4512,7 @@ Rr1B+T0AAP//Ez1JNN4CAAA=
 	},
 
 	"/zoneinfo/America/Iqaluit": {
+		name:    "Iqaluit",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Iqaluit",
 		size:    791,
 		modtime: 1528710319,
@@ -4368,6 +4533,7 @@ NxgXAwAA
 	},
 
 	"/zoneinfo/America/Jamaica": {
+		name:    "Jamaica",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Jamaica",
 		size:    208,
 		modtime: 1528710319,
@@ -4380,6 +4546,7 @@ AA==
 	},
 
 	"/zoneinfo/America/Jujuy": {
+		name:    "Jujuy",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Jujuy",
 		size:    420,
 		modtime: 1528710319,
@@ -4395,6 +4562,7 @@ A2M7Yy5AAAAA//8qQ5qLpAEAAA==
 	},
 
 	"/zoneinfo/America/Juneau": {
+		name:    "Juneau",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Juneau",
 		size:    895,
 		modtime: 1528710319,
@@ -4416,6 +4584,7 @@ uCVIhY6vsZ6RnoGOr6GhnqGeARcgAAD//82PDRJ/AwAA
 	},
 
 	"/zoneinfo/America/Kentucky/Louisville": {
+		name:    "Louisville",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Kentucky/Louisville",
 		size:    1042,
 		modtime: 1528710319,
@@ -4439,6 +4608,7 @@ Mu0L9Xn6nEx7bq4+V58T/1cAAAD//wetJKISBAAA
 	},
 
 	"/zoneinfo/America/Kentucky/Monticello": {
+		name:    "Monticello",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Kentucky/Monticello",
 		size:    892,
 		modtime: 1528710319,
@@ -4460,6 +4630,7 @@ bRgZYBSXa3CIqatLiI6vsZ6RnoGOr6GhnqGeARcgAAD///04aoV8AwAA
 	},
 
 	"/zoneinfo/America/Knox_IN": {
+		name:    "Knox_IN",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Knox_IN",
 		size:    918,
 		modtime: 1528710319,
@@ -4481,6 +4652,7 @@ S7w9WAQvtyV5h0cJeOgq77SkYdeO93m3KgqB8jAHMikKFrdiMH6d9qgbcE/HWQqNb8W9kSO0r8uJ++vr
 	},
 
 	"/zoneinfo/America/Kralendijk": {
+		name:    "Kralendijk",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Kralendijk",
 		size:    103,
 		modtime: 1528710319,
@@ -4491,6 +4663,7 @@ hjDoGpgYGzA4BodAdXM5BoeYcAECAAD//+ZuLoZnAAAA
 	},
 
 	"/zoneinfo/America/La_Paz": {
+		name:    "La_Paz",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/La_Paz",
 		size:    120,
 		modtime: 1528710319,
@@ -4501,6 +4674,7 @@ H4sIAAAAAAAC/wqJykwzYsAALFCMzBZoYGBg2CE37cmOd1ev1P///5+RiZn5//8DMgwMYJLl//9zOowc
 	},
 
 	"/zoneinfo/America/Lima": {
+		name:    "Lima",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Lima",
 		size:    181,
 		modtime: 1528710319,
@@ -4512,6 +4686,7 @@ J3EkQK4/1kH+5/cLCgUTDqjOe3xBTbTmgK4qc4Du7DkO9f///2dkZkKBzP//bz/CwPD///Y1IPL4AUaW
 	},
 
 	"/zoneinfo/America/Los_Angeles": {
+		name:    "Los_Angeles",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Los_Angeles",
 		size:    1058,
 		modtime: 1528710319,
@@ -4535,6 +4710,7 @@ KUuMN6bqUnRJ8cbkZF2yLknxbwAAAP//PLocjiIEAAA=
 	},
 
 	"/zoneinfo/America/Louisville": {
+		name:    "Louisville",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Louisville",
 		size:    1042,
 		modtime: 1528710319,
@@ -4558,6 +4734,7 @@ Mu0L9Xn6nEx7bq4+V58T/1cAAAD//wetJKISBAAA
 	},
 
 	"/zoneinfo/America/Lower_Princes": {
+		name:    "Lower_Princes",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Lower_Princes",
 		size:    103,
 		modtime: 1528710319,
@@ -4568,6 +4745,7 @@ hjDoGpgYGzA4BodAdXM5BoeYcAECAAD//+ZuLoZnAAAA
 	},
 
 	"/zoneinfo/America/Maceio": {
+		name:    "Maceio",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Maceio",
 		size:    303,
 		modtime: 1528710319,
@@ -4581,6 +4759,7 @@ xKBrYAwNAy4bXQNjO2MuQAAAAP//ffGIYi8BAAA=
 	},
 
 	"/zoneinfo/America/Managua": {
+		name:    "Managua",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Managua",
 		size:    198,
 		modtime: 1528710319,
@@ -4592,6 +4771,7 @@ A8f//zs3MPCASEYBiIiPbwiDr28Ig3NwCINrcAiDs0sIikO5nINDzLgAAQAA//+rv5ZoxgAAAA==
 	},
 
 	"/zoneinfo/America/Manaus": {
+		name:    "Manaus",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Manaus",
 		size:    253,
 		modtime: 1528710319,
@@ -4604,6 +4784,7 @@ juT7A3d2phvc/a3scG/2G4P7d1c4PAhxNPgyg/fAV9Ycg28Hihy+8+ls+BFo5fDj+GWDX1wPDvxaybbh
 	},
 
 	"/zoneinfo/America/Marigot": {
+		name:    "Marigot",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Marigot",
 		size:    84,
 		modtime: 1528710319,
@@ -4614,6 +4795,7 @@ wgUIAAD//7pnGTNUAAAA
 	},
 
 	"/zoneinfo/America/Martinique": {
+		name:    "Martinique",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Martinique",
 		size:    119,
 		modtime: 1528710319,
@@ -4624,6 +4806,7 @@ H4sIAAAAAAAC/wqJykwzYsAALFCMzBZsYGBgmLj4hIuwb56DiInYBkYmZqb//4/tYWAAkyz//x8/wMD5
 	},
 
 	"/zoneinfo/America/Matamoros": {
+		name:    "Matamoros",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Matamoros",
 		size:    544,
 		modtime: 1528710319,
@@ -4640,6 +4823,7 @@ CIOzSwg0krmcg0PMnF1CdHyN9Yz0DHR8DQ31DPUMuAABAAD//9gS+EggAgAA
 	},
 
 	"/zoneinfo/America/Mazatlan": {
+		name:    "Mazatlan",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Mazatlan",
 		size:    606,
 		modtime: 1528710319,
@@ -4657,6 +4841,7 @@ zIwsNID//8+xYWD4/3/uBAaW//9XL2Dg+P+/v4GBB8RmFICI+/iGMPgGhzA4B4cwBASHMPi6hKAkFy7f
 	},
 
 	"/zoneinfo/America/Mendoza": {
+		name:    "Mendoza",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Mendoza",
 		size:    430,
 		modtime: 1528710319,
@@ -4672,6 +4857,7 @@ a4AaJ1w2ugbGdsZcgAAAAP//hGmj+a4BAAA=
 	},
 
 	"/zoneinfo/America/Menominee": {
+		name:    "Menominee",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Menominee",
 		size:    863,
 		modtime: 1528710319,
@@ -4693,6 +4879,7 @@ wSBfAwAA
 	},
 
 	"/zoneinfo/America/Merida": {
+		name:    "Merida",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Merida",
 		size:    564,
 		modtime: 1528710319,
@@ -4709,6 +4896,7 @@ ICI+viEMzsEhDK7BIQzOLiFIiYDLOTjEzNklRMfXRM9Qz0DH19BAz1TPgAsQAAD//9f0czE0AgAA
 	},
 
 	"/zoneinfo/America/Metlakatla": {
+		name:    "Metlakatla",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Metlakatla",
 		size:    551,
 		modtime: 1528710319,
@@ -4725,6 +4913,7 @@ g6N3MIhwCQFFLyMklkEUF0jCEiSh42usZ6RnoONraKhnqGfABQgAAP//SiMOKycCAAA=
 	},
 
 	"/zoneinfo/America/Mexico_City": {
+		name:    "Mexico_City",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Mexico_City",
 		size:    623,
 		modtime: 1528710319,
@@ -4742,6 +4931,7 @@ DzWL4xtq1338UNfs2FDfd/kDAyMTCDIzMTOxgEnqw///F/MwMPz/P3cCA8v//6sXMHD8/79zAyMPmBTw
 	},
 
 	"/zoneinfo/America/Miquelon": {
+		name:    "Miquelon",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Miquelon",
 		size:    650,
 		modtime: 1528710319,
@@ -4760,6 +4950,7 @@ Z6hnwAUIAAD///M/8aSKAgAA
 	},
 
 	"/zoneinfo/America/Moncton": {
+		name:    "Moncton",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Moncton",
 		size:    1175,
 		modtime: 1528710319,
@@ -4785,6 +4976,7 @@ AP//4XlsrpcEAAA=
 	},
 
 	"/zoneinfo/America/Monterrey": {
+		name:    "Monterrey",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Monterrey",
 		size:    544,
 		modtime: 1528710319,
@@ -4801,6 +4993,7 @@ cAiDs0sINJK5nINDzJxdQnR8TfQM9Qx0fA0N9Ez1DLgAAQAA///g0S42IAIAAA==
 	},
 
 	"/zoneinfo/America/Montevideo": {
+		name:    "Montevideo",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Montevideo",
 		size:    610,
 		modtime: 1528710319,
@@ -4818,6 +5011,7 @@ YMKga2BsbAAiGXQNjMAsIwZdA0NjAwZsgMtG18DYzpgLEAAA//9+oM41YgIAAA==
 	},
 
 	"/zoneinfo/America/Montreal": {
+		name:    "Montreal",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Montreal",
 		size:    1293,
 		modtime: 1528710319,
@@ -4844,6 +5038,7 @@ yiJkYaHa8HBZuCxM9E8AAAD//8MxvrENBQAA
 	},
 
 	"/zoneinfo/America/Montserrat": {
+		name:    "Montserrat",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Montserrat",
 		size:    84,
 		modtime: 1528710319,
@@ -4854,6 +5049,7 @@ wgUIAAD//7pnGTNUAAAA
 	},
 
 	"/zoneinfo/America/Nassau": {
+		name:    "Nassau",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Nassau",
 		size:    854,
 		modtime: 1528710319,
@@ -4874,6 +5070,7 @@ x8RJ0tx7gqzAIQpWiyhYS8Sja8itJaLJahHTHRe0Rq0+3WEwaA1avfzfAAAA//9KUMqEVgMAAA==
 	},
 
 	"/zoneinfo/America/New_York": {
+		name:    "New_York",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/New_York",
 		size:    1308,
 		modtime: 1528710319,
@@ -4900,6 +5097,7 @@ V4RqfNWB0gCpn6/a31/qL/Vz/TsAAP//UPdsAhwFAAA=
 	},
 
 	"/zoneinfo/America/Nipigon": {
+		name:    "Nipigon",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Nipigon",
 		size:    803,
 		modtime: 1528710319,
@@ -4920,6 +5118,7 @@ K1KTjSqVQqVIFT8JAAD//+VDakUjAwAA
 	},
 
 	"/zoneinfo/America/Nome": {
+		name:    "Nome",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Nome",
 		size:    900,
 		modtime: 1528710319,
@@ -4941,6 +5140,7 @@ wwjLTBAGF0jcEqRCx9dYz0jPQMfX0FDPUM+ACxAAAP//3ndZ6oQDAAA=
 	},
 
 	"/zoneinfo/America/Noronha": {
+		name:    "Noronha",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Noronha",
 		size:    293,
 		modtime: 1528710319,
@@ -4954,6 +5154,7 @@ ugZGdkZcgAAAAP//XehAtyUBAAA=
 	},
 
 	"/zoneinfo/America/North_Dakota/Beulah": {
+		name:    "Beulah",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/North_Dakota/Beulah",
 		size:    902,
 		modtime: 1528710319,
@@ -4975,6 +5176,7 @@ ny+AzS6AzS3EB8TBv1Da3MJRm10w8IeNFqPJwJvNRrPRpPwnAAD//1d8g8GGAwAA
 	},
 
 	"/zoneinfo/America/North_Dakota/Center": {
+		name:    "Center",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/North_Dakota/Center",
 		size:    902,
 		modtime: 1528710319,
@@ -4996,6 +5198,7 @@ xQLYHQLYvUJqQBz8A5XdKxyyOwQDf9BoMZoMvNlsNBtNqr8DAAD//98LVQmGAwAA
 	},
 
 	"/zoneinfo/America/North_Dakota/New_Salem": {
+		name:    "New_Salem",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/North_Dakota/New_Salem",
 		size:    902,
 		modtime: 1528710319,
@@ -5017,6 +5220,7 @@ CINzcAg4AzEywCgu5+AQM2eXEB1fYz0jPQMdX0NDPUM9Ay5AAAAA//8TaV2AhgMAAA==
 	},
 
 	"/zoneinfo/America/Ojinaga": {
+		name:    "Ojinaga",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Ojinaga",
 		size:    591,
 		modtime: 1528710319,
@@ -5034,6 +5238,7 @@ PQMdX0NDPUM9Ay5AAAAA///DLRFfTwIAAA==
 	},
 
 	"/zoneinfo/America/Panama": {
+		name:    "Panama",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Panama",
 		size:    96,
 		modtime: 1528710319,
@@ -5044,6 +5249,7 @@ H4sIAAAAAAAC/wqJykwzYsAAzFAMAkxQNk8DAwND95fEF4xM//9vLWBg+P9/qwQDy///OzcwcPj4hjA4
 	},
 
 	"/zoneinfo/America/Pangnirtung": {
+		name:    "Pangnirtung",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Pangnirtung",
 		size:    820,
 		modtime: 1528710319,
@@ -5064,6 +5270,7 @@ gEERxGZURRbXNTBgcAwPYXAMCGFwDA5hcHRxAREhDK4gHBzC4AzCLiEMDAyMSEkfweZyDQ4xdXUJ0fE1
 	},
 
 	"/zoneinfo/America/Paramaribo": {
+		name:    "Paramaribo",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Paramaribo",
 		size:    140,
 		modtime: 1528710319,
@@ -5075,6 +5282,7 @@ AAAA
 	},
 
 	"/zoneinfo/America/Phoenix": {
+		name:    "Phoenix",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Phoenix",
 		size:    153,
 		modtime: 1528710319,
@@ -5086,6 +5294,7 @@ CNxuLt/gEHMuQAAAAP//2W0jsJkAAAA=
 	},
 
 	"/zoneinfo/America/Port-au-Prince": {
+		name:    "Port-au-Prince",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Port-au-Prince",
 		size:    563,
 		modtime: 1528710319,
@@ -5103,6 +5312,7 @@ MwIAAA==
 	},
 
 	"/zoneinfo/America/Port_of_Spain": {
+		name:    "Port_of_Spain",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Port_of_Spain",
 		size:    84,
 		modtime: 1528710319,
@@ -5113,6 +5323,7 @@ wgUIAAD//7pnGTNUAAAA
 	},
 
 	"/zoneinfo/America/Porto_Acre": {
+		name:    "Porto_Acre",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Porto_Acre",
 		size:    269,
 		modtime: 1528710319,
@@ -5125,6 +5336,7 @@ Hcm/F+7sLHW4+9sw4N7sXw73724LeBDi7/BlhvSFr6xVDt8ONAR857M68CPQI+DH8YcOv7jeXfi1UuTA
 	},
 
 	"/zoneinfo/America/Porto_Velho": {
+		name:    "Porto_Velho",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Porto_Velho",
 		size:    243,
 		modtime: 1528710319,
@@ -5137,6 +5349,7 @@ AwwcPr4hDLoGxgy6BiZQf3DZ6BqY2JlwAQIAAP//0HeBGvMAAAA=
 	},
 
 	"/zoneinfo/America/Puerto_Rico": {
+		name:    "Puerto_Rico",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Puerto_Rico",
 		size:    118,
 		modtime: 1528710319,
@@ -5147,6 +5360,7 @@ H4sIAAAAAAAC/wqJykwzYsAALFCMzBZoYGBgOP3N6MAl5S8FlxLeXmBkZmL8//8QOwPD///HDzCw/P9/
 	},
 
 	"/zoneinfo/America/Punta_Arenas": {
+		name:    "Punta_Arenas",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Punta_Arenas",
 		size:    721,
 		modtime: 1528710319,
@@ -5166,6 +5380,7 @@ SiHspxgTwn6XeQkxikwlxCQx36Ut+Qrhdkr+K4nbyfwLCi2spNDC9Dye6Xkc03PDr2pK0u/rk6znBpPB
 	},
 
 	"/zoneinfo/America/Rainy_River": {
+		name:    "Rainy_River",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Rainy_River",
 		size:    803,
 		modtime: 1528710319,
@@ -5186,6 +5401,7 @@ GORyqVwqEzwKAAD//zW8kMojAwAA
 	},
 
 	"/zoneinfo/America/Rankin_Inlet": {
+		name:    "Rankin_Inlet",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Rankin_Inlet",
 		size:    737,
 		modtime: 1528710319,
@@ -5205,6 +5421,7 @@ DzCy/P+/egED5///Ozcw8oJIBkGIiK6BAYOzi0sIg3NwCIOzSwiDa3AISorlcg4OMXN2CdHxNdYz0jPQ
 	},
 
 	"/zoneinfo/America/Recife": {
+		name:    "Recife",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Recife",
 		size:    293,
 		modtime: 1528710319,
@@ -5218,6 +5435,7 @@ G10DYztjLkAAAAD//8amA9AlAQAA
 	},
 
 	"/zoneinfo/America/Regina": {
+		name:    "Regina",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Regina",
 		size:    392,
 		modtime: 1528710319,
@@ -5232,6 +5450,7 @@ PqkyvH72QeDNtcsMb49dEmBgYsQKmVlwSIAg6///c58wMPz/v3oBI8v//3MnMHCA2TxgUgBEMoj4+IYw
 	},
 
 	"/zoneinfo/America/Resolute": {
+		name:    "Resolute",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Resolute",
 		size:    737,
 		modtime: 1528710319,
@@ -5251,6 +5470,7 @@ DzCy/P+/egED5///Ozcw8oJIBkGIiK6BAYOzi0sIg3NwCIOzSwiDa3AISorlcg4OMXN2CdHxNdYz0jPQ
 	},
 
 	"/zoneinfo/America/Rio_Branco": {
+		name:    "Rio_Branco",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Rio_Branco",
 		size:    269,
 		modtime: 1528710319,
@@ -5263,6 +5483,7 @@ Hcm/F+7sLHW4+9sw4N7sXw73724LeBDi7/BlhvSFr6xVDt8ONAR857M68CPQI+DH8YcOv7jeXfi1UuTA
 	},
 
 	"/zoneinfo/America/Rosario": {
+		name:    "Rosario",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Rosario",
 		size:    430,
 		modtime: 1528710319,
@@ -5278,6 +5499,7 @@ ugbGdsZcgAAAAP//h5F+5a4BAAA=
 	},
 
 	"/zoneinfo/America/Santa_Isabel": {
+		name:    "Santa_Isabel",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Santa_Isabel",
 		size:    890,
 		modtime: 1528710319,
@@ -5299,6 +5521,7 @@ sdl5vc3AqyxVaq26UmXRaNQadaXkvwAAAP//P8PrbnoDAAA=
 	},
 
 	"/zoneinfo/America/Santarem": {
+		name:    "Santarem",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Santarem",
 		size:    256,
 		modtime: 1528710319,
@@ -5311,6 +5534,7 @@ yPL///EDDBwgNgOLj28Ig66BMYOugQncg1w2ugbGdsZcgAAAAP//ib6+SAABAAA=
 	},
 
 	"/zoneinfo/America/Santiago": {
+		name:    "Santiago",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Santiago",
 		size:    961,
 		modtime: 1528710319,
@@ -5333,6 +5557,7 @@ If5lkqqOk0hR1dMs0ucopatqLCItSnDuvsXSLJoszUIPpUIPRqGHxCdKUmKnVujBaDZW6MFgLrCYCksK
 	},
 
 	"/zoneinfo/America/Santo_Domingo": {
+		name:    "Santo_Domingo",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Santo_Domingo",
 		size:    210,
 		modtime: 1528710319,
@@ -5345,6 +5570,7 @@ AP//Bs2Qq9IAAAA=
 	},
 
 	"/zoneinfo/America/Sao_Paulo": {
+		name:    "Sao_Paulo",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Sao_Paulo",
 		size:    757,
 		modtime: 1528710319,
@@ -5364,6 +5590,7 @@ gnwwHyRBebBYJZNJZVL0QbFKLuVXxf5PAAAA///2Yqu79QIAAA==
 	},
 
 	"/zoneinfo/America/Scoresbysund": {
+		name:    "Scoresbysund",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Scoresbysund",
 		size:    743,
 		modtime: 1528710319,
@@ -5383,6 +5610,7 @@ E9x+BwAA//+oyZM+5wIAAA==
 	},
 
 	"/zoneinfo/America/Shiprock": {
+		name:    "Shiprock",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Shiprock",
 		size:    918,
 		modtime: 1528710319,
@@ -5404,6 +5632,7 @@ KHzczdt//IN29DThU1eK4WnJhc+cmIC2Rj22d6dgp3MGd7Wdhd0lI7intgf25LIsVZ4mKf017y2N097B
 	},
 
 	"/zoneinfo/America/Sitka": {
+		name:    "Sitka",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Sitka",
 		size:    883,
 		modtime: 1528710319,
@@ -5425,6 +5654,7 @@ Z6RnoONraKhnqGfABQgAAP//YbGj93MDAAA=
 	},
 
 	"/zoneinfo/America/St_Barthelemy": {
+		name:    "St_Barthelemy",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/St_Barthelemy",
 		size:    84,
 		modtime: 1528710319,
@@ -5435,6 +5665,7 @@ wgUIAAD//7pnGTNUAAAA
 	},
 
 	"/zoneinfo/America/St_Johns": {
+		name:    "St_Johns",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/St_Johns",
 		size:    1363,
 		modtime: 1528710319,
@@ -5462,6 +5693,7 @@ zwPQR/AP6Nf3JYT9//Lx7xD0n2x9mUDgl90EEQiwxYIeFwUCLH7hqNcHvLhDAwFfgyC8Z0rpjIReYyT0
 	},
 
 	"/zoneinfo/America/St_Kitts": {
+		name:    "St_Kitts",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/St_Kitts",
 		size:    84,
 		modtime: 1528710319,
@@ -5472,6 +5704,7 @@ wgUIAAD//7pnGTNUAAAA
 	},
 
 	"/zoneinfo/America/St_Lucia": {
+		name:    "St_Lucia",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/St_Lucia",
 		size:    84,
 		modtime: 1528710319,
@@ -5482,6 +5715,7 @@ wgUIAAD//7pnGTNUAAAA
 	},
 
 	"/zoneinfo/America/St_Thomas": {
+		name:    "St_Thomas",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/St_Thomas",
 		size:    84,
 		modtime: 1528710319,
@@ -5492,6 +5726,7 @@ wgUIAAD//7pnGTNUAAAA
 	},
 
 	"/zoneinfo/America/St_Vincent": {
+		name:    "St_Vincent",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/St_Vincent",
 		size:    84,
 		modtime: 1528710319,
@@ -5502,6 +5737,7 @@ wgUIAAD//7pnGTNUAAAA
 	},
 
 	"/zoneinfo/America/Swift_Current": {
+		name:    "Swift_Current",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Swift_Current",
 		size:    242,
 		modtime: 1528710319,
@@ -5514,6 +5750,7 @@ oXAtA0ui5AQGJkYmZhYmRjTI+v//rBcMDP//r17AyPL//9wJDBxgNg+YFACRDCI+viEMvi4hDL7BIQy+
 	},
 
 	"/zoneinfo/America/Tegucigalpa": {
+		name:    "Tegucigalpa",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Tegucigalpa",
 		size:    126,
 		modtime: 1528710319,
@@ -5524,6 +5761,7 @@ mBjB8P//dTYMDP//79zAyPL//+oFDBw+viEMzi4hDM7BIVBDuZyDQ8y4AAEAAP//o2oUgX4AAAA=
 	},
 
 	"/zoneinfo/America/Thule": {
+		name:    "Thule",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Thule",
 		size:    584,
 		modtime: 1528710319,
@@ -5541,6 +5779,7 @@ NTTUM9Qz4AIEAAD//6voDcpIAgAA
 	},
 
 	"/zoneinfo/America/Thunder_Bay": {
+		name:    "Thunder_Bay",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Thunder_Bay",
 		size:    835,
 		modtime: 1528710319,
@@ -5561,6 +5800,7 @@ g4F6Fw4+K0ChPKZSHv9fnCy/KQkhy2+8KFSyvPS2SJDlT5YVSYdNPuypUrckiqok4Tjwbkk4KiThsEuH
 	},
 
 	"/zoneinfo/America/Tijuana": {
+		name:    "Tijuana",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Tijuana",
 		size:    890,
 		modtime: 1528710319,
@@ -5582,6 +5822,7 @@ sdl5vc3AqyxVaq26UmXRaNQadaXkvwAAAP//P8PrbnoDAAA=
 	},
 
 	"/zoneinfo/America/Toronto": {
+		name:    "Toronto",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Toronto",
 		size:    1293,
 		modtime: 1528710319,
@@ -5608,6 +5849,7 @@ yiJkYaHa8HBZuCxM9E8AAAD//8MxvrENBQAA
 	},
 
 	"/zoneinfo/America/Tortola": {
+		name:    "Tortola",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Tortola",
 		size:    84,
 		modtime: 1528710319,
@@ -5618,6 +5860,7 @@ wgUIAAD//7pnGTNUAAAA
 	},
 
 	"/zoneinfo/America/Vancouver": {
+		name:    "Vancouver",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Vancouver",
 		size:    1078,
 		modtime: 1528710319,
@@ -5641,6 +5884,7 @@ QZwfvWReMoNR1BryxGR9pjpDnZasT09Xp6vTZH8HAAD//2N80NY2BAAA
 	},
 
 	"/zoneinfo/America/Virgin": {
+		name:    "Virgin",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Virgin",
 		size:    84,
 		modtime: 1528710319,
@@ -5651,6 +5895,7 @@ wgUIAAD//7pnGTNUAAAA
 	},
 
 	"/zoneinfo/America/Whitehorse": {
+		name:    "Whitehorse",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Whitehorse",
 		size:    800,
 		modtime: 1528710319,
@@ -5671,6 +5916,7 @@ XpSvUyjkCnlR3MsAAAD//ziPTrYgAwAA
 	},
 
 	"/zoneinfo/America/Winnipeg": {
+		name:    "Winnipeg",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Winnipeg",
 		size:    1079,
 		modtime: 1528710319,
@@ -5694,6 +5940,7 @@ Pl4kEgUGINHmCanaLEFhXKdMVqoURrVaqVaqJH8HAAD//1tAtEw3BAAA
 	},
 
 	"/zoneinfo/America/Yakutat": {
+		name:    "Yakutat",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Yakutat",
 		size:    871,
 		modtime: 1528710319,
@@ -5715,6 +5962,7 @@ M1RnqMmk2pMeUfB7RcH/oCj4a0TB7xSFyhMZeMV0PWT/tiS9FOmfI52WeA6brWYs8VgsZosZFf8EAAD/
 	},
 
 	"/zoneinfo/America/Yellowknife": {
+		name:    "Yellowknife",
 		local:   "pkg/uploader/assets/resources/zoneinfo/America/Yellowknife",
 		size:    756,
 		modtime: 1528710319,
@@ -5734,6 +5982,7 @@ gGQ9vmYpl8vHcyZezcVqDVqdmtPrtXqtTvozAAD//498CHv0AgAA
 	},
 
 	"/zoneinfo/Antarctica/Casey": {
+		name:    "Casey",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Antarctica/Casey",
 		size:    142,
 		modtime: 1528710319,
@@ -5745,6 +5994,7 @@ AAAA
 	},
 
 	"/zoneinfo/Antarctica/Davis": {
+		name:    "Davis",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Antarctica/Davis",
 		size:    142,
 		modtime: 1528710319,
@@ -5756,6 +6006,7 @@ AAAA
 	},
 
 	"/zoneinfo/Antarctica/DumontDUrville": {
+		name:    "DumontDUrville",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Antarctica/DumontDUrville",
 		size:    103,
 		modtime: 1528710319,
@@ -5766,6 +6017,7 @@ AYO2oQGYz2WjbWhgp2towAUIAAD//5rnF0BnAAAA
 	},
 
 	"/zoneinfo/Antarctica/Macquarie": {
+		name:    "Macquarie",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Antarctica/Macquarie",
 		size:    588,
 		modtime: 1528710319,
@@ -5783,6 +6035,7 @@ TAIAAA==
 	},
 
 	"/zoneinfo/Antarctica/Mawson": {
+		name:    "Mawson",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Antarctica/Mawson",
 		size:    109,
 		modtime: 1528710319,
@@ -5793,6 +6046,7 @@ H4sIAAAAAAAC/wqJykwzYsAAzFAMAixQNk8DAwPDIwWjBq9bSg71////Z2BkYoJpCEkAqXMLYODQNTBg
 	},
 
 	"/zoneinfo/Antarctica/McMurdo": {
+		name:    "McMurdo",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Antarctica/McMurdo",
 		size:    928,
 		modtime: 1528710319,
@@ -5814,6 +6068,7 @@ VOkasUom+9c1RWYtNpVmJr29zDDPYNTb5xpMBmPJHMXfAQAA//8oPvucoAMAAA==
 	},
 
 	"/zoneinfo/Antarctica/Palmer": {
+		name:    "Palmer",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Antarctica/Palmer",
 		size:    552,
 		modtime: 1528710319,
@@ -5830,6 +6085,7 @@ wGQZOHQNDBh0DUwYdA2MGXQNoCmBkRFOc9noGhjbGXMBAgAA//8UgC3IKAIAAA==
 	},
 
 	"/zoneinfo/Antarctica/Rothera": {
+		name:    "Rothera",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Antarctica/Rothera",
 		size:    91,
 		modtime: 1528710319,
@@ -5840,6 +6096,7 @@ H4sIAAAAAAAC/wqJykwzYsAATFAMAsxQNkcDAwMDL5MuQ/3///8ZGBkhsv//X73AwKJrYMCga2AMFuGy
 	},
 
 	"/zoneinfo/Antarctica/South_Pole": {
+		name:    "South_Pole",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Antarctica/South_Pole",
 		size:    928,
 		modtime: 1528710319,
@@ -5861,6 +6118,7 @@ VOkasUom+9c1RWYtNpVmJr29zDDPYNTb5xpMBmPJHMXfAQAA//8oPvucoAMAAA==
 	},
 
 	"/zoneinfo/Antarctica/Syowa": {
+		name:    "Syowa",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Antarctica/Syowa",
 		size:    92,
 		modtime: 1528710319,
@@ -5871,6 +6129,7 @@ jO10jbkAAQAA//9mdzFKXAAAAA==
 	},
 
 	"/zoneinfo/Antarctica/Troll": {
+		name:    "Troll",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Antarctica/Troll",
 		size:    467,
 		modtime: 1528710319,
@@ -5886,6 +6145,7 @@ ukY6vsZ6pnoG+oY6voYGYJYxFyAAAP//eEn6YtMBAAA=
 	},
 
 	"/zoneinfo/Antarctica/Vostok": {
+		name:    "Vostok",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Antarctica/Vostok",
 		size:    92,
 		modtime: 1528710319,
@@ -5896,6 +6156,7 @@ Zna6ZlyAAAAA///9PtsiXAAAAA==
 	},
 
 	"/zoneinfo/Arctic/Longyearbyen": {
+		name:    "Longyearbyen",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Arctic/Longyearbyen",
 		size:    851,
 		modtime: 1528710319,
@@ -5916,6 +6177,7 @@ cdYQOWrsRm2KVq+xG/SRrTNK/w4AAP//lJdXsFMDAAA=
 	},
 
 	"/zoneinfo/Asia/Aden": {
+		name:    "Aden",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Aden",
 		size:    92,
 		modtime: 1528710319,
@@ -5926,6 +6188,7 @@ H4sIAAAAAAAC/wqJykwzYsAATFAMAsxQNkcDAwPDVWmzLfX///9nYGRkYNA+A5LXMmBg8fENYdA2MAar
 	},
 
 	"/zoneinfo/Asia/Almaty": {
+		name:    "Almaty",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Almaty",
 		size:    414,
 		modtime: 1528710319,
@@ -5940,6 +6203,7 @@ ZdA2MGfQNjADhzAjGCCFvo22gZmdrhkXIAAA//9FQL8DngEAAA==
 	},
 
 	"/zoneinfo/Asia/Amman": {
+		name:    "Amman",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Amman",
 		size:    718,
 		modtime: 1528710319,
@@ -5959,6 +6223,7 @@ AP//1g/Ji84CAAA=
 	},
 
 	"/zoneinfo/Asia/Anadyr": {
+		name:    "Anadyr",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Anadyr",
 		size:    484,
 		modtime: 1528710319,
@@ -5974,6 +6239,7 @@ A4MARNzHN4RB29CIQdvQhEHb0JhB29AQEk+MIIAUhTbahkZ2uoZGXIAAAAD//0dcgRfkAQAA
 	},
 
 	"/zoneinfo/Asia/Aqtau": {
+		name:    "Aqtau",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Aqtau",
 		size:    409,
 		modtime: 1528710319,
@@ -5988,6 +6254,7 @@ fEMYtA1MGLQNTBm0DcwgocsIAkgBb6NtYGqna8oFCAAA//9RyKDimQEAAA==
 	},
 
 	"/zoneinfo/Asia/Aqtobe": {
+		name:    "Aqtobe",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Aqtobe",
 		size:    422,
 		modtime: 1528710319,
@@ -6002,6 +6269,7 @@ VMJEGDh8fEMYtA1MGLQNTBm0DcwgAc0IBkixwGWjbWBqp2vKBQgAAP//V84XQaYBAAA=
 	},
 
 	"/zoneinfo/Asia/Ashgabat": {
+		name:    "Ashgabat",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Ashgabat",
 		size:    276,
 		modtime: 1528710319,
@@ -6014,6 +6282,7 @@ MDUgcR/fEAZtAxMGbQMzBm0DU7DPGBkZGRF+5rLRNjC10zXlAgQAAP//xvwTdxQBAAA=
 	},
 
 	"/zoneinfo/Asia/Ashkhabad": {
+		name:    "Ashkhabad",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Ashkhabad",
 		size:    276,
 		modtime: 1528710319,
@@ -6026,6 +6295,7 @@ MDUgcR/fEAZtAxMGbQMzBm0DU7DPGBkZGRF+5rLRNjC10zXlAgQAAP//xvwTdxQBAAA=
 	},
 
 	"/zoneinfo/Asia/Atyrau": {
+		name:    "Atyrau",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Atyrau",
 		size:    413,
 		modtime: 1528710319,
@@ -6040,6 +6310,7 @@ wCAAEffxDWHQNjBm0DYwZdA2MGPQNjCBhDAjCCAFvo22gamdrikXIAAA///2mDA5nQEAAA==
 	},
 
 	"/zoneinfo/Asia/Baghdad": {
+		name:    "Baghdad",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Baghdad",
 		size:    392,
 		modtime: 1528710319,
@@ -6054,6 +6325,7 @@ G5iAw5SRERK2XDbaBsZ2usZcgAAAAP//O91ZZ4gBAAA=
 	},
 
 	"/zoneinfo/Asia/Bahrain": {
+		name:    "Bahrain",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Bahrain",
 		size:    109,
 		modtime: 1528710319,
@@ -6064,6 +6336,7 @@ h49vCIO2gQmDtoEx1AAuG20DYztdYy5AAAAA//9Rrcs1bQAAAA==
 	},
 
 	"/zoneinfo/Asia/Baku": {
+		name:    "Baku",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Baku",
 		size:    499,
 		modtime: 1528710319,
@@ -6079,6 +6352,7 @@ YSKMPJhqfHxDGLQNjBm0DUwZtA1MwNHGCAawCGVk5LLRNjCx0zXhAgQAAP//vCPf9PMBAAA=
 	},
 
 	"/zoneinfo/Asia/Bangkok": {
+		name:    "Bangkok",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Bangkok",
 		size:    104,
 		modtime: 1528710319,
@@ -6089,6 +6363,7 @@ H4sIAAAAAAAC/wqJykwzYsAAzFCMzOZpYGBgWJSVfqT+////jExMDAxxNiD5OBsGFgaGpAIGDh/fEAYn
 	},
 
 	"/zoneinfo/Asia/Barnaul": {
+		name:    "Barnaul",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Barnaul",
 		size:    494,
 		modtime: 1528710319,
@@ -6104,6 +6379,7 @@ wkQYeWBqIGyQrI9vCIO2gRmDtoEFg7aBOTjGGBkZGRkYkWLTRtvA3E7XnAsQAAD//0tnFoLuAQAA
 	},
 
 	"/zoneinfo/Asia/Beirut": {
+		name:    "Beirut",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Beirut",
 		size:    816,
 		modtime: 1528710319,
@@ -6124,6 +6400,7 @@ zyT/BgAA//8uBm4iMAMAAA==
 	},
 
 	"/zoneinfo/Asia/Bishkek": {
+		name:    "Bishkek",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Bishkek",
 		size:    419,
 		modtime: 1528710319,
@@ -6138,6 +6415,7 @@ Bsn6+IYwaBuYMmgbmDNoG5iBg5mRkZERJQpstA3M7HTNuAABAAD//3/uxKujAQAA
 	},
 
 	"/zoneinfo/Asia/Brunei": {
+		name:    "Brunei",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Brunei",
 		size:    111,
 		modtime: 1528710319,
@@ -6148,6 +6426,7 @@ H4sIAAAAAAAC/wqJykwzYsAAzFAMAixQNl8DAwPD2i4ml13p7h31////Z2BkYmJgyN4DUpRZAVJX0MDA
 	},
 
 	"/zoneinfo/Asia/Calcutta": {
+		name:    "Calcutta",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Calcutta",
 		size:    134,
 		modtime: 1528710319,
@@ -6158,6 +6437,7 @@ LoCUe7uBVPtGMHAwMERnMPJ4+IYw+PqGMHgGhzBoG5gZG8At4fIMDtE1tTI24AIEAAD//w4Y9neGAAAA
 	},
 
 	"/zoneinfo/Asia/Chita": {
+		name:    "Chita",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Chita",
 		size:    497,
 		modtime: 1528710319,
@@ -6173,6 +6453,7 @@ HMgqfXxDGLQNLBi0DQ0YtA0swVHGCAbIEcplo21gaadryQUIAAD//xwRqSvxAQAA
 	},
 
 	"/zoneinfo/Asia/Choibalsan": {
+		name:    "Choibalsan",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Choibalsan",
 		size:    394,
 		modtime: 1528710319,
@@ -6187,6 +6468,7 @@ Bm0DCwZtA0sGbUMDtJDmstE2sLDTteACBAAA//8Cs81NigEAAA==
 	},
 
 	"/zoneinfo/Asia/Chongqing": {
+		name:    "Chongqing",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Chongqing",
 		size:    172,
 		modtime: 1528710319,
@@ -6198,6 +6480,7 @@ z8QCpTivBmVN5wIV93QGVaH4D2rqngxqnxw/aLBrM2hcUv7AxIgGGRgKr4NsqZvAyMLAUNDAwOHjG8Lg
 	},
 
 	"/zoneinfo/Asia/Chungking": {
+		name:    "Chungking",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Chungking",
 		size:    172,
 		modtime: 1528710319,
@@ -6209,6 +6492,7 @@ z8QCpTivBmVN5wIV93QGVaH4D2rqngxqnxw/aLBrM2hcUv7AxIgGGRgKr4NsqZvAyMLAUNDAwOHjG8Lg
 	},
 
 	"/zoneinfo/Asia/Colombo": {
+		name:    "Colombo",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Colombo",
 		size:    191,
 		modtime: 1528710319,
@@ -6220,6 +6504,7 @@ BgzaBmYgbGyA4TIuG7AKO11TK2MDLkAAAAD///roq2K/AAAA
 	},
 
 	"/zoneinfo/Asia/Dacca": {
+		name:    "Dacca",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Dacca",
 		size:    169,
 		modtime: 1528710319,
@@ -6231,6 +6516,7 @@ Bm0DcxSHcNloG5jZ6ZpxAQIAAP//e8QIsqkAAAA=
 	},
 
 	"/zoneinfo/Asia/Damascus": {
+		name:    "Damascus",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Damascus",
 		size:    871,
 		modtime: 1528710319,
@@ -6252,6 +6538,7 @@ mBgHJWRgUOIAZQQtA0YWBgYZBQZOH98QBlfXYBARAs0lXK6uIbpGIEEdX2M9Uz1TfQMdX0MDCIsLEAAA
 	},
 
 	"/zoneinfo/Asia/Dhaka": {
+		name:    "Dhaka",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Dhaka",
 		size:    169,
 		modtime: 1528710319,
@@ -6263,6 +6550,7 @@ Bm0DcxSHcNloG5jZ6ZpxAQIAAP//e8QIsqkAAAA=
 	},
 
 	"/zoneinfo/Asia/Dili": {
+		name:    "Dili",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Dili",
 		size:    119,
 		modtime: 1528710319,
@@ -6273,6 +6561,7 @@ H4sIAAAAAAAC/wqJykwzYsAAzFAMAmxQNk8DAwPDpGcSR07PNPrA/cqgwPLwTIb6////MzAyMTIxMTCU
 	},
 
 	"/zoneinfo/Asia/Dubai": {
+		name:    "Dubai",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Dubai",
 		size:    92,
 		modtime: 1528710319,
@@ -6283,6 +6572,7 @@ nstG28DETteECxAAAP//AeKG81wAAAA=
 	},
 
 	"/zoneinfo/Asia/Dushanbe": {
+		name:    "Dushanbe",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Dushanbe",
 		size:    263,
 		modtime: 1528710319,
@@ -6295,6 +6585,7 @@ Bm0DUwZtA3MGbQMzsHcYGRkZYd7kstE2MLXTNeUCBAAA//8Z94dCBwEAAA==
 	},
 
 	"/zoneinfo/Asia/Famagusta": {
+		name:    "Famagusta",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Famagusta",
 		size:    782,
 		modtime: 1528710319,
@@ -6314,6 +6605,7 @@ q2swiAhh0DYwBuliZGRghFJcrq4hukYgBTq+xnqmegb6xjq+hgZglgkXIAAA//+DI5mQDgMAAA==
 	},
 
 	"/zoneinfo/Asia/Gaza": {
+		name:    "Gaza",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Gaza",
 		size:    868,
 		modtime: 1528710319,
@@ -6335,6 +6627,7 @@ piAWFyAAAP//FJeec2QDAAA=
 	},
 
 	"/zoneinfo/Asia/Harbin": {
+		name:    "Harbin",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Harbin",
 		size:    172,
 		modtime: 1528710319,
@@ -6346,6 +6639,7 @@ z8QCpTivBmVN5wIV93QGVaH4D2rqngxqnxw/aLBrM2hcUv7AxIgGGRgKr4NsqZvAyMLAUNDAwOHjG8Lg
 	},
 
 	"/zoneinfo/Asia/Hebron": {
+		name:    "Hebron",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Hebron",
 		size:    878,
 		modtime: 1528710319,
@@ -6367,6 +6661,7 @@ M9M31PE1NNAzBbG4AAEAAP//Y17WBm4DAAA=
 	},
 
 	"/zoneinfo/Asia/Ho_Chi_Minh": {
+		name:    "Ho_Chi_Minh",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Ho_Chi_Minh",
 		size:    177,
 		modtime: 1528710319,
@@ -6378,6 +6673,7 @@ BuYM2gYWDNoGligO4rLRNjC30zXnAgQAAP//Hm862rEAAAA=
 	},
 
 	"/zoneinfo/Asia/Hong_Kong": {
+		name:    "Hong_Kong",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Hong_Kong",
 		size:    458,
 		modtime: 1528710319,
@@ -6393,6 +6689,7 @@ HQwiQhi8gkOQ4orLwztE14ILEAAA//+FaxNKygEAAA==
 	},
 
 	"/zoneinfo/Asia/Hovd": {
+		name:    "Hovd",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Hovd",
 		size:    361,
 		modtime: 1528710319,
@@ -6407,6 +6704,7 @@ s2TnBtspcxbYtczeYF9St8AhpXaDY0jCAieX+A3OJk4LXFQcN7jKxiuEiq7YEMaa3xD2tWtD+NPAhvr/
 	},
 
 	"/zoneinfo/Asia/Irkutsk": {
+		name:    "Irkutsk",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Irkutsk",
 		size:    504,
 		modtime: 1528710319,
@@ -6422,6 +6720,7 @@ UHQgVPr4hjB4+oYwaBuYM2gbWDJoG1hAIo4RApDjlctG28DCTteCCxAAAP//cwV/0fgBAAA=
 	},
 
 	"/zoneinfo/Asia/Istanbul": {
+		name:    "Istanbul",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Istanbul",
 		size:    821,
 		modtime: 1528710319,
@@ -6442,6 +6741,7 @@ kZGREZ4jGBkZuGy0DYztdI25AAEAAP//hDoImzUDAAA=
 	},
 
 	"/zoneinfo/Asia/Jakarta": {
+		name:    "Jakarta",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Jakarta",
 		size:    179,
 		modtime: 1528710319,
@@ -6453,6 +6753,7 @@ aQwiLRm0DSwYwj2d0BzFFe7ppGvOBQgAAP//uB6hBbMAAAA=
 	},
 
 	"/zoneinfo/Asia/Jayapura": {
+		name:    "Jayapura",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Jayapura",
 		size:    121,
 		modtime: 1528710319,
@@ -6463,6 +6764,7 @@ m8/HN4RB28AShI0NGMI9Q+BGc4V7huhacgECAAD//51TmB15AAAA
 	},
 
 	"/zoneinfo/Asia/Jerusalem": {
+		name:    "Jerusalem",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Jerusalem",
 		size:    856,
 		modtime: 1528710319,
@@ -6484,6 +6786,7 @@ owBExMc3hMHLN4TB0yWEwTMYRLuEoGQSLs/gEF0jT5cQHV9jPRM9E30jMx1fQwM9Uz0DLkAAAAD//62S
 	},
 
 	"/zoneinfo/Asia/Kabul": {
+		name:    "Kabul",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Kabul",
 		size:    111,
 		modtime: 1528710319,
@@ -6494,6 +6797,7 @@ DUxA2NgAqpvLBsyz0zWxMjbgAgQAAP//Vx2UpW8AAAA=
 	},
 
 	"/zoneinfo/Asia/Kamchatka": {
+		name:    "Kamchatka",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Kamchatka",
 		size:    472,
 		modtime: 1528710319,
@@ -6509,6 +6813,7 @@ oG1ozKBtCIk1RhCARxuXjbahkZ2uoREXIAAA///icBdb2AEAAA==
 	},
 
 	"/zoneinfo/Asia/Karachi": {
+		name:    "Karachi",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Karachi",
 		size:    188,
 		modtime: 1528710319,
@@ -6520,6 +6825,7 @@ bQNTYwMGbQMzMGnKEOAdHMIQ4B2C4jquAO8QXVMuQAAAAP//M6zl4LwAAAA=
 	},
 
 	"/zoneinfo/Asia/Kashgar": {
+		name:    "Kashgar",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Kashgar",
 		size:    92,
 		modtime: 1528710319,
@@ -6530,6 +6836,7 @@ H4sIAAAAAAAC/wqJykwzYsAATFAMAsxQNkcDAwPDhn+7Uur////PwMjIwBAkA5IPSWBg8fENYdA2MAOr
 	},
 
 	"/zoneinfo/Asia/Kathmandu": {
+		name:    "Kathmandu",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Kathmandu",
 		size:    118,
 		modtime: 1528710319,
@@ -6540,6 +6847,7 @@ l49vCIO2gamxAYg0MYUawmUD5tnpmlqZmHIBAgAA//+fmZ+idgAAAA==
 	},
 
 	"/zoneinfo/Asia/Katmandu": {
+		name:    "Katmandu",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Katmandu",
 		size:    118,
 		modtime: 1528710319,
@@ -6550,6 +6858,7 @@ l49vCIO2gamxAYg0MYUawmUD5tnpmlqZmHIBAgAA//+fmZ+idgAAAA==
 	},
 
 	"/zoneinfo/Asia/Khandyga": {
+		name:    "Khandyga",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Khandyga",
 		size:    522,
 		modtime: 1528710319,
@@ -6566,6 +6875,7 @@ BQgAAP//E9ekhQoCAAA=
 	},
 
 	"/zoneinfo/Asia/Kolkata": {
+		name:    "Kolkata",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Kolkata",
 		size:    134,
 		modtime: 1528710319,
@@ -6576,6 +6886,7 @@ LoCUe7uBVPtGMHAwMERnMPJ4+IYw+PqGMHgGhzBoG5gZG8At4fIMDtE1tTI24AIEAAD//w4Y9neGAAAA
 	},
 
 	"/zoneinfo/Asia/Krasnoyarsk": {
+		name:    "Krasnoyarsk",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Krasnoyarsk",
 		size:    492,
 		modtime: 1528710319,
@@ -6591,6 +6902,7 @@ CIO2gRmDtoEFg7aBOTi2GCEAKS65bLQNzO10zbkAAQAA//+dzbB97AEAAA==
 	},
 
 	"/zoneinfo/Asia/Kuala_Lumpur": {
+		name:    "Kuala_Lumpur",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Kuala_Lumpur",
 		size:    194,
 		modtime: 1528710319,
@@ -6602,6 +6914,7 @@ bwiDtoE5CBsZgEhjEGnJoG1ggeFCLhttAws7XQsuQAAAAP//dYNMDcIAAAA=
 	},
 
 	"/zoneinfo/Asia/Kuching": {
+		name:    "Kuching",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Kuching",
 		size:    225,
 		modtime: 1528710319,
@@ -6614,6 +6927,7 @@ FyAAAP//Ofqys+EAAAA=
 	},
 
 	"/zoneinfo/Asia/Kuwait": {
+		name:    "Kuwait",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Kuwait",
 		size:    92,
 		modtime: 1528710319,
@@ -6624,6 +6938,7 @@ H4sIAAAAAAAC/wqJykwzYsAATFAMAsxQNkcDAwPDVWmzLfX///9nYGRkYNA+A5LXMmBg8fENYdA2MAar
 	},
 
 	"/zoneinfo/Asia/Macao": {
+		name:    "Macao",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Macao",
 		size:    305,
 		modtime: 1528710319,
@@ -6637,6 +6952,7 @@ wlzOwSG6FlyAAAAA//9Bt2TsMQEAAA==
 	},
 
 	"/zoneinfo/Asia/Macau": {
+		name:    "Macau",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Macau",
 		size:    305,
 		modtime: 1528710319,
@@ -6650,6 +6966,7 @@ wlzOwSG6FlyAAAAA//9Bt2TsMQEAAA==
 	},
 
 	"/zoneinfo/Asia/Magadan": {
+		name:    "Magadan",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Magadan",
 		size:    498,
 		modtime: 1528710319,
@@ -6665,6 +6982,7 @@ kFX6+IYwaBsaMGgbGjFoGxqCo4wRApAilMtG29DQTtfQkAsQAAD//0vc80nyAQAA
 	},
 
 	"/zoneinfo/Asia/Makassar": {
+		name:    "Makassar",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Makassar",
 		size:    138,
 		modtime: 1528710319,
@@ -6675,6 +6993,7 @@ A0NBAwMHA0PdBAYeMFvAxzeEwdc3hEHbwIJB28CSIdwzxBHJKi4QX9eCCxAAAP//a+tQX4oAAAA=
 	},
 
 	"/zoneinfo/Asia/Manila": {
+		name:    "Manila",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Manila",
 		size:    155,
 		modtime: 1528710319,
@@ -6686,6 +7005,7 @@ XIAAAAD//+H5TrGbAAAA
 	},
 
 	"/zoneinfo/Asia/Muscat": {
+		name:    "Muscat",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Muscat",
 		size:    92,
 		modtime: 1528710319,
@@ -6696,6 +7016,7 @@ nstG28DETteECxAAAP//AeKG81wAAAA=
 	},
 
 	"/zoneinfo/Asia/Nicosia": {
+		name:    "Nicosia",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Nicosia",
 		size:    767,
 		modtime: 1528710319,
@@ -6715,6 +7036,7 @@ EUxwubqG6BqBJHR8jfVM9Qz0jXV8DQ3ALBMuQAAAAP//T3zgdf8CAAA=
 	},
 
 	"/zoneinfo/Asia/Novokuznetsk": {
+		name:    "Novokuznetsk",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Novokuznetsk",
 		size:    471,
 		modtime: 1528710319,
@@ -6730,6 +7052,7 @@ MAly3GAq67HBzEh5g9lfrQ0W0g4GFnd5Nlj+VjKw2vNug/VtFgObZdwGtrueGdi1vjWwn3XCwCH1vIFj
 	},
 
 	"/zoneinfo/Asia/Novosibirsk": {
+		name:    "Novosibirsk",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Novosibirsk",
 		size:    494,
 		modtime: 1528710319,
@@ -6745,6 +7068,7 @@ hIkw8sDUQNggWR/fEAZtAzMGbQMLBm0Dc3CMMTIyMjIwIsWmjbaBuZ2uORcgAAD//5gTQ5buAQAA
 	},
 
 	"/zoneinfo/Asia/Omsk": {
+		name:    "Omsk",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Omsk",
 		size:    492,
 		modtime: 1528710319,
@@ -6760,6 +7084,7 @@ DWHQNjBl0DYwZ9A2MAPHFiMEIMUll422gZmdrhkXIAAA//+EsJco7AEAAA==
 	},
 
 	"/zoneinfo/Asia/Oral": {
+		name:    "Oral",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Oral",
 		size:    418,
 		modtime: 1528710319,
@@ -6774,6 +7099,7 @@ kYOBwcKBQQAi7uMbwqBtYMygbWDKoG1gxqBtYAIJZkYQQIoBG20DUztdUy5AAAAA//+894EMogEAAA==
 	},
 
 	"/zoneinfo/Asia/Phnom_Penh": {
+		name:    "Phnom_Penh",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Phnom_Penh",
 		size:    104,
 		modtime: 1528710319,
@@ -6784,6 +7110,7 @@ H4sIAAAAAAAC/wqJykwzYsAAzFCMzOZpYGBgWJSVfqT+////jExMDAxxNiD5OBsGFgaGpAIGDh/fEAYn
 	},
 
 	"/zoneinfo/Asia/Pontianak": {
+		name:    "Pontianak",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Pontianak",
 		size:    183,
 		modtime: 1528710319,
@@ -6795,6 +7122,7 @@ DNoGlgzaBhYM4Z4hjgzhnk5oDuMK93TSNecCBAAA//93KZ3+twAAAA==
 	},
 
 	"/zoneinfo/Asia/Pyongyang": {
+		name:    "Pyongyang",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Pyongyang",
 		size:    125,
 		modtime: 1528710319,
@@ -6805,6 +7133,7 @@ JyDl5R0g1XUTGDjAJIuPbwiDd3AIg1dwCNx4Lu/gEF1LLkAAAAD//zwH87Z9AAAA
 	},
 
 	"/zoneinfo/Asia/Qatar": {
+		name:    "Qatar",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Qatar",
 		size:    109,
 		modtime: 1528710319,
@@ -6815,6 +7144,7 @@ h49vCIO2gQmDtoEx1AAuG20DYztdYy5AAAAA//9Rrcs1bQAAAA==
 	},
 
 	"/zoneinfo/Asia/Qyzylorda": {
+		name:    "Qyzylorda",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Qyzylorda",
 		size:    422,
 		modtime: 1528710319,
@@ -6829,6 +7159,7 @@ yAFTCZEFifv4hjBoG5gwaBuYMmgbmEECmhEMkGKBy0bbwMxO14wLEAAA//+thVgBpgEAAA==
 	},
 
 	"/zoneinfo/Asia/Rangoon": {
+		name:    "Rangoon",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Rangoon",
 		size:    141,
 		modtime: 1528710319,
@@ -6839,6 +7170,7 @@ A0N0BgMHA0PdBAY+CNvHN4QhyDeEQdvAzNiAQdvAEskeLhuwqJ2umZWxARcgAAD//37xw6eNAAAA
 	},
 
 	"/zoneinfo/Asia/Riyadh": {
+		name:    "Riyadh",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Riyadh",
 		size:    92,
 		modtime: 1528710319,
@@ -6849,6 +7181,7 @@ H4sIAAAAAAAC/wqJykwzYsAATFAMAsxQNkcDAwPDVWmzLfX///9nYGRkYNA+A5LXMmBg8fENYdA2MAar
 	},
 
 	"/zoneinfo/Asia/Saigon": {
+		name:    "Saigon",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Saigon",
 		size:    177,
 		modtime: 1528710319,
@@ -6860,6 +7193,7 @@ BuYM2gYWDNoGligO4rLRNjC30zXnAgQAAP//Hm862rEAAAA=
 	},
 
 	"/zoneinfo/Asia/Sakhalin": {
+		name:    "Sakhalin",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Sakhalin",
 		size:    486,
 		modtime: 1528710319,
@@ -6875,6 +7209,7 @@ AhBxH98QBm0DSwZtQyMGbUNDBm1DA3BUMYIAPBK5bLQNDe10DQ25AAEAAP//iOjBOeYBAAA=
 	},
 
 	"/zoneinfo/Asia/Samarkand": {
+		name:    "Samarkand",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Samarkand",
 		size:    260,
 		modtime: 1528710319,
@@ -6887,6 +7222,7 @@ B1nExzeEQdvAhEHbwJRB28AM4h1GRqi/uGy0DUztdE25AAEAAP//4l9/KwQBAAA=
 	},
 
 	"/zoneinfo/Asia/Seoul": {
+		name:    "Seoul",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Seoul",
 		size:    225,
 		modtime: 1528710319,
@@ -6899,6 +7235,7 @@ l3dwiK4lFyAAAP//ur4fxeEAAAA=
 	},
 
 	"/zoneinfo/Asia/Shanghai": {
+		name:    "Shanghai",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Shanghai",
 		size:    172,
 		modtime: 1528710319,
@@ -6910,6 +7247,7 @@ z8QCpTivBmVN5wIV93QGVaH4D2rqngxqnxw/aLBrM2hcUv7AxIgGGRgKr4NsqZvAyMLAUNDAwOHjG8Lg
 	},
 
 	"/zoneinfo/Asia/Singapore": {
+		name:    "Singapore",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Singapore",
 		size:    194,
 		modtime: 1528710319,
@@ -6921,6 +7259,7 @@ bwiDtoE5CBsZgEhjEGnJoG1ggeFCLhttAws7XQsuQAAAAP//Pz+kg8IAAAA=
 	},
 
 	"/zoneinfo/Asia/Srednekolymsk": {
+		name:    "Srednekolymsk",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Srednekolymsk",
 		size:    493,
 		modtime: 1528710319,
@@ -6936,6 +7275,7 @@ MGgbGjBoGxoxaBsagmOLEQKQ4pLLRtvQ0E7X0JALEAAA///832767QEAAA==
 	},
 
 	"/zoneinfo/Asia/Taipei": {
+		name:    "Taipei",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Taipei",
 		size:    312,
 		modtime: 1528710319,
@@ -6949,6 +7289,7 @@ zi4hSCHD5RwcomvBBQgAAP//Gsbn4zgBAAA=
 	},
 
 	"/zoneinfo/Asia/Tashkent": {
+		name:    "Tashkent",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Tashkent",
 		size:    268,
 		modtime: 1528710319,
@@ -6961,6 +7302,7 @@ QNT4+IYwaBuYMmgbmDNoG5iB/cTICDIHArhstA1M7XRNuQABAAD//xQK7EwMAQAA
 	},
 
 	"/zoneinfo/Asia/Tbilisi": {
+		name:    "Tbilisi",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Tbilisi",
 		size:    432,
 		modtime: 1528710319,
@@ -6976,6 +7318,7 @@ l1VesAEAAA==
 	},
 
 	"/zoneinfo/Asia/Tehran": {
+		name:    "Tehran",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Tehran",
 		size:    672,
 		modtime: 1528710319,
@@ -6994,6 +7337,7 @@ HS8LA30DHS8jMxN9Ay5AAAAA//8m+OTNoAIAAA==
 	},
 
 	"/zoneinfo/Asia/Tel_Aviv": {
+		name:    "Tel_Aviv",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Tel_Aviv",
 		size:    856,
 		modtime: 1528710319,
@@ -7015,6 +7359,7 @@ owBExMc3hMHLN4TB0yWEwTMYRLuEoGQSLs/gEF0jT5cQHV9jPRM9E30jMx1fQwM9Uz0DLkAAAAD//62S
 	},
 
 	"/zoneinfo/Asia/Thimbu": {
+		name:    "Thimbu",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Thimbu",
 		size:    111,
 		modtime: 1528710319,
@@ -7025,6 +7370,7 @@ H4sIAAAAAAAC/wqJykwzYsAAzFAMAixQNl8DAwPD1WeiJYqJvivq////z8DIxMTAEMIDUuQbAVIXksDA
 	},
 
 	"/zoneinfo/Asia/Thimphu": {
+		name:    "Thimphu",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Thimphu",
 		size:    111,
 		modtime: 1528710319,
@@ -7035,6 +7381,7 @@ H4sIAAAAAAAC/wqJykwzYsAAzFAMAixQNl8DAwPD1WeiJYqJvivq////z8DIxMTAEMIDUuQbAVIXksDA
 	},
 
 	"/zoneinfo/Asia/Tokyo": {
+		name:    "Tokyo",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Tokyo",
 		size:    140,
 		modtime: 1528710319,
@@ -7046,6 +7393,7 @@ AAAA
 	},
 
 	"/zoneinfo/Asia/Tomsk": {
+		name:    "Tomsk",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Tomsk",
 		size:    494,
 		modtime: 1528710319,
@@ -7061,6 +7409,7 @@ gZEwEUYemBoIGyTr4xvCoG1gxqBtYMGgbWAOjjFGRkZGBkak2LTRNjC30zXnAgQAAP//DuiZV+4BAAA=
 	},
 
 	"/zoneinfo/Asia/Ujung_Pandang": {
+		name:    "Ujung_Pandang",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Ujung_Pandang",
 		size:    138,
 		modtime: 1528710319,
@@ -7071,6 +7420,7 @@ A0NBAwMHA0PdBAYeMFvAxzeEwdc3hEHbwIJB28CSIdwzxBHJKi4QX9eCCxAAAP//a+tQX4oAAAA=
 	},
 
 	"/zoneinfo/Asia/Ulaanbaatar": {
+		name:    "Ulaanbaatar",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Ulaanbaatar",
 		size:    361,
 		modtime: 1528710319,
@@ -7085,6 +7435,7 @@ LFm9wHZK3wS7lt4F9iUFExxS8hc4hgRNcHIJXOBsYjLBRcV4gatsoECo6KwFYayJBWFfaxaEP3UuqP//
 	},
 
 	"/zoneinfo/Asia/Ulan_Bator": {
+		name:    "Ulan_Bator",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Ulan_Bator",
 		size:    361,
 		modtime: 1528710319,
@@ -7099,6 +7450,7 @@ LFm9wHZK3wS7lt4F9iUFExxS8hc4hgRNcHIJXOBsYjLBRcV4gatsoECo6KwFYayJBWFfaxaEP3UuqP//
 	},
 
 	"/zoneinfo/Asia/Urumqi": {
+		name:    "Urumqi",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Urumqi",
 		size:    92,
 		modtime: 1528710319,
@@ -7109,6 +7461,7 @@ H4sIAAAAAAAC/wqJykwzYsAATFAMAsxQNkcDAwPDhn+7Uur////PwMjIwBAkA5IPSWBg8fENYdA2MAOr
 	},
 
 	"/zoneinfo/Asia/Ust-Nera": {
+		name:    "Ust-Nera",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Ust-Nera",
 		size:    514,
 		modtime: 1528710319,
@@ -7125,6 +7478,7 @@ DAw9CxhEQCIMAjBxkIiPbwiDtoEFg7aBJYO2oSGDtqERg7ahASQGGSEAOYK5bLQNDex0DQ24AAEAAP//
 	},
 
 	"/zoneinfo/Asia/Vientiane": {
+		name:    "Vientiane",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Vientiane",
 		size:    104,
 		modtime: 1528710319,
@@ -7135,6 +7489,7 @@ H4sIAAAAAAAC/wqJykwzYsAAzFCMzOZpYGBgWJSVfqT+////jExMDAxxNiD5OBsGFgaGpAIGDh/fEAYn
 	},
 
 	"/zoneinfo/Asia/Vladivostok": {
+		name:    "Vladivostok",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Vladivostok",
 		size:    493,
 		modtime: 1528710319,
@@ -7150,6 +7505,7 @@ sGTQNjRk0DY0AMcWIwQgxSWXjbahgZ2uoQEXIAAA///MXRmw7QEAAA==
 	},
 
 	"/zoneinfo/Asia/Yakutsk": {
+		name:    "Yakutsk",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Yakutsk",
 		size:    492,
 		modtime: 1528710319,
@@ -7165,6 +7521,7 @@ EAZtAwsGbUMDBm0DS3BsMUIAUlxy2WgbWNrpWnIBAgAA//8efNpG7AEAAA==
 	},
 
 	"/zoneinfo/Asia/Yangon": {
+		name:    "Yangon",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Yangon",
 		size:    141,
 		modtime: 1528710319,
@@ -7175,6 +7532,7 @@ A0N0BgMHA0PdBAY+CNvHN4QhyDeEQdvAzNiAQdvAEskeLhuwqJ2umZWxARcgAAD//37xw6eNAAAA
 	},
 
 	"/zoneinfo/Asia/Yekaterinburg": {
+		name:    "Yekaterinburg",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Yekaterinburg",
 		size:    509,
 		modtime: 1528710319,
@@ -7190,6 +7548,7 @@ EUYBhBpQnCBU+viGMAT4hjBoG5gwaBuYMWgbmEJijxECkCOXy0bbwNRO15QLEAAA//9BuYhw/QEAAA==
 	},
 
 	"/zoneinfo/Asia/Yerevan": {
+		name:    "Yerevan",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Asia/Yerevan",
 		size:    479,
 		modtime: 1528710319,
@@ -7205,6 +7564,7 @@ MGbQNjBl0DYwAUcRIxggRZ+NtoGJna4JFyAAAP//y71rWd8BAAA=
 	},
 
 	"/zoneinfo/Atlantic/Azores": {
+		name:    "Azores",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Atlantic/Azores",
 		size:    1314,
 		modtime: 1528710319,
@@ -7231,6 +7591,7 @@ fWbXeDOdhsiQElgIRBspysJAbLTJeBO1mTIQC6jpJND4IwAA//9nGzRzIgUAAA==
 	},
 
 	"/zoneinfo/Atlantic/Bermuda": {
+		name:    "Bermuda",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Atlantic/Bermuda",
 		size:    754,
 		modtime: 1528710319,
@@ -7250,6 +7611,7 @@ cHQJgSZbLsfgEBNHlxAdX2M9Iz0DHV9DQz1DPQMuQAAAAP//tI/+KfICAAA=
 	},
 
 	"/zoneinfo/Atlantic/Canary": {
+		name:    "Canary",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Atlantic/Canary",
 		size:    731,
 		modtime: 1528710319,
@@ -7269,6 +7631,7 @@ AgAA
 	},
 
 	"/zoneinfo/Atlantic/Cape_Verde": {
+		name:    "Cape_Verde",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Atlantic/Cape_Verde",
 		size:    134,
 		modtime: 1528710319,
@@ -7279,6 +7642,7 @@ H4sIAAAAAAAC/wqJykwzYsAArFAMAmxQNk8DAwPDpGerFpyZOkfhUkmNALf4d4f6////MzAyMbOw/P//
 	},
 
 	"/zoneinfo/Atlantic/Faeroe": {
+		name:    "Faeroe",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Atlantic/Faeroe",
 		size:    696,
 		modtime: 1528710319,
@@ -7297,6 +7661,7 @@ yHXxMYkxililXKdUeMr3dwAAAP//xq7odrgCAAA=
 	},
 
 	"/zoneinfo/Atlantic/Faroe": {
+		name:    "Faroe",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Atlantic/Faroe",
 		size:    696,
 		modtime: 1528710319,
@@ -7315,6 +7680,7 @@ yHXxMYkxililXKdUeMr3dwAAAP//xq7odrgCAAA=
 	},
 
 	"/zoneinfo/Atlantic/Jan_Mayen": {
+		name:    "Jan_Mayen",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Atlantic/Jan_Mayen",
 		size:    851,
 		modtime: 1528710319,
@@ -7335,6 +7701,7 @@ cdYQOWrsRm2KVq+xG/SRrTNK/w4AAP//lJdXsFMDAAA=
 	},
 
 	"/zoneinfo/Atlantic/Madeira": {
+		name:    "Madeira",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Atlantic/Madeira",
 		size:    1309,
 		modtime: 1528710319,
@@ -7361,6 +7728,7 @@ Suf/DJ2MjUyM6A6hoZOQzieNPwMAAP//HLd32x0FAAA=
 	},
 
 	"/zoneinfo/Atlantic/Reykjavik": {
+		name:    "Reykjavik",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Atlantic/Reykjavik",
 		size:    459,
 		modtime: 1528710319,
@@ -7376,6 +7744,7 @@ roEhg7tvCFiKkRGii8vdN8SACxAAAP//UBxxMcsBAAA=
 	},
 
 	"/zoneinfo/Atlantic/South_Georgia": {
+		name:    "South_Georgia",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Atlantic/South_Georgia",
 		size:    86,
 		modtime: 1528710319,
@@ -7386,6 +7755,7 @@ OyMuQAAAAP//CL/JMVYAAAA=
 	},
 
 	"/zoneinfo/Atlantic/St_Helena": {
+		name:    "St_Helena",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Atlantic/St_Helena",
 		size:    84,
 		modtime: 1528710319,
@@ -7396,6 +7766,7 @@ H4sIAAAAAAAC/wqJykwzYsAATFCMzOZoYGBgmPRskgcD4///fyygsiw+viEM7r4hYA6Xu2+IARcgAAD/
 	},
 
 	"/zoneinfo/Atlantic/Stanley": {
+		name:    "Stanley",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Atlantic/Stanley",
 		size:    483,
 		modtime: 1528710319,
@@ -7411,6 +7782,7 @@ feD5av0Fr8X+D7xPTbzg02z4oP7///+MzExIkJWFlYWViZlUyMr6///JIwwMYJLl//+rFxg5/v8/foCB
 	},
 
 	"/zoneinfo/Australia/ACT": {
+		name:    "ACT",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/ACT",
 		size:    838,
 		modtime: 1528710319,
@@ -7431,6 +7803,7 @@ aeK/AwAA//8nSWzwRgMAAA==
 	},
 
 	"/zoneinfo/Australia/Adelaide": {
+		name:    "Adelaide",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/Adelaide",
 		size:    836,
 		modtime: 1528710319,
@@ -7451,6 +7824,7 @@ IdV6Obr0GYq/AwAA//8Qq2nbRAMAAA==
 	},
 
 	"/zoneinfo/Australia/Brisbane": {
+		name:    "Brisbane",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/Brisbane",
 		size:    192,
 		modtime: 1528710319,
@@ -7462,6 +7836,7 @@ icz28Q1hcHR1ARHBISBljIxgN3GB+LqGBlyAAAAA//8u0u3QwAAAAA==
 	},
 
 	"/zoneinfo/Australia/Broken_Hill": {
+		name:    "Broken_Hill",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/Broken_Hill",
 		size:    841,
 		modtime: 1528710319,
@@ -7482,6 +7857,7 @@ Y/SQajMZ9Sa9MdV2NroMGcq/AgAA///AeBqYSQMAAA==
 	},
 
 	"/zoneinfo/Australia/Canberra": {
+		name:    "Canberra",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/Canberra",
 		size:    838,
 		modtime: 1528710319,
@@ -7502,6 +7878,7 @@ aeK/AwAA//8nSWzwRgMAAA==
 	},
 
 	"/zoneinfo/Australia/Currie": {
+		name:    "Currie",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/Currie",
 		size:    838,
 		modtime: 1528710319,
@@ -7522,6 +7899,7 @@ tPhE2T8BAAD//5ZmgxNGAwAA
 	},
 
 	"/zoneinfo/Australia/Darwin": {
+		name:    "Darwin",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/Darwin",
 		size:    134,
 		modtime: 1528710319,
@@ -7532,6 +7910,7 @@ H4sIAAAAAAAC/wqJykwzYsAAzFAMApxQNlcDAwPDHL+1S+bsUf9xOmQXx+njcRVntsd2nF3uUHFuQRXH
 	},
 
 	"/zoneinfo/Australia/Eucla": {
+		name:    "Eucla",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/Eucla",
 		size:    214,
 		modtime: 1528710319,
@@ -7544,6 +7923,7 @@ AA==
 	},
 
 	"/zoneinfo/Australia/Hobart": {
+		name:    "Hobart",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/Hobart",
 		size:    878,
 		modtime: 1528710319,
@@ -7564,6 +7944,7 @@ rhvyhEi1CGsi0b/PIhPgGY1awEqzRq3SqNRK83mhJZ2T/RMAAP//Na2RSG4DAAA=
 	},
 
 	"/zoneinfo/Australia/LHI": {
+		name:    "LHI",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/LHI",
 		size:    727,
 		modtime: 1528710319,
@@ -7583,6 +7964,7 @@ AqK4AAEAAP//OsB0etcCAAA=
 	},
 
 	"/zoneinfo/Australia/Lindeman": {
+		name:    "Lindeman",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/Lindeman",
 		size:    217,
 		modtime: 1528710319,
@@ -7595,6 +7977,7 @@ AAA=
 	},
 
 	"/zoneinfo/Australia/Lord_Howe": {
+		name:    "Lord_Howe",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/Lord_Howe",
 		size:    727,
 		modtime: 1528710319,
@@ -7614,6 +7997,7 @@ AqK4AAEAAP//OsB0etcCAAA=
 	},
 
 	"/zoneinfo/Australia/Melbourne": {
+		name:    "Melbourne",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/Melbourne",
 		size:    838,
 		modtime: 1528710319,
@@ -7634,6 +8018,7 @@ VPE/AQAA//8K2V+cRgMAAA==
 	},
 
 	"/zoneinfo/Australia/NSW": {
+		name:    "NSW",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/NSW",
 		size:    838,
 		modtime: 1528710319,
@@ -7654,6 +8039,7 @@ aeK/AwAA//8nSWzwRgMAAA==
 	},
 
 	"/zoneinfo/Australia/North": {
+		name:    "North",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/North",
 		size:    134,
 		modtime: 1528710319,
@@ -7664,6 +8050,7 @@ H4sIAAAAAAAC/wqJykwzYsAAzFAMApxQNlcDAwPDHL+1S+bsUf9xOmQXx+njcRVntsd2nF3uUHFuQRXH
 	},
 
 	"/zoneinfo/Australia/Perth": {
+		name:    "Perth",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/Perth",
 		size:    201,
 		modtime: 1528710319,
@@ -7675,6 +8062,7 @@ JjCyMDAUNDBwIrN9fEMYHMNdQERwCEgZIyPYdVwgvq4FFyAAAP//3q7iO8kAAAA=
 	},
 
 	"/zoneinfo/Australia/Queensland": {
+		name:    "Queensland",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/Queensland",
 		size:    192,
 		modtime: 1528710319,
@@ -7686,6 +8074,7 @@ icz28Q1hcHR1ARHBISBljIxgN3GB+LqGBlyAAAAA//8u0u3QwAAAAA==
 	},
 
 	"/zoneinfo/Australia/South": {
+		name:    "South",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/South",
 		size:    836,
 		modtime: 1528710319,
@@ -7706,6 +8095,7 @@ IdV6Obr0GYq/AwAA//8Qq2nbRAMAAA==
 	},
 
 	"/zoneinfo/Australia/Sydney": {
+		name:    "Sydney",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/Sydney",
 		size:    838,
 		modtime: 1528710319,
@@ -7726,6 +8116,7 @@ aeK/AwAA//8nSWzwRgMAAA==
 	},
 
 	"/zoneinfo/Australia/Tasmania": {
+		name:    "Tasmania",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/Tasmania",
 		size:    878,
 		modtime: 1528710319,
@@ -7746,6 +8137,7 @@ rhvyhEi1CGsi0b/PIhPgGY1awEqzRq3SqNRK83mhJZ2T/RMAAP//Na2RSG4DAAA=
 	},
 
 	"/zoneinfo/Australia/Victoria": {
+		name:    "Victoria",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/Victoria",
 		size:    838,
 		modtime: 1528710319,
@@ -7766,6 +8158,7 @@ VPE/AQAA//8K2V+cRgMAAA==
 	},
 
 	"/zoneinfo/Australia/West": {
+		name:    "West",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/West",
 		size:    201,
 		modtime: 1528710319,
@@ -7777,6 +8170,7 @@ JjCyMDAUNDBwIrN9fEMYHMNdQERwCEgZIyPYdVwgvq4FFyAAAP//3q7iO8kAAAA=
 	},
 
 	"/zoneinfo/Australia/Yancowinna": {
+		name:    "Yancowinna",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Australia/Yancowinna",
 		size:    841,
 		modtime: 1528710319,
@@ -7797,6 +8191,7 @@ Y/SQajMZ9Sa9MdV2NroMGcq/AgAA///AeBqYSQMAAA==
 	},
 
 	"/zoneinfo/Brazil/Acre": {
+		name:    "Acre",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Brazil/Acre",
 		size:    269,
 		modtime: 1528710319,
@@ -7809,6 +8204,7 @@ Hcm/F+7sLHW4+9sw4N7sXw73724LeBDi7/BlhvSFr6xVDt8ONAR857M68CPQI+DH8YcOv7jeXfi1UuTA
 	},
 
 	"/zoneinfo/Brazil/DeNoronha": {
+		name:    "DeNoronha",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Brazil/DeNoronha",
 		size:    293,
 		modtime: 1528710319,
@@ -7822,6 +8218,7 @@ ugZGdkZcgAAAAP//XehAtyUBAAA=
 	},
 
 	"/zoneinfo/Brazil/East": {
+		name:    "East",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Brazil/East",
 		size:    757,
 		modtime: 1528710319,
@@ -7841,6 +8238,7 @@ gnwwHyRBebBYJZNJZVL0QbFKLuVXxf5PAAAA///2Yqu79QIAAA==
 	},
 
 	"/zoneinfo/Brazil/West": {
+		name:    "West",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Brazil/West",
 		size:    253,
 		modtime: 1528710319,
@@ -7853,6 +8251,7 @@ juT7A3d2phvc/a3scG/2G4P7d1c4PAhxNPgyg/fAV9Ycg28Hihy+8+ls+BFo5fDj+GWDX1wPDvxaybbh
 	},
 
 	"/zoneinfo/CET": {
+		name:    "CET",
 		local:   "pkg/uploader/assets/resources/zoneinfo/CET",
 		size:    793,
 		modtime: 1528710319,
@@ -7872,6 +8271,7 @@ w9jZGuPIqrggmS1L1PLg8GCpRC2T2jZE7vgnAAD//zfqPPQZAwAA
 	},
 
 	"/zoneinfo/CST6CDT": {
+		name:    "CST6CDT",
 		local:   "pkg/uploader/assets/resources/zoneinfo/CST6CDT",
 		size:    861,
 		modtime: 1528710319,
@@ -7893,6 +8293,7 @@ XQMAAA==
 	},
 
 	"/zoneinfo/Canada/Atlantic": {
+		name:    "Atlantic",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Canada/Atlantic",
 		size:    1273,
 		modtime: 1528710319,
@@ -7919,6 +8320,7 @@ O4WTxFHC2ikcHCQOElb4dwAAAP//d4U9ffkEAAA=
 	},
 
 	"/zoneinfo/Canada/Central": {
+		name:    "Central",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Canada/Central",
 		size:    1079,
 		modtime: 1528710319,
@@ -7942,6 +8344,7 @@ Pl4kEgUGINHmCanaLEFhXKdMVqoURrVaqVaqJH8HAAD//1tAtEw3BAAA
 	},
 
 	"/zoneinfo/Canada/Eastern": {
+		name:    "Eastern",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Canada/Eastern",
 		size:    1293,
 		modtime: 1528710319,
@@ -7968,6 +8371,7 @@ yiJkYaHa8HBZuCxM9E8AAAD//8MxvrENBQAA
 	},
 
 	"/zoneinfo/Canada/Mountain": {
+		name:    "Mountain",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Canada/Mountain",
 		size:    903,
 		modtime: 1528710319,
@@ -7989,6 +8393,7 @@ MbGipATkgkPcKdhEnZBrMBuMOsFkMpgMRvnfAQAA///dE59DhwMAAA==
 	},
 
 	"/zoneinfo/Canada/Newfoundland": {
+		name:    "Newfoundland",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Canada/Newfoundland",
 		size:    1363,
 		modtime: 1528710319,
@@ -8016,6 +8421,7 @@ zwPQR/AP6Nf3JYT9//Lx7xD0n2x9mUDgl90EEQiwxYIeFwUCLH7hqNcHvLhDAwFfgyC8Z0rpjIReYyT0
 	},
 
 	"/zoneinfo/Canada/Pacific": {
+		name:    "Pacific",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Canada/Pacific",
 		size:    1078,
 		modtime: 1528710319,
@@ -8039,6 +8445,7 @@ QZwfvWReMoNR1BryxGR9pjpDnZasT09Xp6vTZH8HAAD//2N80NY2BAAA
 	},
 
 	"/zoneinfo/Canada/Saskatchewan": {
+		name:    "Saskatchewan",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Canada/Saskatchewan",
 		size:    392,
 		modtime: 1528710319,
@@ -8053,6 +8460,7 @@ PqkyvH72QeDNtcsMb49dEmBgYsQKmVlwSIAg6///c58wMPz/v3oBI8v//3MnMHCA2TxgUgBEMoj4+IYw
 	},
 
 	"/zoneinfo/Canada/Yukon": {
+		name:    "Yukon",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Canada/Yukon",
 		size:    800,
 		modtime: 1528710319,
@@ -8073,6 +8481,7 @@ XpSvUyjkCnlR3MsAAAD//ziPTrYgAwAA
 	},
 
 	"/zoneinfo/Chile/Continental": {
+		name:    "Continental",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Chile/Continental",
 		size:    961,
 		modtime: 1528710319,
@@ -8095,6 +8504,7 @@ If5lkqqOk0hR1dMs0ucopatqLCItSnDuvsXSLJoszUIPpUIPRqGHxCdKUmKnVujBaDZW6MFgLrCYCksK
 	},
 
 	"/zoneinfo/Chile/EasterIsland": {
+		name:    "EasterIsland",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Chile/EasterIsland",
 		size:    853,
 		modtime: 1528710319,
@@ -8115,6 +8525,7 @@ AGZhAIswgEkIIZPt3d+TYDOA2W62GcBkT3VZ04xp5nSjMdVl2reEPwMAAP//1/HTsVUDAAA=
 	},
 
 	"/zoneinfo/Cuba": {
+		name:    "Cuba",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Cuba",
 		size:    916,
 		modtime: 1528710319,
@@ -8136,6 +8547,7 @@ Jh7v76hEWjOr1urYbGOOTCVTyBXZRqVSppQp5ErRnwEAAP//2SlceZQDAAA=
 	},
 
 	"/zoneinfo/EET": {
+		name:    "EET",
 		local:   "pkg/uploader/assets/resources/zoneinfo/EET",
 		size:    709,
 		modtime: 1528710319,
@@ -8154,6 +8566,7 @@ BJlMJnMXRSlSN5c0Zn1UXJQ2Wq8xx2j/Wqz7nwAAAP//UFRaDMUCAAA=
 	},
 
 	"/zoneinfo/EST": {
+		name:    "EST",
 		local:   "pkg/uploader/assets/resources/zoneinfo/EST",
 		size:    62,
 		modtime: 1528710319,
@@ -8163,6 +8576,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGf5/3/nBgYG1+AQBgYGLtfgEFMuQAAAAP//x3PrgD4AAAA=
 	},
 
 	"/zoneinfo/EST5EDT": {
+		name:    "EST5EDT",
 		local:   "pkg/uploader/assets/resources/zoneinfo/EST5EDT",
 		size:    861,
 		modtime: 1528710319,
@@ -8184,6 +8598,7 @@ XQMAAA==
 	},
 
 	"/zoneinfo/Egypt": {
+		name:    "Egypt",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Egypt",
 		size:    731,
 		modtime: 1528710319,
@@ -8203,6 +8618,7 @@ CC5X1xBdIy5AAAAA//8WIwYn2wIAAA==
 	},
 
 	"/zoneinfo/Eire": {
+		name:    "Eire",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Eire",
 		size:    1317,
 		modtime: 1528710319,
@@ -8229,6 +8645,7 @@ ZnfAh64CYv3dKbbpPsQ5t1Hc9ctgabhN64+mwoaCbPpo50XaaE2mjy0pFL89nmTP2Nv9wwAH+/8Yx4Hy
 	},
 
 	"/zoneinfo/Etc/GMT": {
+		name:    "GMT",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT",
 		size:    62,
 		modtime: 1528710319,
@@ -8238,6 +8655,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGeBMN19QxgYGLjcfUMMuAABAAD//1CSWVw+AAAA
 	},
 
 	"/zoneinfo/Etc/GMT+0": {
+		name:    "GMT+0",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT+0",
 		size:    62,
 		modtime: 1528710319,
@@ -8247,6 +8665,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGeBMN19QxgYGLjcfUMMuAABAAD//1CSWVw+AAAA
 	},
 
 	"/zoneinfo/Etc/GMT+1": {
+		name:    "GMT+1",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT+1",
 		size:    74,
 		modtime: 1528710319,
@@ -8257,6 +8676,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///xkY/v//+IGBQdfAkIGBgctG18DQzpALEAAA
 	},
 
 	"/zoneinfo/Etc/GMT+10": {
+		name:    "GMT+10",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT+10",
 		size:    75,
 		modtime: 1528710319,
@@ -8267,6 +8687,7 @@ AP//4rV3uksAAAA=
 	},
 
 	"/zoneinfo/Etc/GMT+11": {
+		name:    "GMT+11",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT+11",
 		size:    75,
 		modtime: 1528710319,
@@ -8277,6 +8698,7 @@ AP//p6DhvksAAAA=
 	},
 
 	"/zoneinfo/Etc/GMT+12": {
+		name:    "GMT+12",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT+12",
 		size:    75,
 		modtime: 1528710319,
@@ -8287,6 +8709,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///xkY/v8Pd2Bg0DUE6eSy0TU0sjM04gIEAAD/
 	},
 
 	"/zoneinfo/Etc/GMT+2": {
+		name:    "GMT+2",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT+2",
 		size:    74,
 		modtime: 1528710319,
@@ -8297,6 +8720,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///xkY/v9//ICBQdcApJPLRtfAyM6ICxAAAP//
 	},
 
 	"/zoneinfo/Etc/GMT+3": {
+		name:    "GMT+3",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT+3",
 		size:    74,
 		modtime: 1528710319,
@@ -8307,6 +8731,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///xkY/v+/eoGBQdfAmIGBgctG18DYzpgLEAAA
 	},
 
 	"/zoneinfo/Etc/GMT+4": {
+		name:    "GMT+4",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT+4",
 		size:    74,
 		modtime: 1528710319,
@@ -8317,6 +8742,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///xkY/v8/foCBQdfAhIGBgctG18DEzoQLEAAA
 	},
 
 	"/zoneinfo/Etc/GMT+5": {
+		name:    "GMT+5",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT+5",
 		size:    74,
 		modtime: 1528710319,
@@ -8327,6 +8753,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///xkY/v/fuYGBQdfAlIGBgctG18DUzpQLEAAA
 	},
 
 	"/zoneinfo/Etc/GMT+6": {
+		name:    "GMT+6",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT+6",
 		size:    74,
 		modtime: 1528710319,
@@ -8337,6 +8764,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///xkY/v9fvYCBQdfAjIGBgctG18DMzowLEAAA
 	},
 
 	"/zoneinfo/Etc/GMT+7": {
+		name:    "GMT+7",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT+7",
 		size:    74,
 		modtime: 1528710319,
@@ -8347,6 +8775,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///xkY/v+fO4GBQdfAnIGBgctG18DczpwLEAAA
 	},
 
 	"/zoneinfo/Etc/GMT+8": {
+		name:    "GMT+8",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT+8",
 		size:    74,
 		modtime: 1528710319,
@@ -8357,6 +8786,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///xkY/v/vb2Bg0DWwYGBg4LLRNbCws+ACBAAA
 	},
 
 	"/zoneinfo/Etc/GMT+9": {
+		name:    "GMT+9",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT+9",
 		size:    74,
 		modtime: 1528710319,
@@ -8367,6 +8797,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///xkY/v9vLGBg0DWwZGBg4LLRNbC0s+QCBAAA
 	},
 
 	"/zoneinfo/Etc/GMT-0": {
+		name:    "GMT-0",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT-0",
 		size:    62,
 		modtime: 1528710319,
@@ -8376,6 +8807,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGeBMN19QxgYGLjcfUMMuAABAAD//1CSWVw+AAAA
 	},
 
 	"/zoneinfo/Etc/GMT-1": {
+		name:    "GMT-1",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT-1",
 		size:    75,
 		modtime: 1528710319,
@@ -8386,6 +8818,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///0GCfAIMDNoGhgwMDFw22gaGdrqGXIAAAAD/
 	},
 
 	"/zoneinfo/Etc/GMT-10": {
+		name:    "GMT-10",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT-10",
 		size:    76,
 		modtime: 1528710319,
@@ -8396,6 +8829,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///0GCPQsYGLQNDRgYGLhstA0N7HQNDbgAAQAA
 	},
 
 	"/zoneinfo/Etc/GMT-11": {
+		name:    "GMT-11",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT-11",
 		size:    76,
 		modtime: 1528710319,
@@ -8406,6 +8840,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///0GCszYwMGgbGjIwMHDZaBsa2ukaGnIBAgAA
 	},
 
 	"/zoneinfo/Etc/GMT-12": {
+		name:    "GMT-12",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT-12",
 		size:    76,
 		modtime: 1528710319,
@@ -8416,6 +8851,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///0GCKw4wMGgbgnRy2WgbGtnpGhpxAQIAAP//
 	},
 
 	"/zoneinfo/Etc/GMT-13": {
+		name:    "GMT-13",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT-13",
 		size:    76,
 		modtime: 1528710319,
@@ -8426,6 +8862,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///0GC2y4wMGgbGjMwMHDZaBsa2+kaGnMBAgAA
 	},
 
 	"/zoneinfo/Etc/GMT-14": {
+		name:    "GMT-14",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT-14",
 		size:    76,
 		modtime: 1528710319,
@@ -8436,6 +8873,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///0GCRx4wMGgbmjAwMHDZaBua2OkamnABAgAA
 	},
 
 	"/zoneinfo/Etc/GMT-2": {
+		name:    "GMT-2",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT-2",
 		size:    75,
 		modtime: 1528710319,
@@ -8446,6 +8884,7 @@ x8GMSwAAAA==
 	},
 
 	"/zoneinfo/Etc/GMT-3": {
+		name:    "GMT-3",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT-3",
 		size:    75,
 		modtime: 1528710319,
@@ -8456,6 +8895,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///0GCWgYMDNoGxgwMDFw22gbGdrrGXIAAAAD/
 	},
 
 	"/zoneinfo/Etc/GMT-4": {
+		name:    "GMT-4",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT-4",
 		size:    75,
 		modtime: 1528710319,
@@ -8466,6 +8906,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///0GCFg4MDNoGJgwMDFw22gYmdromXIAAAAD/
 	},
 
 	"/zoneinfo/Etc/GMT-5": {
+		name:    "GMT-5",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT-5",
 		size:    75,
 		modtime: 1528710319,
@@ -8476,6 +8917,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///0GCbgEMDNoGpgwMDFw22gamdrqmXIAAAAD/
 	},
 
 	"/zoneinfo/Etc/GMT-6": {
+		name:    "GMT-6",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT-6",
 		size:    75,
 		modtime: 1528710319,
@@ -8486,6 +8928,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///0GCIQkMDNoGZgwMDFw22gZmdrpmXIAAAAD/
 	},
 
 	"/zoneinfo/Etc/GMT-7": {
+		name:    "GMT-7",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT-7",
 		size:    75,
 		modtime: 1528710319,
@@ -8496,6 +8939,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///0GCSQUMDNoG5gwMDFw22gbmdrrmXIAAAAD/
 	},
 
 	"/zoneinfo/Etc/GMT-8": {
+		name:    "GMT-8",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT-8",
 		size:    75,
 		modtime: 1528710319,
@@ -8506,6 +8950,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///0GCBQ0MDNoGFgwMDFw22gYWdroWXIAAAAD/
 	},
 
 	"/zoneinfo/Etc/GMT-9": {
+		name:    "GMT-9",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT-9",
 		size:    75,
 		modtime: 1528710319,
@@ -8516,6 +8961,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFAMAkxQNksDAwND/f///0GCdRMYGLQNLBkYGLhstA0s7XQtuQABAAD/
 	},
 
 	"/zoneinfo/Etc/GMT0": {
+		name:    "GMT0",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/GMT0",
 		size:    62,
 		modtime: 1528710319,
@@ -8525,6 +8971,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGeBMN19QxgYGLjcfUMMuAABAAD//1CSWVw+AAAA
 	},
 
 	"/zoneinfo/Etc/Greenwich": {
+		name:    "Greenwich",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/Greenwich",
 		size:    62,
 		modtime: 1528710319,
@@ -8534,6 +8981,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGeBMN19QxgYGLjcfUMMuAABAAD//1CSWVw+AAAA
 	},
 
 	"/zoneinfo/Etc/UCT": {
+		name:    "UCT",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/UCT",
 		size:    62,
 		modtime: 1528710319,
@@ -8543,6 +8991,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGeBMEOdQxgYGLhCnUMMuAABAAD//+R58xQ+AAAA
 	},
 
 	"/zoneinfo/Etc/UTC": {
+		name:    "UTC",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/UTC",
 		size:    62,
 		modtime: 1528710319,
@@ -8552,6 +9001,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGeBMENDnBkYGLhCQ5wNuAABAAD//+7o64I+AAAA
 	},
 
 	"/zoneinfo/Etc/Universal": {
+		name:    "Universal",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/Universal",
 		size:    62,
 		modtime: 1528710319,
@@ -8561,6 +9011,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGeBMENDnBkYGLhCQ5wNuAABAAD//+7o64I+AAAA
 	},
 
 	"/zoneinfo/Etc/Zulu": {
+		name:    "Zulu",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Etc/Zulu",
 		size:    62,
 		modtime: 1528710319,
@@ -8570,6 +9021,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGeBMENDnBkYGLhCQ5wNuAABAAD//+7o64I+AAAA
 	},
 
 	"/zoneinfo/Europe/Amsterdam": {
+		name:    "Amsterdam",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Amsterdam",
 		size:    1122,
 		modtime: 1528710319,
@@ -8594,6 +9046,7 @@ AP//P02sTWIEAAA=
 	},
 
 	"/zoneinfo/Europe/Andorra": {
+		name:    "Andorra",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Andorra",
 		size:    669,
 		modtime: 1528710319,
@@ -8612,6 +9065,7 @@ AAD//0I/u4+dAgAA
 	},
 
 	"/zoneinfo/Europe/Astrakhan": {
+		name:    "Astrakhan",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Astrakhan",
 		size:    471,
 		modtime: 1528710319,
@@ -8627,6 +9081,7 @@ mEHbwJRB28AEHDmMIACPNi4bbQMTO10TLkAAAAD//w+l2CvXAQAA
 	},
 
 	"/zoneinfo/Europe/Athens": {
+		name:    "Athens",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Athens",
 		size:    870,
 		modtime: 1528710319,
@@ -8648,6 +9103,7 @@ AwAA
 	},
 
 	"/zoneinfo/Europe/Belfast": {
+		name:    "Belfast",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Belfast",
 		size:    1366,
 		modtime: 1528710319,
@@ -8675,6 +9131,7 @@ ucLXT6byU1id3R8BAAD//3t3SzpWBQAA
 	},
 
 	"/zoneinfo/Europe/Belgrade": {
+		name:    "Belgrade",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Belgrade",
 		size:    746,
 		modtime: 1528710319,
@@ -8694,6 +9151,7 @@ Y+K8PwcAAP//XWg9S+oCAAA=
 	},
 
 	"/zoneinfo/Europe/Berlin": {
+		name:    "Berlin",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Berlin",
 		size:    887,
 		modtime: 1528710319,
@@ -8715,6 +9173,7 @@ Rc9bgXcDAAA=
 	},
 
 	"/zoneinfo/Europe/Bratislava": {
+		name:    "Bratislava",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Bratislava",
 		size:    878,
 		modtime: 1528710319,
@@ -8735,6 +9194,7 @@ ya5/JyedomC1FUSHKNid4l8NSfQJf2Oc1SYeNEUrBqc5LSvNaHCajNGdbo77MwAA///VThDObgMAAA==
 	},
 
 	"/zoneinfo/Europe/Brussels": {
+		name:    "Brussels",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Brussels",
 		size:    1112,
 		modtime: 1528710319,
@@ -8759,6 +9219,7 @@ JT1BWAQAAA==
 	},
 
 	"/zoneinfo/Europe/Bucharest": {
+		name:    "Bucharest",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Bucharest",
 		size:    845,
 		modtime: 1528710319,
@@ -8779,6 +9240,7 @@ ICKEgYGBkRGCGcBsLlfXEF0jkLSOr7GeqZ6BvrGOr6EBmGXCBQgAAP//Pe2fvE0DAAA=
 	},
 
 	"/zoneinfo/Europe/Budapest": {
+		name:    "Budapest",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Budapest",
 		size:    906,
 		modtime: 1528710319,
@@ -8800,6 +9262,7 @@ hb8kz+6QFphzQ4PLUlpRajK4zKZcNVry/ggAAP//Wrnc6ooDAAA=
 	},
 
 	"/zoneinfo/Europe/Busingen": {
+		name:    "Busingen",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Busingen",
 		size:    720,
 		modtime: 1528710319,
@@ -8818,6 +9281,7 @@ EAv/9CSDSWh1RgdMjiuJ5DdctTpTiNqxUBoiQqNCVUqDWuWYYRGuvwIAAP//EvWE4dACAAA=
 	},
 
 	"/zoneinfo/Europe/Chisinau": {
+		name:    "Chisinau",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Chisinau",
 		size:    948,
 		modtime: 1528710319,
@@ -8839,6 +9303,7 @@ MDBoGTDyMDDIKDAIwkiICJ8AgyhIhFESRlo4MMqBZBmUYCRMBGaCj28Ig7NvCIOTbwiDq2swiAhhcAbj
 	},
 
 	"/zoneinfo/Europe/Copenhagen": {
+		name:    "Copenhagen",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Copenhagen",
 		size:    811,
 		modtime: 1528710319,
@@ -8859,6 +9324,7 @@ AA==
 	},
 
 	"/zoneinfo/Europe/Dublin": {
+		name:    "Dublin",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Dublin",
 		size:    1317,
 		modtime: 1528710319,
@@ -8885,6 +9351,7 @@ ZnfAh64CYv3dKbbpPsQ5t1Hc9ctgabhN64+mwoaCbPpo50XaaE2mjy0pFL89nmTP2Nv9wwAH+/8Yx4Hy
 	},
 
 	"/zoneinfo/Europe/Gibraltar": {
+		name:    "Gibraltar",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Gibraltar",
 		size:    1144,
 		modtime: 1528710319,
@@ -8909,6 +9376,7 @@ zvMOMrmwNNQ2ECWGBYcHi0WJoWKbh4Q5/BkAAP//jgblJ3gEAAA=
 	},
 
 	"/zoneinfo/Europe/Guernsey": {
+		name:    "Guernsey",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Guernsey",
 		size:    1366,
 		modtime: 1528710319,
@@ -8936,6 +9404,7 @@ ucLXT6byU1id3R8BAAD//3t3SzpWBQAA
 	},
 
 	"/zoneinfo/Europe/Helsinki": {
+		name:    "Helsinki",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Helsinki",
 		size:    729,
 		modtime: 1528710319,
@@ -8955,6 +9424,7 @@ AAA=
 	},
 
 	"/zoneinfo/Europe/Isle_of_Man": {
+		name:    "Isle_of_Man",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Isle_of_Man",
 		size:    1366,
 		modtime: 1528710319,
@@ -8982,6 +9452,7 @@ ucLXT6byU1id3R8BAAD//3t3SzpWBQAA
 	},
 
 	"/zoneinfo/Europe/Istanbul": {
+		name:    "Istanbul",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Istanbul",
 		size:    821,
 		modtime: 1528710319,
@@ -9002,6 +9473,7 @@ kZGREZ4jGBkZuGy0DYztdI25AAEAAP//hDoImzUDAAA=
 	},
 
 	"/zoneinfo/Europe/Jersey": {
+		name:    "Jersey",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Jersey",
 		size:    1366,
 		modtime: 1528710319,
@@ -9029,6 +9501,7 @@ ucLXT6byU1id3R8BAAD//3t3SzpWBQAA
 	},
 
 	"/zoneinfo/Europe/Kaliningrad": {
+		name:    "Kaliningrad",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Kaliningrad",
 		size:    600,
 		modtime: 1528710319,
@@ -9046,6 +9519,7 @@ WAIAAA==
 	},
 
 	"/zoneinfo/Europe/Kiev": {
+		name:    "Kiev",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Kiev",
 		size:    817,
 		modtime: 1528710319,
@@ -9066,6 +9540,7 @@ GhqAWSZcgAAAAP///1ujBDEDAAA=
 	},
 
 	"/zoneinfo/Europe/Kirov": {
+		name:    "Kirov",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Kirov",
 		size:    458,
 		modtime: 1528710319,
@@ -9081,6 +9556,7 @@ gQkDAyMDAyMjIyOIBgEuG20DYztdYy5AAAAA//9aWhV6ygEAAA==
 	},
 
 	"/zoneinfo/Europe/Lisbon": {
+		name:    "Lisbon",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Lisbon",
 		size:    1304,
 		modtime: 1528710319,
@@ -9107,6 +9583,7 @@ hwdYHfiP7Eb/shw42FaJhy7HwYclaXj4TBYeSYjEjw7GYkBoAHKDBa+YDHpJC/+Rl/KQ/5o/dNiATQf/
 	},
 
 	"/zoneinfo/Europe/Ljubljana": {
+		name:    "Ljubljana",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Ljubljana",
 		size:    746,
 		modtime: 1528710319,
@@ -9126,6 +9603,7 @@ Y+K8PwcAAP//XWg9S+oCAAA=
 	},
 
 	"/zoneinfo/Europe/London": {
+		name:    "London",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/London",
 		size:    1366,
 		modtime: 1528710319,
@@ -9153,6 +9631,7 @@ ucLXT6byU1id3R8BAAD//3t3SzpWBQAA
 	},
 
 	"/zoneinfo/Europe/Luxembourg": {
+		name:    "Luxembourg",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Luxembourg",
 		size:    1131,
 		modtime: 1528710319,
@@ -9177,6 +9656,7 @@ wqR/BAAA//9AYWYAawQAAA==
 	},
 
 	"/zoneinfo/Europe/Madrid": {
+		name:    "Madrid",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Madrid",
 		size:    1002,
 		modtime: 1528710319,
@@ -9199,6 +9679,7 @@ guI/ODF9QobyVvDmzd8Dcn6yiBv/Z5AyGNPM4DL/5nPkLVP9nzdbeLbK2CgXWRaeGeTJYOQZY5z8huM4
 	},
 
 	"/zoneinfo/Europe/Malta": {
+		name:    "Malta",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Malta",
 		size:    986,
 		modtime: 1528710319,
@@ -9221,6 +9702,7 @@ qpNiTW6wLMsyd4LEaLLO0SY/1RZdgb5Ao7ZoNUkv1En+DgAA//8hpmYu2gMAAA==
 	},
 
 	"/zoneinfo/Europe/Mariehamn": {
+		name:    "Mariehamn",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Mariehamn",
 		size:    729,
 		modtime: 1528710319,
@@ -9240,6 +9722,7 @@ AAA=
 	},
 
 	"/zoneinfo/Europe/Minsk": {
+		name:    "Minsk",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Minsk",
 		size:    545,
 		modtime: 1528710319,
@@ -9256,6 +9739,7 @@ y8gIwowgCglw2WgbGNvpGnMBAgAA//8Fiqm5IQIAAA==
 	},
 
 	"/zoneinfo/Europe/Monaco": {
+		name:    "Monaco",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Monaco",
 		size:    1116,
 		modtime: 1528710319,
@@ -9280,6 +9764,7 @@ rFwEAAA=
 	},
 
 	"/zoneinfo/Europe/Moscow": {
+		name:    "Moscow",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Moscow",
 		size:    615,
 		modtime: 1528710319,
@@ -9297,6 +9782,7 @@ RjABAQgBKODyDfbWNeYCBAAA//+Z/UcSZwIAAA==
 	},
 
 	"/zoneinfo/Europe/Nicosia": {
+		name:    "Nicosia",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Nicosia",
 		size:    767,
 		modtime: 1528710319,
@@ -9316,6 +9802,7 @@ EUxwubqG6BqBJHR8jfVM9Qz0jXV8DQ3ALBMuQAAAAP//T3zgdf8CAAA=
 	},
 
 	"/zoneinfo/Europe/Oslo": {
+		name:    "Oslo",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Oslo",
 		size:    851,
 		modtime: 1528710319,
@@ -9336,6 +9823,7 @@ cdYQOWrsRm2KVq+xG/SRrTNK/w4AAP//lJdXsFMDAAA=
 	},
 
 	"/zoneinfo/Europe/Paris": {
+		name:    "Paris",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Paris",
 		size:    1127,
 		modtime: 1528710319,
@@ -9360,6 +9848,7 @@ AAA=
 	},
 
 	"/zoneinfo/Europe/Podgorica": {
+		name:    "Podgorica",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Podgorica",
 		size:    746,
 		modtime: 1528710319,
@@ -9379,6 +9868,7 @@ Y+K8PwcAAP//XWg9S+oCAAA=
 	},
 
 	"/zoneinfo/Europe/Prague": {
+		name:    "Prague",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Prague",
 		size:    878,
 		modtime: 1528710319,
@@ -9399,6 +9889,7 @@ ya5/JyedomC1FUSHKNid4l8NSfQJf2Oc1SYeNEUrBqc5LSvNaHCajNGdbo77MwAA///VThDObgMAAA==
 	},
 
 	"/zoneinfo/Europe/Riga": {
+		name:    "Riga",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Riga",
 		size:    872,
 		modtime: 1528710319,
@@ -9420,6 +9911,7 @@ aheZ8mgDAAA=
 	},
 
 	"/zoneinfo/Europe/Rome": {
+		name:    "Rome",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Rome",
 		size:    1001,
 		modtime: 1528710319,
@@ -9442,6 +9934,7 @@ aqb7Sr1R0GgNYTGGf4iiKAq3gkyjNS5ShR+VenVWflaOUq/KCXu2WvZPAAAA///nEO2U6QMAAA==
 	},
 
 	"/zoneinfo/Europe/Samara": {
+		name:    "Samara",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Samara",
 		size:    499,
 		modtime: 1528710319,
@@ -9457,6 +9950,7 @@ jAKDAEwcpNLHN4RB28CYQdvAhEHbwJRB28CIgYGRgYERCkBsGOCy0TYwsdM14QIEAAD//5oEPUnzAQAA
 	},
 
 	"/zoneinfo/Europe/San_Marino": {
+		name:    "San_Marino",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/San_Marino",
 		size:    1001,
 		modtime: 1528710319,
@@ -9479,6 +9973,7 @@ aqb7Sr1R0GgNYTGGf4iiKAq3gkyjNS5ShR+VenVWflaOUq/KCXu2WvZPAAAA///nEO2U6QMAAA==
 	},
 
 	"/zoneinfo/Europe/Sarajevo": {
+		name:    "Sarajevo",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Sarajevo",
 		size:    746,
 		modtime: 1528710319,
@@ -9498,6 +9993,7 @@ Y+K8PwcAAP//XWg9S+oCAAA=
 	},
 
 	"/zoneinfo/Europe/Saratov": {
+		name:    "Saratov",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Saratov",
 		size:    471,
 		modtime: 1528710319,
@@ -9513,6 +10009,7 @@ MDOK/mD2N+mDhXRFgcVdlw+Wv6MKrPaqfbC+bVNgs8y5wHa3XIFdm2qB/WyGAoc09gLHFpkPTq4vC5yT
 	},
 
 	"/zoneinfo/Europe/Simferopol": {
+		name:    "Simferopol",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Simferopol",
 		size:    590,
 		modtime: 1528710319,
@@ -9530,6 +10027,7 @@ AAD//7VJ8EtOAgAA
 	},
 
 	"/zoneinfo/Europe/Skopje": {
+		name:    "Skopje",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Skopje",
 		size:    746,
 		modtime: 1528710319,
@@ -9549,6 +10047,7 @@ Y+K8PwcAAP//XWg9S+oCAAA=
 	},
 
 	"/zoneinfo/Europe/Sofia": {
+		name:    "Sofia",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Sofia",
 		size:    811,
 		modtime: 1528710319,
@@ -9569,6 +10068,7 @@ AAD//2G6lbUrAwAA
 	},
 
 	"/zoneinfo/Europe/Stockholm": {
+		name:    "Stockholm",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Stockholm",
 		size:    720,
 		modtime: 1528710319,
@@ -9587,6 +10087,7 @@ LaA+ypf102/Q4DXHhmcP0Dg1xiPXe3F0dIBNHffY7OjiscYe2tpslPwjcXP/+yMIXgpXx7wguAuCPFji
 	},
 
 	"/zoneinfo/Europe/Tallinn": {
+		name:    "Tallinn",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Tallinn",
 		size:    856,
 		modtime: 1528710319,
@@ -9607,6 +10108,7 @@ zBX+ex8MA3KO4/P14arWXlxgLNAVFmvtRborZ5D/EwAA//8uQa4LWAMAAA==
 	},
 
 	"/zoneinfo/Europe/Tirane": {
+		name:    "Tirane",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Tirane",
 		size:    795,
 		modtime: 1528710319,
@@ -9627,6 +10129,7 @@ bBsDAAA=
 	},
 
 	"/zoneinfo/Europe/Tiraspol": {
+		name:    "Tiraspol",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Tiraspol",
 		size:    948,
 		modtime: 1528710319,
@@ -9648,6 +10151,7 @@ MDBoGTDyMDDIKDAIwkiICJ8AgyhIhFESRlo4MMqBZBmUYCRMBGaCj28Ig7NvCIOTbwiDq2swiAhhcAbj
 	},
 
 	"/zoneinfo/Europe/Ulyanovsk": {
+		name:    "Ulyanovsk",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Ulyanovsk",
 		size:    509,
 		modtime: 1528710319,
@@ -9664,6 +10168,7 @@ HpgaLQNGFgYGGQUGAZg4SKWPbwiDtoExg7aBKYO2gQmDtoERAwMjAwMjFIDYMMBlo21gYqdrwgUIAAD/
 	},
 
 	"/zoneinfo/Europe/Uzhgorod": {
+		name:    "Uzhgorod",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Uzhgorod",
 		size:    818,
 		modtime: 1528710319,
@@ -9684,6 +10189,7 @@ pQjurwAAAP//tNrpTzIDAAA=
 	},
 
 	"/zoneinfo/Europe/Vaduz": {
+		name:    "Vaduz",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Vaduz",
 		size:    720,
 		modtime: 1528710319,
@@ -9702,6 +10208,7 @@ EAv/9CSDSWh1RgdMjiuJ5DdctTpTiNqxUBoiQqNCVUqDWuWYYRGuvwIAAP//EvWE4dACAAA=
 	},
 
 	"/zoneinfo/Europe/Vatican": {
+		name:    "Vatican",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Vatican",
 		size:    1001,
 		modtime: 1528710319,
@@ -9724,6 +10231,7 @@ aqb7Sr1R0GgNYTGGf4iiKAq3gkyjNS5ShR+VenVWflaOUq/KCXu2WvZPAAAA///nEO2U6QMAAA==
 	},
 
 	"/zoneinfo/Europe/Vienna": {
+		name:    "Vienna",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Vienna",
 		size:    846,
 		modtime: 1528710319,
@@ -9744,6 +10252,7 @@ f1RbdLEJsRq1Ravx7zhd8N8BAAD//9G/XeZOAwAA
 	},
 
 	"/zoneinfo/Europe/Vilnius": {
+		name:    "Vilnius",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Vilnius",
 		size:    866,
 		modtime: 1528710319,
@@ -9764,6 +10273,7 @@ MDKCMASgZhSQCJera4iuEUi5jq+xnqmegb6xjq+hAZhlwgUIAAD//5CMqzhiAwAA
 	},
 
 	"/zoneinfo/Europe/Volgograd": {
+		name:    "Volgograd",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Volgograd",
 		size:    458,
 		modtime: 1528710319,
@@ -9779,6 +10289,7 @@ hJGRkREWU1w22gbGdrrGXIAAAAD//5KwGsTKAQAA
 	},
 
 	"/zoneinfo/Europe/Warsaw": {
+		name:    "Warsaw",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Warsaw",
 		size:    1026,
 		modtime: 1528710319,
@@ -9802,6 +10313,7 @@ G0j7S/9IG9QCbFALoOIbYyIAHzM8L/xWWI7jOOC4P8vMcVIVLywpiV0r1GVFFUVKhbpEGfuLy6S/BgAA
 	},
 
 	"/zoneinfo/Europe/Zagreb": {
+		name:    "Zagreb",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Zagreb",
 		size:    746,
 		modtime: 1528710319,
@@ -9821,6 +10333,7 @@ Y+K8PwcAAP//XWg9S+oCAAA=
 	},
 
 	"/zoneinfo/Europe/Zaporozhye": {
+		name:    "Zaporozhye",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Zaporozhye",
 		size:    824,
 		modtime: 1528710319,
@@ -9841,6 +10354,7 @@ VM9A31jH19AAzDLhAgQAAP//0sQCEDgDAAA=
 	},
 
 	"/zoneinfo/Europe/Zurich": {
+		name:    "Zurich",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Europe/Zurich",
 		size:    720,
 		modtime: 1528710319,
@@ -9859,6 +10373,7 @@ EAv/9CSDSWh1RgdMjiuJ5DdctTpTiNqxUBoiQqNCVUqDWuWYYRGuvwIAAP//EvWE4dACAAA=
 	},
 
 	"/zoneinfo/Factory": {
+		name:    "Factory",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Factory",
 		size:    74,
 		modtime: 1528710319,
@@ -9869,6 +10384,7 @@ SgAAAA==
 	},
 
 	"/zoneinfo/GB": {
+		name:    "GB",
 		local:   "pkg/uploader/assets/resources/zoneinfo/GB",
 		size:    1366,
 		modtime: 1528710319,
@@ -9896,6 +10412,7 @@ ucLXT6byU1id3R8BAAD//3t3SzpWBQAA
 	},
 
 	"/zoneinfo/GB-Eire": {
+		name:    "GB-Eire",
 		local:   "pkg/uploader/assets/resources/zoneinfo/GB-Eire",
 		size:    1366,
 		modtime: 1528710319,
@@ -9923,6 +10440,7 @@ ucLXT6byU1id3R8BAAD//3t3SzpWBQAA
 	},
 
 	"/zoneinfo/GMT": {
+		name:    "GMT",
 		local:   "pkg/uploader/assets/resources/zoneinfo/GMT",
 		size:    62,
 		modtime: 1528710319,
@@ -9932,6 +10450,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGeBMN19QxgYGLjcfUMMuAABAAD//1CSWVw+AAAA
 	},
 
 	"/zoneinfo/GMT+0": {
+		name:    "GMT+0",
 		local:   "pkg/uploader/assets/resources/zoneinfo/GMT+0",
 		size:    62,
 		modtime: 1528710319,
@@ -9941,6 +10460,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGeBMN19QxgYGLjcfUMMuAABAAD//1CSWVw+AAAA
 	},
 
 	"/zoneinfo/GMT-0": {
+		name:    "GMT-0",
 		local:   "pkg/uploader/assets/resources/zoneinfo/GMT-0",
 		size:    62,
 		modtime: 1528710319,
@@ -9950,6 +10470,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGeBMN19QxgYGLjcfUMMuAABAAD//1CSWVw+AAAA
 	},
 
 	"/zoneinfo/GMT0": {
+		name:    "GMT0",
 		local:   "pkg/uploader/assets/resources/zoneinfo/GMT0",
 		size:    62,
 		modtime: 1528710319,
@@ -9959,6 +10480,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGeBMN19QxgYGLjcfUMMuAABAAD//1CSWVw+AAAA
 	},
 
 	"/zoneinfo/Greenwich": {
+		name:    "Greenwich",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Greenwich",
 		size:    62,
 		modtime: 1528710319,
@@ -9968,6 +10490,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGeBMN19QxgYGLjcfUMMuAABAAD//1CSWVw+AAAA
 	},
 
 	"/zoneinfo/HST": {
+		name:    "HST",
 		local:   "pkg/uploader/assets/resources/zoneinfo/HST",
 		size:    63,
 		modtime: 1528710319,
@@ -9977,6 +10500,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGf5/784gYHBIziEgYGByyM4xNCACxAAAP//I+sHrz8AAAA=
 	},
 
 	"/zoneinfo/Hongkong": {
+		name:    "Hongkong",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Hongkong",
 		size:    458,
 		modtime: 1528710319,
@@ -9992,6 +10516,7 @@ HQwiQhi8gkOQ4orLwztE14ILEAAA//+FaxNKygEAAA==
 	},
 
 	"/zoneinfo/Iceland": {
+		name:    "Iceland",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Iceland",
 		size:    459,
 		modtime: 1528710319,
@@ -10007,6 +10532,7 @@ roEhg7tvCFiKkRGii8vdN8SACxAAAP//UBxxMcsBAAA=
 	},
 
 	"/zoneinfo/Indian/Antananarivo": {
+		name:    "Antananarivo",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Indian/Antananarivo",
 		size:    136,
 		modtime: 1528710319,
@@ -10017,6 +10543,7 @@ GBiUNRg4GBjU1jDwQUR8fEMYXB1DGLQNjIwNQKSJKZJNXK6OIbrGXIAAAAD//+k60qmIAAAA
 	},
 
 	"/zoneinfo/Indian/Chagos": {
+		name:    "Chagos",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Indian/Chagos",
 		size:    109,
 		modtime: 1528710319,
@@ -10027,6 +10554,7 @@ Dh/fEAZtA1MGbQMzqAFcNtoGZna6ZlyAAAAA//9f5/wibQAAAA==
 	},
 
 	"/zoneinfo/Indian/Christmas": {
+		name:    "Christmas",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Indian/Christmas",
 		size:    87,
 		modtime: 1528710319,
@@ -10037,6 +10565,7 @@ nAsQAAD//0m/d5VXAAAA
 	},
 
 	"/zoneinfo/Indian/Cocos": {
+		name:    "Cocos",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Indian/Cocos",
 		size:    94,
 		modtime: 1528710319,
@@ -10047,6 +10576,7 @@ a2ZlbMAFCAAA///SDFSVXgAAAA==
 	},
 
 	"/zoneinfo/Indian/Comoro": {
+		name:    "Comoro",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Indian/Comoro",
 		size:    136,
 		modtime: 1528710319,
@@ -10057,6 +10587,7 @@ GBiUNRg4GBjU1jDwQUR8fEMYXB1DGLQNjIwNQKSJKZJNXK6OIbrGXIAAAAD//+k60qmIAAAA
 	},
 
 	"/zoneinfo/Indian/Kerguelen": {
+		name:    "Kerguelen",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Indian/Kerguelen",
 		size:    92,
 		modtime: 1528710319,
@@ -10067,6 +10598,7 @@ pna6plyAAAAA//8KZjwXXAAAAA==
 	},
 
 	"/zoneinfo/Indian/Mahe": {
+		name:    "Mahe",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Indian/Mahe",
 		size:    92,
 		modtime: 1528710319,
@@ -10077,6 +10609,7 @@ c9loG5jY6ZpwAQIAAP//BGZ5mlwAAAA=
 	},
 
 	"/zoneinfo/Indian/Maldives": {
+		name:    "Maldives",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Indian/Maldives",
 		size:    104,
 		modtime: 1528710319,
@@ -10087,6 +10620,7 @@ H4sIAAAAAAAC/wqJykwzYsAAzFCMzOZpYGBgeKt/eEb9////GZmYGBhcXoDkXV4wsDAwuAUwcPj4hjD4
 	},
 
 	"/zoneinfo/Indian/Mauritius": {
+		name:    "Mauritius",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Indian/Mauritius",
 		size:    124,
 		modtime: 1528710319,
@@ -10097,6 +10631,7 @@ TEwMDKYvQHrcAhhZGBgsHBg4fHxDGLQNTBm0DUyg5nHZaBuY2OmacAECAAD//0p7QTx8AAAA
 	},
 
 	"/zoneinfo/Indian/Mayotte": {
+		name:    "Mayotte",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Indian/Mayotte",
 		size:    136,
 		modtime: 1528710319,
@@ -10107,6 +10642,7 @@ GBiUNRg4GBjU1jDwQUR8fEMYXB1DGLQNjIwNQKSJKZJNXK6OIbrGXIAAAAD//+k60qmIAAAA
 	},
 
 	"/zoneinfo/Indian/Reunion": {
+		name:    "Reunion",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Indian/Reunion",
 		size:    92,
 		modtime: 1528710319,
@@ -10117,6 +10653,7 @@ H4sIAAAAAAAC/wqJykwzYsAATFAMAsxQNkcDAwPDxDOWDfX///9nYGRkYDABy1s4MLD4+IYwaBtA+Fw2
 	},
 
 	"/zoneinfo/Iran": {
+		name:    "Iran",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Iran",
 		size:    672,
 		modtime: 1528710319,
@@ -10135,6 +10672,7 @@ HS8LA30DHS8jMxN9Ay5AAAAA//8m+OTNoAIAAA==
 	},
 
 	"/zoneinfo/Israel": {
+		name:    "Israel",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Israel",
 		size:    856,
 		modtime: 1528710319,
@@ -10156,6 +10694,7 @@ owBExMc3hMHLN4TB0yWEwTMYRLuEoGQSLs/gEF0jT5cQHV9jPRM9E30jMx1fQwM9Uz0DLkAAAAD//62S
 	},
 
 	"/zoneinfo/Jamaica": {
+		name:    "Jamaica",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Jamaica",
 		size:    208,
 		modtime: 1528710319,
@@ -10168,6 +10707,7 @@ AA==
 	},
 
 	"/zoneinfo/Japan": {
+		name:    "Japan",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Japan",
 		size:    140,
 		modtime: 1528710319,
@@ -10179,6 +10719,7 @@ AAAA
 	},
 
 	"/zoneinfo/Kwajalein": {
+		name:    "Kwajalein",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Kwajalein",
 		size:    122,
 		modtime: 1528710319,
@@ -10189,6 +10730,7 @@ DgaGFQcYeHx8Qxi0DQ0ZdA2NGLQNETZw2WgbGtnpGhpxAQIAAP//NEi1L3oAAAA=
 	},
 
 	"/zoneinfo/Libya": {
+		name:    "Libya",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Libya",
 		size:    265,
 		modtime: 1528710319,
@@ -10201,6 +10743,7 @@ xIBcLaPAyMLAwCfAwAliM/D6+IYwOLsGg4gQBlfXELhXuVxdQ3SNuAABAAD//3bIgfAJAQAA
 	},
 
 	"/zoneinfo/MET": {
+		name:    "MET",
 		local:   "pkg/uploader/assets/resources/zoneinfo/MET",
 		size:    793,
 		modtime: 1528710319,
@@ -10220,6 +10763,7 @@ GMbO1hhHVs0FyWxZwsqDw4OlElYmtW2I3PFPAAAA//+YUS8NGQMAAA==
 	},
 
 	"/zoneinfo/MST": {
+		name:    "MST",
 		local:   "pkg/uploader/assets/resources/zoneinfo/MST",
 		size:    62,
 		modtime: 1528710319,
@@ -10229,6 +10773,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGf5/3/uBAYG3+AQBgYGLt/gEHMuQAAAAP//HiVqzz4AAAA=
 	},
 
 	"/zoneinfo/MST7MDT": {
+		name:    "MST7MDT",
 		local:   "pkg/uploader/assets/resources/zoneinfo/MST7MDT",
 		size:    861,
 		modtime: 1528710319,
@@ -10250,6 +10795,7 @@ AA==
 	},
 
 	"/zoneinfo/Mexico/BajaNorte": {
+		name:    "BajaNorte",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Mexico/BajaNorte",
 		size:    890,
 		modtime: 1528710319,
@@ -10271,6 +10817,7 @@ sdl5vc3AqyxVaq26UmXRaNQadaXkvwAAAP//P8PrbnoDAAA=
 	},
 
 	"/zoneinfo/Mexico/BajaSur": {
+		name:    "BajaSur",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Mexico/BajaSur",
 		size:    606,
 		modtime: 1528710319,
@@ -10288,6 +10835,7 @@ zIwsNID//8+xYWD4/3/uBAaW//9XL2Dg+P+/v4GBB8RmFICI+/iGMPgGhzA4B4cwBASHMPi6hKAkFy7f
 	},
 
 	"/zoneinfo/Mexico/General": {
+		name:    "General",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Mexico/General",
 		size:    623,
 		modtime: 1528710319,
@@ -10305,6 +10853,7 @@ DzWL4xtq1338UNfs2FDfd/kDAyMTCDIzMTOxgEnqw///F/MwMPz/P3cCA8v//6sXMHD8/79zAyMPmBTw
 	},
 
 	"/zoneinfo/NZ": {
+		name:    "NZ",
 		local:   "pkg/uploader/assets/resources/zoneinfo/NZ",
 		size:    928,
 		modtime: 1528710319,
@@ -10326,6 +10875,7 @@ VOkasUom+9c1RWYtNpVmJr29zDDPYNTb5xpMBmPJHMXfAQAA//8oPvucoAMAAA==
 	},
 
 	"/zoneinfo/NZ-CHAT": {
+		name:    "NZ-CHAT",
 		local:   "pkg/uploader/assets/resources/zoneinfo/NZ-CHAT",
 		size:    802,
 		modtime: 1528710319,
@@ -10346,6 +10896,7 @@ IgMAAA==
 	},
 
 	"/zoneinfo/Navajo": {
+		name:    "Navajo",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Navajo",
 		size:    918,
 		modtime: 1528710319,
@@ -10367,6 +10918,7 @@ KHzczdt//IN29DThU1eK4WnJhc+cmIC2Rj22d6dgp3MGd7Wdhd0lI7intgf25LIsVZ4mKf017y2N097B
 	},
 
 	"/zoneinfo/PRC": {
+		name:    "PRC",
 		local:   "pkg/uploader/assets/resources/zoneinfo/PRC",
 		size:    172,
 		modtime: 1528710319,
@@ -10378,6 +10930,7 @@ z8QCpTivBmVN5wIV93QGVaH4D2rqngxqnxw/aLBrM2hcUv7AxIgGGRgKr4NsqZvAyMLAUNDAwOHjG8Lg
 	},
 
 	"/zoneinfo/PST8PDT": {
+		name:    "PST8PDT",
 		local:   "pkg/uploader/assets/resources/zoneinfo/PST8PDT",
 		size:    861,
 		modtime: 1528710319,
@@ -10399,6 +10952,7 @@ V5fLvUoyIZdraRTyV/uq1V8oOiRB9EiCeK8kiKK0Mg7ZikrRI9lFh1Ts3mWymszFbovFZDGZlf8GAAD/
 	},
 
 	"/zoneinfo/Pacific/Apia": {
+		name:    "Apia",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Apia",
 		size:    459,
 		modtime: 1528710319,
@@ -10414,6 +10968,7 @@ GhrbaBua2On4WuqZ6hnoG+v4mugZ6hnom3ABAgAA//+i1LA/ywEAAA==
 	},
 
 	"/zoneinfo/Pacific/Auckland": {
+		name:    "Auckland",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Auckland",
 		size:    928,
 		modtime: 1528710319,
@@ -10435,6 +10990,7 @@ VOkasUom+9c1RWYtNpVmJr29zDDPYNTb5xpMBmPJHMXfAQAA//8oPvucoAMAAA==
 	},
 
 	"/zoneinfo/Pacific/Bougainville": {
+		name:    "Bougainville",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Bougainville",
 		size:    128,
 		modtime: 1528710319,
@@ -10445,6 +11001,7 @@ IMV1Exg4GRhmbWDgDfD1DWHQNjRg0DawZNA2NIQbz2WjbWhop2toyAUIAAD//y9hCEeAAAAA
 	},
 
 	"/zoneinfo/Pacific/Chatham": {
+		name:    "Chatham",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Chatham",
 		size:    802,
 		modtime: 1528710319,
@@ -10465,6 +11022,7 @@ IgMAAA==
 	},
 
 	"/zoneinfo/Pacific/Chuuk": {
+		name:    "Chuuk",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Chuuk",
 		size:    88,
 		modtime: 1528710319,
@@ -10475,6 +11033,7 @@ oQEXIAAA//9tz1jHWAAAAA==
 	},
 
 	"/zoneinfo/Pacific/Easter": {
+		name:    "Easter",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Easter",
 		size:    853,
 		modtime: 1528710319,
@@ -10495,6 +11054,7 @@ AGZhAIswgEkIIZPt3d+TYDOA2W62GcBkT3VZ04xp5nSjMdVl2reEPwMAAP//1/HTsVUDAAA=
 	},
 
 	"/zoneinfo/Pacific/Efate": {
+		name:    "Efate",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Efate",
 		size:    205,
 		modtime: 1528710319,
@@ -10507,6 +11067,7 @@ AAA=
 	},
 
 	"/zoneinfo/Pacific/Enderbury": {
+		name:    "Enderbury",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Enderbury",
 		size:    122,
 		modtime: 1528710319,
@@ -10517,6 +11078,7 @@ AAYOBoZtFxh4fHxDGHQNjRh0DQ0ZtA2N4QZz2WgbGtvpGhpzAQIAAP//1a/hgHoAAAA=
 	},
 
 	"/zoneinfo/Pacific/Fakaofo": {
+		name:    "Fakaofo",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Fakaofo",
 		size:    105,
 		modtime: 1528710319,
@@ -10527,6 +11089,7 @@ EAZdQ0MGbUNjqF4uG21DYztdQ2MuQAAAAP//raLSYWkAAAA=
 	},
 
 	"/zoneinfo/Pacific/Fiji": {
+		name:    "Fiji",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Fiji",
 		size:    439,
 		modtime: 1528710319,
@@ -10542,6 +11105,7 @@ RnqG+oYm5lyAAAAA///ZPCePtwEAAA==
 	},
 
 	"/zoneinfo/Pacific/Funafuti": {
+		name:    "Funafuti",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Funafuti",
 		size:    88,
 		modtime: 1528710319,
@@ -10552,6 +11116,7 @@ jbgAAQAA//9qbp6aWAAAAA==
 	},
 
 	"/zoneinfo/Pacific/Galapagos": {
+		name:    "Galapagos",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Galapagos",
 		size:    126,
 		modtime: 1528710319,
@@ -10562,6 +11127,7 @@ GBgY/v/fuYGBBUQysvz/v3oBA4ePbwiDroEpg66BGdx4LhtdAzM7My5AAAAA//9N4Z4ufgAAAA==
 	},
 
 	"/zoneinfo/Pacific/Gambier": {
+		name:    "Gambier",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Gambier",
 		size:    91,
 		modtime: 1528710319,
@@ -10572,6 +11138,7 @@ JVg9l42ugaWdJRcgAAD//++MnDhbAAAA
 	},
 
 	"/zoneinfo/Pacific/Guadalcanal": {
+		name:    "Guadalcanal",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Guadalcanal",
 		size:    93,
 		modtime: 1528710319,
@@ -10582,6 +11149,7 @@ nstG29DQTtfQkAsQAAD//7CfTR1dAAAA
 	},
 
 	"/zoneinfo/Pacific/Guam": {
+		name:    "Guam",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Guam",
 		size:    100,
 		modtime: 1528710319,
@@ -10592,6 +11160,7 @@ AtXHBWLrGhpwAQIAAP//JkeUyWQAAAA=
 	},
 
 	"/zoneinfo/Pacific/Honolulu": {
+		name:    "Honolulu",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Honolulu",
 		size:    125,
 		modtime: 1528710319,
@@ -10602,6 +11171,7 @@ EwPD//85EQws//9XZTBy/P9fnMDA4uMbwuARHMLg4RICN57LIzjE0IALEAAA//+FOKR1fQAAAA==
 	},
 
 	"/zoneinfo/Pacific/Johnston": {
+		name:    "Johnston",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Johnston",
 		size:    125,
 		modtime: 1528710319,
@@ -10612,6 +11182,7 @@ EwPD//85EQws//9XZTBy/P9fnMDA4uMbwuARHMLg4RICN57LIzjE0IALEAAA//+FOKR1fQAAAA==
 	},
 
 	"/zoneinfo/Pacific/Kiritimati": {
+		name:    "Kiritimati",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Kiritimati",
 		size:    124,
 		modtime: 1528710319,
@@ -10622,6 +11193,7 @@ YmA48oCBz8c3hEHX0MDEAEQyaBuawI3mstE2NLHTNTThAgQAAP//6dY+InwAAAA=
 	},
 
 	"/zoneinfo/Pacific/Kosrae": {
+		name:    "Kosrae",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Kosrae",
 		size:    118,
 		modtime: 1528710319,
@@ -10632,6 +11204,7 @@ H4sIAAAAAAAC/wqJykwzYsAALFCMzOZpYGBg+N8mHWDWne5Q////f0YmRkYGhhlnQIpmbQCpWXGAgQPC
 	},
 
 	"/zoneinfo/Pacific/Kwajalein": {
+		name:    "Kwajalein",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Kwajalein",
 		size:    122,
 		modtime: 1528710319,
@@ -10642,6 +11215,7 @@ DgaGFQcYeHx8Qxi0DQ0ZdA2NGLQNETZw2WgbGtnpGhpxAQIAAP//NEi1L3oAAAA=
 	},
 
 	"/zoneinfo/Pacific/Majuro": {
+		name:    "Majuro",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Majuro",
 		size:    105,
 		modtime: 1528710319,
@@ -10652,6 +11226,7 @@ NjRk0DaEGcllo21oZKdraMQFCAAA///NjiLdaQAAAA==
 	},
 
 	"/zoneinfo/Pacific/Marquesas": {
+		name:    "Marquesas",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Marquesas",
 		size:    98,
 		modtime: 1528710319,
@@ -10662,6 +11237,7 @@ pbEBWAeXDZhtZ2llbMAFCAAA//8YCLfBYgAAAA==
 	},
 
 	"/zoneinfo/Pacific/Midway": {
+		name:    "Midway",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Midway",
 		size:    93,
 		modtime: 1528710319,
@@ -10672,6 +11248,7 @@ WriCg0MMDbkAAQAA//8Avg5FXQAAAA==
 	},
 
 	"/zoneinfo/Pacific/Nauru": {
+		name:    "Nauru",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Nauru",
 		size:    134,
 		modtime: 1528710319,
@@ -10682,6 +11259,7 @@ akDKF+4Aqa6bwMDFwLDiAAOfj28Ig7ahobEBg7aBJYO2IcI2LhttQyM7XUMjLkAAAAD//3nDdiGGAAAA
 	},
 
 	"/zoneinfo/Pacific/Niue": {
+		name:    "Niue",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Niue",
 		size:    125,
 		modtime: 1528710319,
@@ -10692,6 +11270,7 @@ Hgxc//+nBjAI+PiGMOgaGhoZgEhjMAk3nMtG19DQztCQCxAAAP//jGPFSX0AAAA=
 	},
 
 	"/zoneinfo/Pacific/Norfolk": {
+		name:    "Norfolk",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Norfolk",
 		size:    150,
 		modtime: 1528710319,
@@ -10703,6 +11282,7 @@ AP//6sW2X5YAAAA=
 	},
 
 	"/zoneinfo/Pacific/Noumea": {
+		name:    "Noumea",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Noumea",
 		size:    151,
 		modtime: 1528710319,
@@ -10714,6 +11294,7 @@ AAD//2TLb2+XAAAA
 	},
 
 	"/zoneinfo/Pacific/Pago_Pago": {
+		name:    "Pago_Pago",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Pago_Pago",
 		size:    93,
 		modtime: 1528710319,
@@ -10724,6 +11305,7 @@ WriCg0MMDbkAAQAA//8Avg5FXQAAAA==
 	},
 
 	"/zoneinfo/Pacific/Palau": {
+		name:    "Palau",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Palau",
 		size:    87,
 		modtime: 1528710319,
@@ -10734,6 +11316,7 @@ JRcgAAD//1il6tdXAAAA
 	},
 
 	"/zoneinfo/Pacific/Pitcairn": {
+		name:    "Pitcairn",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Pitcairn",
 		size:    105,
 		modtime: 1528710319,
@@ -10744,6 +11327,7 @@ wqBrYGFsACKhurlsdA0s7Cy4AAEAAP//MBjn2WkAAAA=
 	},
 
 	"/zoneinfo/Pacific/Pohnpei": {
+		name:    "Pohnpei",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Pohnpei",
 		size:    88,
 		modtime: 1528710319,
@@ -10754,6 +11338,7 @@ hoZcgAAAAP//j4ElKVgAAAA=
 	},
 
 	"/zoneinfo/Pacific/Ponape": {
+		name:    "Ponape",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Ponape",
 		size:    88,
 		modtime: 1528710319,
@@ -10764,6 +11349,7 @@ hoZcgAAAAP//j4ElKVgAAAA=
 	},
 
 	"/zoneinfo/Pacific/Port_Moresby": {
+		name:    "Port_Moresby",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Port_Moresby",
 		size:    89,
 		modtime: 1528710319,
@@ -10774,6 +11360,7 @@ XUMDLkAAAAD//x4w/qpZAAAA
 	},
 
 	"/zoneinfo/Pacific/Rarotonga": {
+		name:    "Rarotonga",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Rarotonga",
 		size:    245,
 		modtime: 1528710319,
@@ -10786,6 +11373,7 @@ jA1AJIOugaWxAdxTXDa6hgZ2hgZcgAAAAP//Q46owvUAAAA=
 	},
 
 	"/zoneinfo/Pacific/Saipan": {
+		name:    "Saipan",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Saipan",
 		size:    100,
 		modtime: 1528710319,
@@ -10796,6 +11384,7 @@ AtXHBWLrGhpwAQIAAP//JkeUyWQAAAA=
 	},
 
 	"/zoneinfo/Pacific/Samoa": {
+		name:    "Samoa",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Samoa",
 		size:    93,
 		modtime: 1528710319,
@@ -10806,6 +11395,7 @@ WriCg0MMDbkAAQAA//8Avg5FXQAAAA==
 	},
 
 	"/zoneinfo/Pacific/Tahiti": {
+		name:    "Tahiti",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Tahiti",
 		size:    92,
 		modtime: 1528710319,
@@ -10816,6 +11406,7 @@ BmD1XDa6hgZ2hgZcgAAAAP//yfqIrlwAAAA=
 	},
 
 	"/zoneinfo/Pacific/Tarawa": {
+		name:    "Tarawa",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Tarawa",
 		size:    88,
 		modtime: 1528710319,
@@ -10826,6 +11417,7 @@ jbgAAQAA//9axr2oWAAAAA==
 	},
 
 	"/zoneinfo/Pacific/Tongatapu": {
+		name:    "Tongatapu",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Tongatapu",
 		size:    175,
 		modtime: 1528710319,
@@ -10837,6 +11429,7 @@ hiYgDYyMUBdw2WgbGtvpGhpzAQIAAP///GEI7K8AAAA=
 	},
 
 	"/zoneinfo/Pacific/Truk": {
+		name:    "Truk",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Truk",
 		size:    88,
 		modtime: 1528710319,
@@ -10847,6 +11440,7 @@ oQEXIAAA//9tz1jHWAAAAA==
 	},
 
 	"/zoneinfo/Pacific/Wake": {
+		name:    "Wake",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Wake",
 		size:    88,
 		modtime: 1528710319,
@@ -10857,6 +11451,7 @@ jbgAAQAA//8KVg0lWAAAAA==
 	},
 
 	"/zoneinfo/Pacific/Wallis": {
+		name:    "Wallis",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Wallis",
 		size:    88,
 		modtime: 1528710319,
@@ -10867,6 +11462,7 @@ jbgAAQAA//9eJNJGWAAAAA==
 	},
 
 	"/zoneinfo/Pacific/Yap": {
+		name:    "Yap",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Pacific/Yap",
 		size:    88,
 		modtime: 1528710319,
@@ -10877,6 +11473,7 @@ oQEXIAAA//9tz1jHWAAAAA==
 	},
 
 	"/zoneinfo/Poland": {
+		name:    "Poland",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Poland",
 		size:    1026,
 		modtime: 1528710319,
@@ -10900,6 +11497,7 @@ G0j7S/9IG9QCbFALoOIbYyIAHzM8L/xWWI7jOOC4P8vMcVIVLywpiV0r1GVFFUVKhbpEGfuLy6S/BgAA
 	},
 
 	"/zoneinfo/Portugal": {
+		name:    "Portugal",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Portugal",
 		size:    1304,
 		modtime: 1528710319,
@@ -10926,6 +11524,7 @@ hwdYHfiP7Eb/shw42FaJhy7HwYclaXj4TBYeSYjEjw7GYkBoAHKDBa+YDHpJC/+Rl/KQ/5o/dNiATQf/
 	},
 
 	"/zoneinfo/ROC": {
+		name:    "ROC",
 		local:   "pkg/uploader/assets/resources/zoneinfo/ROC",
 		size:    312,
 		modtime: 1528710319,
@@ -10939,6 +11538,7 @@ zi4hSCHD5RwcomvBBQgAAP//Gsbn4zgBAAA=
 	},
 
 	"/zoneinfo/ROK": {
+		name:    "ROK",
 		local:   "pkg/uploader/assets/resources/zoneinfo/ROK",
 		size:    225,
 		modtime: 1528710319,
@@ -10951,6 +11551,7 @@ l3dwiK4lFyAAAP//ur4fxeEAAAA=
 	},
 
 	"/zoneinfo/Singapore": {
+		name:    "Singapore",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Singapore",
 		size:    194,
 		modtime: 1528710319,
@@ -10962,6 +11563,7 @@ bwiDtoE5CBsZgEhjEGnJoG1ggeFCLhttAws7XQsuQAAAAP//Pz+kg8IAAAA=
 	},
 
 	"/zoneinfo/Turkey": {
+		name:    "Turkey",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Turkey",
 		size:    821,
 		modtime: 1528710319,
@@ -10982,6 +11584,7 @@ kZGREZ4jGBkZuGy0DYztdI25AAEAAP//hDoImzUDAAA=
 	},
 
 	"/zoneinfo/UCT": {
+		name:    "UCT",
 		local:   "pkg/uploader/assets/resources/zoneinfo/UCT",
 		size:    62,
 		modtime: 1528710319,
@@ -10991,6 +11594,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGeBMEOdQxgYGLhCnUMMuAABAAD//+R58xQ+AAAA
 	},
 
 	"/zoneinfo/US/Alaska": {
+		name:    "Alaska",
 		local:   "pkg/uploader/assets/resources/zoneinfo/US/Alaska",
 		size:    902,
 		modtime: 1528710319,
@@ -11012,6 +11616,7 @@ cIHELUEqdHyN9Yz0DHR8DQ31DPUMuAABAAD//xcrEiWGAwAA
 	},
 
 	"/zoneinfo/US/Aleutian": {
+		name:    "Aleutian",
 		local:   "pkg/uploader/assets/resources/zoneinfo/US/Aleutian",
 		size:    894,
 		modtime: 1528710319,
@@ -11033,6 +11638,7 @@ B1TegGjhXrdo8tnMVjM3+SwWs8XMVX8HAAD//3Bv0lB+AwAA
 	},
 
 	"/zoneinfo/US/Arizona": {
+		name:    "Arizona",
 		local:   "pkg/uploader/assets/resources/zoneinfo/US/Arizona",
 		size:    153,
 		modtime: 1528710319,
@@ -11044,6 +11650,7 @@ CNxuLt/gEHMuQAAAAP//2W0jsJkAAAA=
 	},
 
 	"/zoneinfo/US/Central": {
+		name:    "Central",
 		local:   "pkg/uploader/assets/resources/zoneinfo/US/Central",
 		size:    1328,
 		modtime: 1528710319,
@@ -11070,6 +11677,7 @@ xXwBFLOFZ10n+vs4KyKEiYpQQaae4Bvo6y9TBwT4Bvj6O/8VAAD//7AmRkswBQAA
 	},
 
 	"/zoneinfo/US/East-Indiana": {
+		name:    "East-Indiana",
 		local:   "pkg/uploader/assets/resources/zoneinfo/US/East-Indiana",
 		size:    647,
 		modtime: 1528710319,
@@ -11088,6 +11696,7 @@ CoBIBpH//48fYJTw8Q1hcHYJYXAODmFwDg9hcA4IYXANDmFwdQkBpyBGBhjF5RocYurqEqLja6xnpGeg
 	},
 
 	"/zoneinfo/US/Eastern": {
+		name:    "Eastern",
 		local:   "pkg/uploader/assets/resources/zoneinfo/US/Eastern",
 		size:    1308,
 		modtime: 1528710319,
@@ -11114,6 +11723,7 @@ V4RqfNWB0gCpn6/a31/qL/Vz/TsAAP//UPdsAhwFAAA=
 	},
 
 	"/zoneinfo/US/Hawaii": {
+		name:    "Hawaii",
 		local:   "pkg/uploader/assets/resources/zoneinfo/US/Hawaii",
 		size:    125,
 		modtime: 1528710319,
@@ -11124,6 +11734,7 @@ EwPD//85EQws//9XZTBy/P9fnMDA4uMbwuARHMLg4RICN57LIzjE0IALEAAA//+FOKR1fQAAAA==
 	},
 
 	"/zoneinfo/US/Indiana-Starke": {
+		name:    "Indiana-Starke",
 		local:   "pkg/uploader/assets/resources/zoneinfo/US/Indiana-Starke",
 		size:    918,
 		modtime: 1528710319,
@@ -11145,6 +11756,7 @@ S7w9WAQvtyV5h0cJeOgq77SkYdeO93m3KgqB8jAHMikKFrdiMH6d9qgbcE/HWQqNb8W9kSO0r8uJ++vr
 	},
 
 	"/zoneinfo/US/Michigan": {
+		name:    "Michigan",
 		local:   "pkg/uploader/assets/resources/zoneinfo/US/Michigan",
 		size:    830,
 		modtime: 1528710319,
@@ -11165,6 +11777,7 @@ wfTjDquwF0sWu03Kdp3Rm/XGbJfJpDfpjYp/AwAA//9fnGFePgMAAA==
 	},
 
 	"/zoneinfo/US/Mountain": {
+		name:    "Mountain",
 		local:   "pkg/uploader/assets/resources/zoneinfo/US/Mountain",
 		size:    918,
 		modtime: 1528710319,
@@ -11186,6 +11799,7 @@ KHzczdt//IN29DThU1eK4WnJhc+cmIC2Rj22d6dgp3MGd7Wdhd0lI7intgf25LIsVZ4mKf017y2N097B
 	},
 
 	"/zoneinfo/US/Pacific": {
+		name:    "Pacific",
 		local:   "pkg/uploader/assets/resources/zoneinfo/US/Pacific",
 		size:    1058,
 		modtime: 1528710319,
@@ -11209,6 +11823,7 @@ KUuMN6bqUnRJ8cbkZF2yLknxbwAAAP//PLocjiIEAAA=
 	},
 
 	"/zoneinfo/US/Samoa": {
+		name:    "Samoa",
 		local:   "pkg/uploader/assets/resources/zoneinfo/US/Samoa",
 		size:    93,
 		modtime: 1528710319,
@@ -11219,6 +11834,7 @@ WriCg0MMDbkAAQAA//8Avg5FXQAAAA==
 	},
 
 	"/zoneinfo/UTC": {
+		name:    "UTC",
 		local:   "pkg/uploader/assets/resources/zoneinfo/UTC",
 		size:    62,
 		modtime: 1528710319,
@@ -11228,6 +11844,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGeBMENDnBkYGLhCQ5wNuAABAAD//+7o64I+AAAA
 	},
 
 	"/zoneinfo/Universal": {
+		name:    "Universal",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Universal",
 		size:    62,
 		modtime: 1528710319,
@@ -11237,6 +11854,7 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGeBMENDnBkYGLhCQ5wNuAABAAD//+7o64I+AAAA
 	},
 
 	"/zoneinfo/W-SU": {
+		name:    "W-SU",
 		local:   "pkg/uploader/assets/resources/zoneinfo/W-SU",
 		size:    615,
 		modtime: 1528710319,
@@ -11254,6 +11872,7 @@ RjABAQgBKODyDfbWNeYCBAAA//+Z/UcSZwIAAA==
 	},
 
 	"/zoneinfo/WET": {
+		name:    "WET",
 		local:   "pkg/uploader/assets/resources/zoneinfo/WET",
 		size:    706,
 		modtime: 1528710319,
@@ -11272,6 +11891,7 @@ IIqi6G6WZK1r0ZiiI2IjtJE6jUmndZn7nwAAAP//WtsQ7cICAAA=
 	},
 
 	"/zoneinfo/Zulu": {
+		name:    "Zulu",
 		local:   "pkg/uploader/assets/resources/zoneinfo/Zulu",
 		size:    62,
 		modtime: 1528710319,
@@ -11281,117 +11901,835 @@ H4sIAAAAAAAC/wqJykwzYsAAjFCMzGeBMENDnBkYGLhCQ5wNuAABAAD//+7o64I+AAAA
 	},
 
 	"/": {
+		name:  "/",
+		local: `pkg/uploader/assets/resources`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources",
 	},
 
 	"/assets": {
+		name:  "assets",
+		local: `pkg/uploader/assets/resources/assets`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/assets",
 	},
 
 	"/zoneinfo": {
+		name:  "zoneinfo",
+		local: `pkg/uploader/assets/resources/zoneinfo`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo",
 	},
 
 	"/zoneinfo/Africa": {
+		name:  "Africa",
+		local: `pkg/uploader/assets/resources/zoneinfo/Africa`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/Africa",
 	},
 
 	"/zoneinfo/America": {
+		name:  "America",
+		local: `pkg/uploader/assets/resources/zoneinfo/America`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/America",
 	},
 
 	"/zoneinfo/America/Argentina": {
+		name:  "Argentina",
+		local: `pkg/uploader/assets/resources/zoneinfo/America/Argentina`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/America/Argentina",
 	},
 
 	"/zoneinfo/America/Indiana": {
+		name:  "Indiana",
+		local: `pkg/uploader/assets/resources/zoneinfo/America/Indiana`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/America/Indiana",
 	},
 
 	"/zoneinfo/America/Kentucky": {
+		name:  "Kentucky",
+		local: `pkg/uploader/assets/resources/zoneinfo/America/Kentucky`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/America/Kentucky",
 	},
 
 	"/zoneinfo/America/North_Dakota": {
+		name:  "North_Dakota",
+		local: `pkg/uploader/assets/resources/zoneinfo/America/North_Dakota`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/America/North_Dakota",
 	},
 
 	"/zoneinfo/Antarctica": {
+		name:  "Antarctica",
+		local: `pkg/uploader/assets/resources/zoneinfo/Antarctica`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/Antarctica",
 	},
 
 	"/zoneinfo/Arctic": {
+		name:  "Arctic",
+		local: `pkg/uploader/assets/resources/zoneinfo/Arctic`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/Arctic",
 	},
 
 	"/zoneinfo/Asia": {
+		name:  "Asia",
+		local: `pkg/uploader/assets/resources/zoneinfo/Asia`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/Asia",
 	},
 
 	"/zoneinfo/Atlantic": {
+		name:  "Atlantic",
+		local: `pkg/uploader/assets/resources/zoneinfo/Atlantic`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/Atlantic",
 	},
 
 	"/zoneinfo/Australia": {
+		name:  "Australia",
+		local: `pkg/uploader/assets/resources/zoneinfo/Australia`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/Australia",
 	},
 
 	"/zoneinfo/Brazil": {
+		name:  "Brazil",
+		local: `pkg/uploader/assets/resources/zoneinfo/Brazil`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/Brazil",
 	},
 
 	"/zoneinfo/Canada": {
+		name:  "Canada",
+		local: `pkg/uploader/assets/resources/zoneinfo/Canada`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/Canada",
 	},
 
 	"/zoneinfo/Chile": {
+		name:  "Chile",
+		local: `pkg/uploader/assets/resources/zoneinfo/Chile`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/Chile",
 	},
 
 	"/zoneinfo/Etc": {
+		name:  "Etc",
+		local: `pkg/uploader/assets/resources/zoneinfo/Etc`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/Etc",
 	},
 
 	"/zoneinfo/Europe": {
+		name:  "Europe",
+		local: `pkg/uploader/assets/resources/zoneinfo/Europe`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/Europe",
 	},
 
 	"/zoneinfo/Indian": {
+		name:  "Indian",
+		local: `pkg/uploader/assets/resources/zoneinfo/Indian`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/Indian",
 	},
 
 	"/zoneinfo/Mexico": {
+		name:  "Mexico",
+		local: `pkg/uploader/assets/resources/zoneinfo/Mexico`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/Mexico",
 	},
 
 	"/zoneinfo/Pacific": {
+		name:  "Pacific",
+		local: `pkg/uploader/assets/resources/zoneinfo/Pacific`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/Pacific",
 	},
 
 	"/zoneinfo/US": {
+		name:  "US",
+		local: `pkg/uploader/assets/resources/zoneinfo/US`,
 		isDir: true,
-		local: "pkg/uploader/assets/resources/zoneinfo/US",
+	},
+}
+
+var _escDirs = map[string][]os.FileInfo{
+
+	"pkg/uploader/assets/resources": {
+		_escData["/_layout.html"],
+		_escData["/assets"],
+		_escData["/database.html"],
+		_escData["/query.html"],
+		_escData["/status.html"],
+		_escData["/upload.html"],
+		_escData["/zoneinfo"],
+	},
+
+	"pkg/uploader/assets/resources/assets": {
+		_escData["/assets/bootstrap.min.css"],
+		_escData["/assets/bootstrap.min.css.map"],
+		_escData["/assets/custom.css"],
+		_escData["/assets/logo.png"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo": {
+		_escData["/zoneinfo/Africa"],
+		_escData["/zoneinfo/America"],
+		_escData["/zoneinfo/Antarctica"],
+		_escData["/zoneinfo/Arctic"],
+		_escData["/zoneinfo/Asia"],
+		_escData["/zoneinfo/Atlantic"],
+		_escData["/zoneinfo/Australia"],
+		_escData["/zoneinfo/Brazil"],
+		_escData["/zoneinfo/CET"],
+		_escData["/zoneinfo/CST6CDT"],
+		_escData["/zoneinfo/Canada"],
+		_escData["/zoneinfo/Chile"],
+		_escData["/zoneinfo/Cuba"],
+		_escData["/zoneinfo/EET"],
+		_escData["/zoneinfo/EST"],
+		_escData["/zoneinfo/EST5EDT"],
+		_escData["/zoneinfo/Egypt"],
+		_escData["/zoneinfo/Eire"],
+		_escData["/zoneinfo/Etc"],
+		_escData["/zoneinfo/Europe"],
+		_escData["/zoneinfo/Factory"],
+		_escData["/zoneinfo/GB"],
+		_escData["/zoneinfo/GB-Eire"],
+		_escData["/zoneinfo/GMT"],
+		_escData["/zoneinfo/GMT+0"],
+		_escData["/zoneinfo/GMT-0"],
+		_escData["/zoneinfo/GMT0"],
+		_escData["/zoneinfo/Greenwich"],
+		_escData["/zoneinfo/HST"],
+		_escData["/zoneinfo/Hongkong"],
+		_escData["/zoneinfo/Iceland"],
+		_escData["/zoneinfo/Indian"],
+		_escData["/zoneinfo/Iran"],
+		_escData["/zoneinfo/Israel"],
+		_escData["/zoneinfo/Jamaica"],
+		_escData["/zoneinfo/Japan"],
+		_escData["/zoneinfo/Kwajalein"],
+		_escData["/zoneinfo/Libya"],
+		_escData["/zoneinfo/MET"],
+		_escData["/zoneinfo/MST"],
+		_escData["/zoneinfo/MST7MDT"],
+		_escData["/zoneinfo/Mexico"],
+		_escData["/zoneinfo/NZ"],
+		_escData["/zoneinfo/NZ-CHAT"],
+		_escData["/zoneinfo/Navajo"],
+		_escData["/zoneinfo/PRC"],
+		_escData["/zoneinfo/PST8PDT"],
+		_escData["/zoneinfo/Pacific"],
+		_escData["/zoneinfo/Poland"],
+		_escData["/zoneinfo/Portugal"],
+		_escData["/zoneinfo/ROC"],
+		_escData["/zoneinfo/ROK"],
+		_escData["/zoneinfo/Singapore"],
+		_escData["/zoneinfo/Turkey"],
+		_escData["/zoneinfo/UCT"],
+		_escData["/zoneinfo/US"],
+		_escData["/zoneinfo/UTC"],
+		_escData["/zoneinfo/Universal"],
+		_escData["/zoneinfo/W-SU"],
+		_escData["/zoneinfo/WET"],
+		_escData["/zoneinfo/Zulu"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/Africa": {
+		_escData["/zoneinfo/Africa/Abidjan"],
+		_escData["/zoneinfo/Africa/Accra"],
+		_escData["/zoneinfo/Africa/Addis_Ababa"],
+		_escData["/zoneinfo/Africa/Algiers"],
+		_escData["/zoneinfo/Africa/Asmara"],
+		_escData["/zoneinfo/Africa/Asmera"],
+		_escData["/zoneinfo/Africa/Bamako"],
+		_escData["/zoneinfo/Africa/Bangui"],
+		_escData["/zoneinfo/Africa/Banjul"],
+		_escData["/zoneinfo/Africa/Bissau"],
+		_escData["/zoneinfo/Africa/Blantyre"],
+		_escData["/zoneinfo/Africa/Brazzaville"],
+		_escData["/zoneinfo/Africa/Bujumbura"],
+		_escData["/zoneinfo/Africa/Cairo"],
+		_escData["/zoneinfo/Africa/Casablanca"],
+		_escData["/zoneinfo/Africa/Ceuta"],
+		_escData["/zoneinfo/Africa/Conakry"],
+		_escData["/zoneinfo/Africa/Dakar"],
+		_escData["/zoneinfo/Africa/Dar_es_Salaam"],
+		_escData["/zoneinfo/Africa/Djibouti"],
+		_escData["/zoneinfo/Africa/Douala"],
+		_escData["/zoneinfo/Africa/El_Aaiun"],
+		_escData["/zoneinfo/Africa/Freetown"],
+		_escData["/zoneinfo/Africa/Gaborone"],
+		_escData["/zoneinfo/Africa/Harare"],
+		_escData["/zoneinfo/Africa/Johannesburg"],
+		_escData["/zoneinfo/Africa/Juba"],
+		_escData["/zoneinfo/Africa/Kampala"],
+		_escData["/zoneinfo/Africa/Khartoum"],
+		_escData["/zoneinfo/Africa/Kigali"],
+		_escData["/zoneinfo/Africa/Kinshasa"],
+		_escData["/zoneinfo/Africa/Lagos"],
+		_escData["/zoneinfo/Africa/Libreville"],
+		_escData["/zoneinfo/Africa/Lome"],
+		_escData["/zoneinfo/Africa/Luanda"],
+		_escData["/zoneinfo/Africa/Lubumbashi"],
+		_escData["/zoneinfo/Africa/Lusaka"],
+		_escData["/zoneinfo/Africa/Malabo"],
+		_escData["/zoneinfo/Africa/Maputo"],
+		_escData["/zoneinfo/Africa/Maseru"],
+		_escData["/zoneinfo/Africa/Mbabane"],
+		_escData["/zoneinfo/Africa/Mogadishu"],
+		_escData["/zoneinfo/Africa/Monrovia"],
+		_escData["/zoneinfo/Africa/Nairobi"],
+		_escData["/zoneinfo/Africa/Ndjamena"],
+		_escData["/zoneinfo/Africa/Niamey"],
+		_escData["/zoneinfo/Africa/Nouakchott"],
+		_escData["/zoneinfo/Africa/Ouagadougou"],
+		_escData["/zoneinfo/Africa/Porto-Novo"],
+		_escData["/zoneinfo/Africa/Sao_Tome"],
+		_escData["/zoneinfo/Africa/Timbuktu"],
+		_escData["/zoneinfo/Africa/Tripoli"],
+		_escData["/zoneinfo/Africa/Tunis"],
+		_escData["/zoneinfo/Africa/Windhoek"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/America": {
+		_escData["/zoneinfo/America/Adak"],
+		_escData["/zoneinfo/America/Anchorage"],
+		_escData["/zoneinfo/America/Anguilla"],
+		_escData["/zoneinfo/America/Antigua"],
+		_escData["/zoneinfo/America/Araguaina"],
+		_escData["/zoneinfo/America/Argentina"],
+		_escData["/zoneinfo/America/Aruba"],
+		_escData["/zoneinfo/America/Asuncion"],
+		_escData["/zoneinfo/America/Atikokan"],
+		_escData["/zoneinfo/America/Atka"],
+		_escData["/zoneinfo/America/Bahia"],
+		_escData["/zoneinfo/America/Bahia_Banderas"],
+		_escData["/zoneinfo/America/Barbados"],
+		_escData["/zoneinfo/America/Belem"],
+		_escData["/zoneinfo/America/Belize"],
+		_escData["/zoneinfo/America/Blanc-Sablon"],
+		_escData["/zoneinfo/America/Boa_Vista"],
+		_escData["/zoneinfo/America/Bogota"],
+		_escData["/zoneinfo/America/Boise"],
+		_escData["/zoneinfo/America/Buenos_Aires"],
+		_escData["/zoneinfo/America/Cambridge_Bay"],
+		_escData["/zoneinfo/America/Campo_Grande"],
+		_escData["/zoneinfo/America/Cancun"],
+		_escData["/zoneinfo/America/Caracas"],
+		_escData["/zoneinfo/America/Catamarca"],
+		_escData["/zoneinfo/America/Cayenne"],
+		_escData["/zoneinfo/America/Cayman"],
+		_escData["/zoneinfo/America/Chicago"],
+		_escData["/zoneinfo/America/Chihuahua"],
+		_escData["/zoneinfo/America/Coral_Harbour"],
+		_escData["/zoneinfo/America/Cordoba"],
+		_escData["/zoneinfo/America/Costa_Rica"],
+		_escData["/zoneinfo/America/Creston"],
+		_escData["/zoneinfo/America/Cuiaba"],
+		_escData["/zoneinfo/America/Curacao"],
+		_escData["/zoneinfo/America/Danmarkshavn"],
+		_escData["/zoneinfo/America/Dawson"],
+		_escData["/zoneinfo/America/Dawson_Creek"],
+		_escData["/zoneinfo/America/Denver"],
+		_escData["/zoneinfo/America/Detroit"],
+		_escData["/zoneinfo/America/Dominica"],
+		_escData["/zoneinfo/America/Edmonton"],
+		_escData["/zoneinfo/America/Eirunepe"],
+		_escData["/zoneinfo/America/El_Salvador"],
+		_escData["/zoneinfo/America/Ensenada"],
+		_escData["/zoneinfo/America/Fort_Nelson"],
+		_escData["/zoneinfo/America/Fort_Wayne"],
+		_escData["/zoneinfo/America/Fortaleza"],
+		_escData["/zoneinfo/America/Glace_Bay"],
+		_escData["/zoneinfo/America/Godthab"],
+		_escData["/zoneinfo/America/Goose_Bay"],
+		_escData["/zoneinfo/America/Grand_Turk"],
+		_escData["/zoneinfo/America/Grenada"],
+		_escData["/zoneinfo/America/Guadeloupe"],
+		_escData["/zoneinfo/America/Guatemala"],
+		_escData["/zoneinfo/America/Guayaquil"],
+		_escData["/zoneinfo/America/Guyana"],
+		_escData["/zoneinfo/America/Halifax"],
+		_escData["/zoneinfo/America/Havana"],
+		_escData["/zoneinfo/America/Hermosillo"],
+		_escData["/zoneinfo/America/Indiana"],
+		_escData["/zoneinfo/America/Indianapolis"],
+		_escData["/zoneinfo/America/Inuvik"],
+		_escData["/zoneinfo/America/Iqaluit"],
+		_escData["/zoneinfo/America/Jamaica"],
+		_escData["/zoneinfo/America/Jujuy"],
+		_escData["/zoneinfo/America/Juneau"],
+		_escData["/zoneinfo/America/Kentucky"],
+		_escData["/zoneinfo/America/Knox_IN"],
+		_escData["/zoneinfo/America/Kralendijk"],
+		_escData["/zoneinfo/America/La_Paz"],
+		_escData["/zoneinfo/America/Lima"],
+		_escData["/zoneinfo/America/Los_Angeles"],
+		_escData["/zoneinfo/America/Louisville"],
+		_escData["/zoneinfo/America/Lower_Princes"],
+		_escData["/zoneinfo/America/Maceio"],
+		_escData["/zoneinfo/America/Managua"],
+		_escData["/zoneinfo/America/Manaus"],
+		_escData["/zoneinfo/America/Marigot"],
+		_escData["/zoneinfo/America/Martinique"],
+		_escData["/zoneinfo/America/Matamoros"],
+		_escData["/zoneinfo/America/Mazatlan"],
+		_escData["/zoneinfo/America/Mendoza"],
+		_escData["/zoneinfo/America/Menominee"],
+		_escData["/zoneinfo/America/Merida"],
+		_escData["/zoneinfo/America/Metlakatla"],
+		_escData["/zoneinfo/America/Mexico_City"],
+		_escData["/zoneinfo/America/Miquelon"],
+		_escData["/zoneinfo/America/Moncton"],
+		_escData["/zoneinfo/America/Monterrey"],
+		_escData["/zoneinfo/America/Montevideo"],
+		_escData["/zoneinfo/America/Montreal"],
+		_escData["/zoneinfo/America/Montserrat"],
+		_escData["/zoneinfo/America/Nassau"],
+		_escData["/zoneinfo/America/New_York"],
+		_escData["/zoneinfo/America/Nipigon"],
+		_escData["/zoneinfo/America/Nome"],
+		_escData["/zoneinfo/America/Noronha"],
+		_escData["/zoneinfo/America/North_Dakota"],
+		_escData["/zoneinfo/America/Ojinaga"],
+		_escData["/zoneinfo/America/Panama"],
+		_escData["/zoneinfo/America/Pangnirtung"],
+		_escData["/zoneinfo/America/Paramaribo"],
+		_escData["/zoneinfo/America/Phoenix"],
+		_escData["/zoneinfo/America/Port-au-Prince"],
+		_escData["/zoneinfo/America/Port_of_Spain"],
+		_escData["/zoneinfo/America/Porto_Acre"],
+		_escData["/zoneinfo/America/Porto_Velho"],
+		_escData["/zoneinfo/America/Puerto_Rico"],
+		_escData["/zoneinfo/America/Punta_Arenas"],
+		_escData["/zoneinfo/America/Rainy_River"],
+		_escData["/zoneinfo/America/Rankin_Inlet"],
+		_escData["/zoneinfo/America/Recife"],
+		_escData["/zoneinfo/America/Regina"],
+		_escData["/zoneinfo/America/Resolute"],
+		_escData["/zoneinfo/America/Rio_Branco"],
+		_escData["/zoneinfo/America/Rosario"],
+		_escData["/zoneinfo/America/Santa_Isabel"],
+		_escData["/zoneinfo/America/Santarem"],
+		_escData["/zoneinfo/America/Santiago"],
+		_escData["/zoneinfo/America/Santo_Domingo"],
+		_escData["/zoneinfo/America/Sao_Paulo"],
+		_escData["/zoneinfo/America/Scoresbysund"],
+		_escData["/zoneinfo/America/Shiprock"],
+		_escData["/zoneinfo/America/Sitka"],
+		_escData["/zoneinfo/America/St_Barthelemy"],
+		_escData["/zoneinfo/America/St_Johns"],
+		_escData["/zoneinfo/America/St_Kitts"],
+		_escData["/zoneinfo/America/St_Lucia"],
+		_escData["/zoneinfo/America/St_Thomas"],
+		_escData["/zoneinfo/America/St_Vincent"],
+		_escData["/zoneinfo/America/Swift_Current"],
+		_escData["/zoneinfo/America/Tegucigalpa"],
+		_escData["/zoneinfo/America/Thule"],
+		_escData["/zoneinfo/America/Thunder_Bay"],
+		_escData["/zoneinfo/America/Tijuana"],
+		_escData["/zoneinfo/America/Toronto"],
+		_escData["/zoneinfo/America/Tortola"],
+		_escData["/zoneinfo/America/Vancouver"],
+		_escData["/zoneinfo/America/Virgin"],
+		_escData["/zoneinfo/America/Whitehorse"],
+		_escData["/zoneinfo/America/Winnipeg"],
+		_escData["/zoneinfo/America/Yakutat"],
+		_escData["/zoneinfo/America/Yellowknife"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/America/Argentina": {
+		_escData["/zoneinfo/America/Argentina/Buenos_Aires"],
+		_escData["/zoneinfo/America/Argentina/Catamarca"],
+		_escData["/zoneinfo/America/Argentina/ComodRivadavia"],
+		_escData["/zoneinfo/America/Argentina/Cordoba"],
+		_escData["/zoneinfo/America/Argentina/Jujuy"],
+		_escData["/zoneinfo/America/Argentina/La_Rioja"],
+		_escData["/zoneinfo/America/Argentina/Mendoza"],
+		_escData["/zoneinfo/America/Argentina/Rio_Gallegos"],
+		_escData["/zoneinfo/America/Argentina/Salta"],
+		_escData["/zoneinfo/America/Argentina/San_Juan"],
+		_escData["/zoneinfo/America/Argentina/San_Luis"],
+		_escData["/zoneinfo/America/Argentina/Tucuman"],
+		_escData["/zoneinfo/America/Argentina/Ushuaia"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/America/Indiana": {
+		_escData["/zoneinfo/America/Indiana/Indianapolis"],
+		_escData["/zoneinfo/America/Indiana/Knox"],
+		_escData["/zoneinfo/America/Indiana/Marengo"],
+		_escData["/zoneinfo/America/Indiana/Petersburg"],
+		_escData["/zoneinfo/America/Indiana/Tell_City"],
+		_escData["/zoneinfo/America/Indiana/Vevay"],
+		_escData["/zoneinfo/America/Indiana/Vincennes"],
+		_escData["/zoneinfo/America/Indiana/Winamac"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/America/Kentucky": {
+		_escData["/zoneinfo/America/Kentucky/Louisville"],
+		_escData["/zoneinfo/America/Kentucky/Monticello"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/America/North_Dakota": {
+		_escData["/zoneinfo/America/North_Dakota/Beulah"],
+		_escData["/zoneinfo/America/North_Dakota/Center"],
+		_escData["/zoneinfo/America/North_Dakota/New_Salem"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/Antarctica": {
+		_escData["/zoneinfo/Antarctica/Casey"],
+		_escData["/zoneinfo/Antarctica/Davis"],
+		_escData["/zoneinfo/Antarctica/DumontDUrville"],
+		_escData["/zoneinfo/Antarctica/Macquarie"],
+		_escData["/zoneinfo/Antarctica/Mawson"],
+		_escData["/zoneinfo/Antarctica/McMurdo"],
+		_escData["/zoneinfo/Antarctica/Palmer"],
+		_escData["/zoneinfo/Antarctica/Rothera"],
+		_escData["/zoneinfo/Antarctica/South_Pole"],
+		_escData["/zoneinfo/Antarctica/Syowa"],
+		_escData["/zoneinfo/Antarctica/Troll"],
+		_escData["/zoneinfo/Antarctica/Vostok"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/Arctic": {
+		_escData["/zoneinfo/Arctic/Longyearbyen"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/Asia": {
+		_escData["/zoneinfo/Asia/Aden"],
+		_escData["/zoneinfo/Asia/Almaty"],
+		_escData["/zoneinfo/Asia/Amman"],
+		_escData["/zoneinfo/Asia/Anadyr"],
+		_escData["/zoneinfo/Asia/Aqtau"],
+		_escData["/zoneinfo/Asia/Aqtobe"],
+		_escData["/zoneinfo/Asia/Ashgabat"],
+		_escData["/zoneinfo/Asia/Ashkhabad"],
+		_escData["/zoneinfo/Asia/Atyrau"],
+		_escData["/zoneinfo/Asia/Baghdad"],
+		_escData["/zoneinfo/Asia/Bahrain"],
+		_escData["/zoneinfo/Asia/Baku"],
+		_escData["/zoneinfo/Asia/Bangkok"],
+		_escData["/zoneinfo/Asia/Barnaul"],
+		_escData["/zoneinfo/Asia/Beirut"],
+		_escData["/zoneinfo/Asia/Bishkek"],
+		_escData["/zoneinfo/Asia/Brunei"],
+		_escData["/zoneinfo/Asia/Calcutta"],
+		_escData["/zoneinfo/Asia/Chita"],
+		_escData["/zoneinfo/Asia/Choibalsan"],
+		_escData["/zoneinfo/Asia/Chongqing"],
+		_escData["/zoneinfo/Asia/Chungking"],
+		_escData["/zoneinfo/Asia/Colombo"],
+		_escData["/zoneinfo/Asia/Dacca"],
+		_escData["/zoneinfo/Asia/Damascus"],
+		_escData["/zoneinfo/Asia/Dhaka"],
+		_escData["/zoneinfo/Asia/Dili"],
+		_escData["/zoneinfo/Asia/Dubai"],
+		_escData["/zoneinfo/Asia/Dushanbe"],
+		_escData["/zoneinfo/Asia/Famagusta"],
+		_escData["/zoneinfo/Asia/Gaza"],
+		_escData["/zoneinfo/Asia/Harbin"],
+		_escData["/zoneinfo/Asia/Hebron"],
+		_escData["/zoneinfo/Asia/Ho_Chi_Minh"],
+		_escData["/zoneinfo/Asia/Hong_Kong"],
+		_escData["/zoneinfo/Asia/Hovd"],
+		_escData["/zoneinfo/Asia/Irkutsk"],
+		_escData["/zoneinfo/Asia/Istanbul"],
+		_escData["/zoneinfo/Asia/Jakarta"],
+		_escData["/zoneinfo/Asia/Jayapura"],
+		_escData["/zoneinfo/Asia/Jerusalem"],
+		_escData["/zoneinfo/Asia/Kabul"],
+		_escData["/zoneinfo/Asia/Kamchatka"],
+		_escData["/zoneinfo/Asia/Karachi"],
+		_escData["/zoneinfo/Asia/Kashgar"],
+		_escData["/zoneinfo/Asia/Kathmandu"],
+		_escData["/zoneinfo/Asia/Katmandu"],
+		_escData["/zoneinfo/Asia/Khandyga"],
+		_escData["/zoneinfo/Asia/Kolkata"],
+		_escData["/zoneinfo/Asia/Krasnoyarsk"],
+		_escData["/zoneinfo/Asia/Kuala_Lumpur"],
+		_escData["/zoneinfo/Asia/Kuching"],
+		_escData["/zoneinfo/Asia/Kuwait"],
+		_escData["/zoneinfo/Asia/Macao"],
+		_escData["/zoneinfo/Asia/Macau"],
+		_escData["/zoneinfo/Asia/Magadan"],
+		_escData["/zoneinfo/Asia/Makassar"],
+		_escData["/zoneinfo/Asia/Manila"],
+		_escData["/zoneinfo/Asia/Muscat"],
+		_escData["/zoneinfo/Asia/Nicosia"],
+		_escData["/zoneinfo/Asia/Novokuznetsk"],
+		_escData["/zoneinfo/Asia/Novosibirsk"],
+		_escData["/zoneinfo/Asia/Omsk"],
+		_escData["/zoneinfo/Asia/Oral"],
+		_escData["/zoneinfo/Asia/Phnom_Penh"],
+		_escData["/zoneinfo/Asia/Pontianak"],
+		_escData["/zoneinfo/Asia/Pyongyang"],
+		_escData["/zoneinfo/Asia/Qatar"],
+		_escData["/zoneinfo/Asia/Qyzylorda"],
+		_escData["/zoneinfo/Asia/Rangoon"],
+		_escData["/zoneinfo/Asia/Riyadh"],
+		_escData["/zoneinfo/Asia/Saigon"],
+		_escData["/zoneinfo/Asia/Sakhalin"],
+		_escData["/zoneinfo/Asia/Samarkand"],
+		_escData["/zoneinfo/Asia/Seoul"],
+		_escData["/zoneinfo/Asia/Shanghai"],
+		_escData["/zoneinfo/Asia/Singapore"],
+		_escData["/zoneinfo/Asia/Srednekolymsk"],
+		_escData["/zoneinfo/Asia/Taipei"],
+		_escData["/zoneinfo/Asia/Tashkent"],
+		_escData["/zoneinfo/Asia/Tbilisi"],
+		_escData["/zoneinfo/Asia/Tehran"],
+		_escData["/zoneinfo/Asia/Tel_Aviv"],
+		_escData["/zoneinfo/Asia/Thimbu"],
+		_escData["/zoneinfo/Asia/Thimphu"],
+		_escData["/zoneinfo/Asia/Tokyo"],
+		_escData["/zoneinfo/Asia/Tomsk"],
+		_escData["/zoneinfo/Asia/Ujung_Pandang"],
+		_escData["/zoneinfo/Asia/Ulaanbaatar"],
+		_escData["/zoneinfo/Asia/Ulan_Bator"],
+		_escData["/zoneinfo/Asia/Urumqi"],
+		_escData["/zoneinfo/Asia/Ust-Nera"],
+		_escData["/zoneinfo/Asia/Vientiane"],
+		_escData["/zoneinfo/Asia/Vladivostok"],
+		_escData["/zoneinfo/Asia/Yakutsk"],
+		_escData["/zoneinfo/Asia/Yangon"],
+		_escData["/zoneinfo/Asia/Yekaterinburg"],
+		_escData["/zoneinfo/Asia/Yerevan"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/Atlantic": {
+		_escData["/zoneinfo/Atlantic/Azores"],
+		_escData["/zoneinfo/Atlantic/Bermuda"],
+		_escData["/zoneinfo/Atlantic/Canary"],
+		_escData["/zoneinfo/Atlantic/Cape_Verde"],
+		_escData["/zoneinfo/Atlantic/Faeroe"],
+		_escData["/zoneinfo/Atlantic/Faroe"],
+		_escData["/zoneinfo/Atlantic/Jan_Mayen"],
+		_escData["/zoneinfo/Atlantic/Madeira"],
+		_escData["/zoneinfo/Atlantic/Reykjavik"],
+		_escData["/zoneinfo/Atlantic/South_Georgia"],
+		_escData["/zoneinfo/Atlantic/St_Helena"],
+		_escData["/zoneinfo/Atlantic/Stanley"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/Australia": {
+		_escData["/zoneinfo/Australia/ACT"],
+		_escData["/zoneinfo/Australia/Adelaide"],
+		_escData["/zoneinfo/Australia/Brisbane"],
+		_escData["/zoneinfo/Australia/Broken_Hill"],
+		_escData["/zoneinfo/Australia/Canberra"],
+		_escData["/zoneinfo/Australia/Currie"],
+		_escData["/zoneinfo/Australia/Darwin"],
+		_escData["/zoneinfo/Australia/Eucla"],
+		_escData["/zoneinfo/Australia/Hobart"],
+		_escData["/zoneinfo/Australia/LHI"],
+		_escData["/zoneinfo/Australia/Lindeman"],
+		_escData["/zoneinfo/Australia/Lord_Howe"],
+		_escData["/zoneinfo/Australia/Melbourne"],
+		_escData["/zoneinfo/Australia/NSW"],
+		_escData["/zoneinfo/Australia/North"],
+		_escData["/zoneinfo/Australia/Perth"],
+		_escData["/zoneinfo/Australia/Queensland"],
+		_escData["/zoneinfo/Australia/South"],
+		_escData["/zoneinfo/Australia/Sydney"],
+		_escData["/zoneinfo/Australia/Tasmania"],
+		_escData["/zoneinfo/Australia/Victoria"],
+		_escData["/zoneinfo/Australia/West"],
+		_escData["/zoneinfo/Australia/Yancowinna"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/Brazil": {
+		_escData["/zoneinfo/Brazil/Acre"],
+		_escData["/zoneinfo/Brazil/DeNoronha"],
+		_escData["/zoneinfo/Brazil/East"],
+		_escData["/zoneinfo/Brazil/West"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/Canada": {
+		_escData["/zoneinfo/Canada/Atlantic"],
+		_escData["/zoneinfo/Canada/Central"],
+		_escData["/zoneinfo/Canada/Eastern"],
+		_escData["/zoneinfo/Canada/Mountain"],
+		_escData["/zoneinfo/Canada/Newfoundland"],
+		_escData["/zoneinfo/Canada/Pacific"],
+		_escData["/zoneinfo/Canada/Saskatchewan"],
+		_escData["/zoneinfo/Canada/Yukon"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/Chile": {
+		_escData["/zoneinfo/Chile/Continental"],
+		_escData["/zoneinfo/Chile/EasterIsland"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/Etc": {
+		_escData["/zoneinfo/Etc/GMT"],
+		_escData["/zoneinfo/Etc/GMT+0"],
+		_escData["/zoneinfo/Etc/GMT+1"],
+		_escData["/zoneinfo/Etc/GMT+10"],
+		_escData["/zoneinfo/Etc/GMT+11"],
+		_escData["/zoneinfo/Etc/GMT+12"],
+		_escData["/zoneinfo/Etc/GMT+2"],
+		_escData["/zoneinfo/Etc/GMT+3"],
+		_escData["/zoneinfo/Etc/GMT+4"],
+		_escData["/zoneinfo/Etc/GMT+5"],
+		_escData["/zoneinfo/Etc/GMT+6"],
+		_escData["/zoneinfo/Etc/GMT+7"],
+		_escData["/zoneinfo/Etc/GMT+8"],
+		_escData["/zoneinfo/Etc/GMT+9"],
+		_escData["/zoneinfo/Etc/GMT-0"],
+		_escData["/zoneinfo/Etc/GMT-1"],
+		_escData["/zoneinfo/Etc/GMT-10"],
+		_escData["/zoneinfo/Etc/GMT-11"],
+		_escData["/zoneinfo/Etc/GMT-12"],
+		_escData["/zoneinfo/Etc/GMT-13"],
+		_escData["/zoneinfo/Etc/GMT-14"],
+		_escData["/zoneinfo/Etc/GMT-2"],
+		_escData["/zoneinfo/Etc/GMT-3"],
+		_escData["/zoneinfo/Etc/GMT-4"],
+		_escData["/zoneinfo/Etc/GMT-5"],
+		_escData["/zoneinfo/Etc/GMT-6"],
+		_escData["/zoneinfo/Etc/GMT-7"],
+		_escData["/zoneinfo/Etc/GMT-8"],
+		_escData["/zoneinfo/Etc/GMT-9"],
+		_escData["/zoneinfo/Etc/GMT0"],
+		_escData["/zoneinfo/Etc/Greenwich"],
+		_escData["/zoneinfo/Etc/UCT"],
+		_escData["/zoneinfo/Etc/UTC"],
+		_escData["/zoneinfo/Etc/Universal"],
+		_escData["/zoneinfo/Etc/Zulu"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/Europe": {
+		_escData["/zoneinfo/Europe/Amsterdam"],
+		_escData["/zoneinfo/Europe/Andorra"],
+		_escData["/zoneinfo/Europe/Astrakhan"],
+		_escData["/zoneinfo/Europe/Athens"],
+		_escData["/zoneinfo/Europe/Belfast"],
+		_escData["/zoneinfo/Europe/Belgrade"],
+		_escData["/zoneinfo/Europe/Berlin"],
+		_escData["/zoneinfo/Europe/Bratislava"],
+		_escData["/zoneinfo/Europe/Brussels"],
+		_escData["/zoneinfo/Europe/Bucharest"],
+		_escData["/zoneinfo/Europe/Budapest"],
+		_escData["/zoneinfo/Europe/Busingen"],
+		_escData["/zoneinfo/Europe/Chisinau"],
+		_escData["/zoneinfo/Europe/Copenhagen"],
+		_escData["/zoneinfo/Europe/Dublin"],
+		_escData["/zoneinfo/Europe/Gibraltar"],
+		_escData["/zoneinfo/Europe/Guernsey"],
+		_escData["/zoneinfo/Europe/Helsinki"],
+		_escData["/zoneinfo/Europe/Isle_of_Man"],
+		_escData["/zoneinfo/Europe/Istanbul"],
+		_escData["/zoneinfo/Europe/Jersey"],
+		_escData["/zoneinfo/Europe/Kaliningrad"],
+		_escData["/zoneinfo/Europe/Kiev"],
+		_escData["/zoneinfo/Europe/Kirov"],
+		_escData["/zoneinfo/Europe/Lisbon"],
+		_escData["/zoneinfo/Europe/Ljubljana"],
+		_escData["/zoneinfo/Europe/London"],
+		_escData["/zoneinfo/Europe/Luxembourg"],
+		_escData["/zoneinfo/Europe/Madrid"],
+		_escData["/zoneinfo/Europe/Malta"],
+		_escData["/zoneinfo/Europe/Mariehamn"],
+		_escData["/zoneinfo/Europe/Minsk"],
+		_escData["/zoneinfo/Europe/Monaco"],
+		_escData["/zoneinfo/Europe/Moscow"],
+		_escData["/zoneinfo/Europe/Nicosia"],
+		_escData["/zoneinfo/Europe/Oslo"],
+		_escData["/zoneinfo/Europe/Paris"],
+		_escData["/zoneinfo/Europe/Podgorica"],
+		_escData["/zoneinfo/Europe/Prague"],
+		_escData["/zoneinfo/Europe/Riga"],
+		_escData["/zoneinfo/Europe/Rome"],
+		_escData["/zoneinfo/Europe/Samara"],
+		_escData["/zoneinfo/Europe/San_Marino"],
+		_escData["/zoneinfo/Europe/Sarajevo"],
+		_escData["/zoneinfo/Europe/Saratov"],
+		_escData["/zoneinfo/Europe/Simferopol"],
+		_escData["/zoneinfo/Europe/Skopje"],
+		_escData["/zoneinfo/Europe/Sofia"],
+		_escData["/zoneinfo/Europe/Stockholm"],
+		_escData["/zoneinfo/Europe/Tallinn"],
+		_escData["/zoneinfo/Europe/Tirane"],
+		_escData["/zoneinfo/Europe/Tiraspol"],
+		_escData["/zoneinfo/Europe/Ulyanovsk"],
+		_escData["/zoneinfo/Europe/Uzhgorod"],
+		_escData["/zoneinfo/Europe/Vaduz"],
+		_escData["/zoneinfo/Europe/Vatican"],
+		_escData["/zoneinfo/Europe/Vienna"],
+		_escData["/zoneinfo/Europe/Vilnius"],
+		_escData["/zoneinfo/Europe/Volgograd"],
+		_escData["/zoneinfo/Europe/Warsaw"],
+		_escData["/zoneinfo/Europe/Zagreb"],
+		_escData["/zoneinfo/Europe/Zaporozhye"],
+		_escData["/zoneinfo/Europe/Zurich"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/Indian": {
+		_escData["/zoneinfo/Indian/Antananarivo"],
+		_escData["/zoneinfo/Indian/Chagos"],
+		_escData["/zoneinfo/Indian/Christmas"],
+		_escData["/zoneinfo/Indian/Cocos"],
+		_escData["/zoneinfo/Indian/Comoro"],
+		_escData["/zoneinfo/Indian/Kerguelen"],
+		_escData["/zoneinfo/Indian/Mahe"],
+		_escData["/zoneinfo/Indian/Maldives"],
+		_escData["/zoneinfo/Indian/Mauritius"],
+		_escData["/zoneinfo/Indian/Mayotte"],
+		_escData["/zoneinfo/Indian/Reunion"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/Mexico": {
+		_escData["/zoneinfo/Mexico/BajaNorte"],
+		_escData["/zoneinfo/Mexico/BajaSur"],
+		_escData["/zoneinfo/Mexico/General"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/Pacific": {
+		_escData["/zoneinfo/Pacific/Apia"],
+		_escData["/zoneinfo/Pacific/Auckland"],
+		_escData["/zoneinfo/Pacific/Bougainville"],
+		_escData["/zoneinfo/Pacific/Chatham"],
+		_escData["/zoneinfo/Pacific/Chuuk"],
+		_escData["/zoneinfo/Pacific/Easter"],
+		_escData["/zoneinfo/Pacific/Efate"],
+		_escData["/zoneinfo/Pacific/Enderbury"],
+		_escData["/zoneinfo/Pacific/Fakaofo"],
+		_escData["/zoneinfo/Pacific/Fiji"],
+		_escData["/zoneinfo/Pacific/Funafuti"],
+		_escData["/zoneinfo/Pacific/Galapagos"],
+		_escData["/zoneinfo/Pacific/Gambier"],
+		_escData["/zoneinfo/Pacific/Guadalcanal"],
+		_escData["/zoneinfo/Pacific/Guam"],
+		_escData["/zoneinfo/Pacific/Honolulu"],
+		_escData["/zoneinfo/Pacific/Johnston"],
+		_escData["/zoneinfo/Pacific/Kiritimati"],
+		_escData["/zoneinfo/Pacific/Kosrae"],
+		_escData["/zoneinfo/Pacific/Kwajalein"],
+		_escData["/zoneinfo/Pacific/Majuro"],
+		_escData["/zoneinfo/Pacific/Marquesas"],
+		_escData["/zoneinfo/Pacific/Midway"],
+		_escData["/zoneinfo/Pacific/Nauru"],
+		_escData["/zoneinfo/Pacific/Niue"],
+		_escData["/zoneinfo/Pacific/Norfolk"],
+		_escData["/zoneinfo/Pacific/Noumea"],
+		_escData["/zoneinfo/Pacific/Pago_Pago"],
+		_escData["/zoneinfo/Pacific/Palau"],
+		_escData["/zoneinfo/Pacific/Pitcairn"],
+		_escData["/zoneinfo/Pacific/Pohnpei"],
+		_escData["/zoneinfo/Pacific/Ponape"],
+		_escData["/zoneinfo/Pacific/Port_Moresby"],
+		_escData["/zoneinfo/Pacific/Rarotonga"],
+		_escData["/zoneinfo/Pacific/Saipan"],
+		_escData["/zoneinfo/Pacific/Samoa"],
+		_escData["/zoneinfo/Pacific/Tahiti"],
+		_escData["/zoneinfo/Pacific/Tarawa"],
+		_escData["/zoneinfo/Pacific/Tongatapu"],
+		_escData["/zoneinfo/Pacific/Truk"],
+		_escData["/zoneinfo/Pacific/Wake"],
+		_escData["/zoneinfo/Pacific/Wallis"],
+		_escData["/zoneinfo/Pacific/Yap"],
+	},
+
+	"pkg/uploader/assets/resources/zoneinfo/US": {
+		_escData["/zoneinfo/US/Alaska"],
+		_escData["/zoneinfo/US/Aleutian"],
+		_escData["/zoneinfo/US/Arizona"],
+		_escData["/zoneinfo/US/Central"],
+		_escData["/zoneinfo/US/East-Indiana"],
+		_escData["/zoneinfo/US/Eastern"],
+		_escData["/zoneinfo/US/Hawaii"],
+		_escData["/zoneinfo/US/Indiana-Starke"],
+		_escData["/zoneinfo/US/Michigan"],
+		_escData["/zoneinfo/US/Mountain"],
+		_escData["/zoneinfo/US/Pacific"],
+		_escData["/zoneinfo/US/Samoa"],
 	},
 }

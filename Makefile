@@ -12,7 +12,7 @@ ifeq "$(VERSION)" ""
 	$(error There is no version specified)
 endif
 	git push origin master
-	$(MAKE) clean 
+	$(MAKE) clean
 	$(MAKE) Door2doc_Upload_Service_$(VERSION).exe
 	$(MAKE) -C doc handleiding.pdf
 	hub release create -d -a "Door2doc_Upload_Service_$(VERSION).exe#Windows installer" -m"$(VERSION)" $(VERSION)

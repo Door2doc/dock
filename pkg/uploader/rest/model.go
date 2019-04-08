@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/publysher/d2d-uploader/pkg/uploader/db"
@@ -125,8 +126,17 @@ func age(now *time.Time, birthday time.Time) int {
 }
 
 var (
-	reParseTijd = regexp.MustCompile(`^(\d\d:\d\d)(:\d\d)?$`)
+	reParseTijd = regexp.MustCompile(`^(\d?\d:\d\d)(:\d\d)?$`)
 )
+
+func normalizeDatum(d string) string {
+	t := strings.Index(d, "T")
+	if t >= 0 {
+		return d[:t]
+	}
+
+	return d
+}
 
 func normalizeTijd(t string) (string, error) {
 	parsedTijd := reParseTijd.FindAllStringSubmatch(t, 1)
@@ -140,6 +150,8 @@ func datumTijd(datum, tijd string, location *time.Location) (*time.Time, error) 
 	if datum == "" || tijd == "" {
 		return nil, nil
 	}
+
+	datum = normalizeDatum(datum)
 
 	nt, err := normalizeTijd(tijd)
 	if err != nil {

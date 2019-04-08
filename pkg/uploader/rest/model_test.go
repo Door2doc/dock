@@ -48,6 +48,15 @@ func TestVisitorRecordFromDB(t *testing.T) {
 		},
 		"Binnenkomst": {
 			Given: &db.VisitorRecord{
+				BinnenkomstDatum: "2017-01-01T12:21:25.65Z",
+				BinnenkomstTijd:  "00:20:00",
+			},
+			Want: &VisitorRecord{
+				Binnenkomst: tm("2017-01-01T00:20:00+01:00"),
+			},
+		},
+		"Binnenkomst date-time": {
+			Given: &db.VisitorRecord{
 				BinnenkomstDatum: "2017-01-01",
 				BinnenkomstTijd:  "00:20:00",
 			},

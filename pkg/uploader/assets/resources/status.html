@@ -30,11 +30,11 @@
                                     <td><pre>{{ $evt.Error }}</pre></td>
                                 </tr>
                             {{ else }}
-                                <tr>
+                                <tr class="table-success">
                                     <td>{{ $evt.Time.Format "Jan _2 15:04:05" }}</td>
                                     <td>{{ $evt.QueryDuration.Seconds|printf "%0.3fs" }}</td>
                                     <td>{{ $evt.UploadDuration.Seconds|printf "%0.3fs" }}</td>
-                                    <td><pre>{{ $evt.JSON }}</pre></td>
+                                    <td>{{ $evt.Size }} item(s) uploaded</td>
                                 </tr>
                             {{ end }}
                         {{ else }}

@@ -2471,22 +2471,22 @@ BXkoaRr5Kim0vHznJ2IhETsqWRcYPsT/KhUKxZPWaQe6vQ0T5+LstdT/AgAA///tGDM9HBEAAA==
 	"/status.html": {
 		name:    "status.html",
 		local:   "pkg/uploader/assets/resources/status.html",
-		size:    4446,
-		modtime: 1552658426,
+		size:    4474,
+		modtime: 1554786638,
 		compressed: `
-H4sIAAAAAAAC/+RWUU/bOhR+51ccWdwXdNtwufBSpZWuKFcb0pi2Dl4nNz5praV2Zjtlnel/n+w0kEDS
-BAYUaXmL/fn4nO87x+dYCwxjLhCI4SZBAuv1xFCTaWsBBYP1eq+EmUq2cpA9AABrgcfQv6IJZ9RwKfrv
-tf9xAI8ooU6liPksUznwv8jwJRaGii9kfAlRQrUekogqBotV75iMKpg6XG+OlKECgz9M73rODcJ01tNZ
-FKHWNefdN0G15BEC16AyIbiYPbwmYHzZ4XZPSv0tYVq/7r4PUhtQGKEwgEsURg/qbQQNRkJDpwkWrvgf
-0nxdaBxL2/ZV8+bGwOgLX2AYmHk78lOGatUNepkmkrJu2Dw3t2PDYFso7mwLEU7Q5n1rQVExQ9jnf8M+
-Lg0MhtB/x7WRatU/80rez+waGzz2h/tnSknVht8IVNG6x5wXioxaT+an2cja/EqnYv9/qRbUADmnAr4e
-wT8ng8PjweGJq+4wMKy71RdFpwpv3S6YCgO32s3Q9lzYSIGJxo4K7Jrswqovr3HxnE4wkoLpm1RxYWIg
-fx32/431063nFfns5itqnk8+XryImHnT+k25O0kdGlatyGuqXCchEMlEp1QMyTEZXcjN894e5PYA24ML
-gy1vVxh4J0dd+ty9pQbSnrdfF+S19uuUZhpZ13ZtbXDQ0LIPghouPZ7CXGE8JIFCnS2QVA4nXHwjo89+
-B7JN86JbrHnHHmzXcHynbonxB6NUaeAaU0OnVOOpFAIjt/SyGuUtBxo0KryB6M6dmPKku1iPma2sbaPi
-BubZggr+s7bcH+MCTKViqHpGpk2T3m3KsI0jdUlzmTJqPD93w7DLnSfWpKgdtUukXHHNjVS+W+wyMzZ+
-wHfvyKvlRCX83WSDj/gtpML4aPw2Xol8uHjFh6ESeCkLOqbBU8lWyFAYThP9p7Fdinw3RZc35Veruupf
-KUF+BQAA///T9pW9XhEAAA==
+H4sIAAAAAAAC/+RW32/TMBB+319xioYEE23G2F6qtBJahwAJJCjbK3LjS2uR2sF2OorX/x3ZSbZ0yy+6
+rZtE3mJ/Pt/d9/nujAGKEeMInmY6Rg/W64kmOlXGAHIK6/VeCTMVdGUhewAAxgCLoH9BYkaJZoL3Pyr3
+YwEOUUKdCh6xWSoz4LtQsyUWhoovoGwJYUyUGnohkRQWq96xN9rAVOF6cyQUJWj8rXuXc6YRprOeSsMQ
+lao4b78JyiULEZgCmXLO+OzuNT5lyw63u6RU3xIk1ev2+yyUBokhcg24RK7VoNqGX2Mk0GQaY+GK+/Hq
+rwu0zVLTvqzfzA2MvrMFBr6etyO/pihX3aDnSSwI7YbNtNmMDfymUOzZlkRYQuv3jQFJ+Axhn72GfVxq
+GAyh/4EpLeSqf+aYvK3sChsscof7Z1IK2YbPCdrguketF9IbtZ7MTtORMdmVlsX+eyEXRIP3iXD4cQRv
+TgaHx4PDE/u6A1/T7lYfFZ1IvHa7yFTg29Vuhpq1kFOBscKtGGguMbujoLDqHt24KLITDAWn6iqRjOsI
+vBeH/beR2t569k4fzfyE/bEsANO4eKleQequQ/qQRGcN7Z5SaK2UeWSbWrkk0nYZD0IRq4TwoXfsjb6I
+vPS3B9kcYHtwgd9Q1wLfOTnq0gNvLdUk7WF7eZG81l6ekFQh7drKjfEPatr5gV+RS4cnMJcYDT1fokoX
+6G0cjhn/6Y2+uZ1cwYFPGqw5x+5sV+T4ht1Sxu+MWaVhbEw0mRKFp4JzDO3S43KUtSOo4ajwBsIbdyLC
+4u5k/cvcZUxbKq5gni4Iz2rOvVyAqZAUZU+LpG4KvJYMzR2pEs15Qol2+bkZlK12tnyTvHIMLyXlgimm
+hXQ94ymVkfsBv5wjO9PERvhPowYX8XOQwvho/DyqRDZi7LAwbAReUkFHGWybbIkUuWYkVv9btkuRP82j
+y5ryzl7d5l9JIH8DAAD//0+w2uV6EQAA
 `,
 	},
 

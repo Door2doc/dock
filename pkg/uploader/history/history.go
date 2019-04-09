@@ -20,6 +20,7 @@ type Event struct {
 	Time           time.Time
 	QueryDuration  time.Duration
 	UploadDuration time.Duration
+	Size           int
 	JSON           string
 	Error          error
 }

@@ -66,6 +66,7 @@ func (u *Uploader) Upload(ctx context.Context) error {
 		return err
 	}
 	evt.JSON = buf.String()
+	evt.Size = len(vRecs)
 
 	// upload JSON to upload service
 	start = time.Now()

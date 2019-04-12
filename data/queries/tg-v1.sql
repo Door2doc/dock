@@ -1,3 +1,4 @@
+-- 5 april 2019
 SELECT TOP 100 mut.sehid      AS sehid,
                mut.sehmutid   AS sehmutid,
                reg.locatiecod AS locatie,
@@ -12,7 +13,7 @@ SELECT TOP 100 mut.sehid      AS sehid,
                reg.arbehetijd AS vertrektijd,
                mut.behkamerco AS kamer,
                mut.bednr      AS bed,
-               reg.klacht     AS ingangsklacht,
+               reg.klacht  AS ingangsklacht,
                reg.specialism AS specialisme,
                reg.trianivcod AS triage,
                reg.vvcode     AS vervoerder,

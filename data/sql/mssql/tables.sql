@@ -1,5 +1,8 @@
 USE upload;
 
+DROP TABLE IF EXISTS vrlijst_antwview;
+DROP TABLE IF EXISTS vrlijst_keuzelst;
+DROP TABLE IF EXISTS vrlijst_vragen;
 DROP TABLE IF EXISTS opname_opname;
 DROP TABLE IF EXISTS patient_patient;
 DROP TABLE IF EXISTS seh_sehmut;
@@ -46,6 +49,24 @@ CREATE TABLE seh_sehreg (
     vervall    BIT
 );
 
+CREATE TABLE vrlijst_antwview (
+    objectid NVARCHAR(13),
+    realvrid NVARCHAR(10),
+    antwoord NVARCHAR(13),
+    lijstid  NVARCHAR(10)
+);
+
+CREATE TABLE vrlijst_vragen (
+    vraagid    NVARCHAR(10),
+    keuzelijst NVARCHAR(10)
+);
+
+CREATE TABLE vrlijst_keuzelst (
+    code      NVARCHAR(10),
+    lijstcode NVARCHAR(10),
+    omschr    NVARCHAR(30)
+);
+
 INSERT INTO seh_sehreg(sehid, patientnr, locatiecod, datum, aanksdatum, aankstijd, patgezt,
                        klacht, specialism, vvcode, vervoertyp, bestemming, opnameid, vervall)
 VALUES ('84192', '1', 'BLA', getdate(), getdate(), '8:54', '8:54', 'val van flat', 'CHI', 'AMB', 'EIG', 'OPN', '1', 0);
@@ -55,7 +76,8 @@ VALUES ('368203', '84192', 'BED9', '1', getdate()),
        ('368204', '84192', NULL, NULL, getdate()),
        ('368205', '84192', 'BED9', '1', getdate());
 
-insert into patient_patient(patientnr, gebdat) values (1, '1978-07-24 00:00:00');
+INSERT INTO patient_patient(patientnr, gebdat)
+VALUES (1, '1978-07-24 00:00:00');
 
 
 

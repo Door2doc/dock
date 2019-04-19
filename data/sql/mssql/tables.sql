@@ -33,6 +33,7 @@ CREATE TABLE seh_sehreg (
     patientnr  NVARCHAR(13),
     locatiecod NVARCHAR(3),
     datum      DATETIME,
+    regtijd    NVARCHAR(5),
     aanksdatum DATETIME,
     aankstijd  NVARCHAR(5),
     triagetijd NVARCHAR(5),
@@ -53,7 +54,8 @@ CREATE TABLE vrlijst_antwview (
     objectid NVARCHAR(13),
     realvrid NVARCHAR(10),
     antwoord NVARCHAR(13),
-    lijstid  NVARCHAR(10)
+    lijstid  NVARCHAR(10),
+    datum    DATETIME
 );
 
 CREATE TABLE vrlijst_vragen (
@@ -67,9 +69,10 @@ CREATE TABLE vrlijst_keuzelst (
     omschr    NVARCHAR(30)
 );
 
-INSERT INTO seh_sehreg(sehid, patientnr, locatiecod, datum, aanksdatum, aankstijd, patgezt,
+INSERT INTO seh_sehreg(sehid, patientnr, locatiecod, datum, regtijd, aanksdatum, aankstijd, patgezt,
                        klacht, specialism, vvcode, vervoertyp, bestemming, opnameid, vervall)
-VALUES ('84192', '1', 'BLA', getdate(), getdate(), '8:54', '8:54', 'val van flat', 'CHI', 'AMB', 'EIG', 'OPN', '1', 0);
+VALUES ('84192', '1', 'BLA', getdate(), '8:00', getdate(), '8:54', '8:54', 'val van flat', 'CHI', 'AMB', 'EIG', 'OPN',
+        '1', 0);
 
 INSERT INTO seh_sehmut(sehmutid, sehid, behkamerco, bednr, datum)
 VALUES ('368203', '84192', 'BED9', '1', getdate()),
@@ -81,3 +84,8 @@ VALUES (1, '1978-07-24 00:00:00');
 
 
 
+select concat(convert(varchar(10), datum, 127), 'T', regtijd, ':00Z') from seh_sehreg;
+
+select datum, regtijd, datum + regtijd as konijn from seh_sehreg;
+
+update seh_sehreg set datum = '2019-04-19' where 1=1;

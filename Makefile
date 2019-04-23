@@ -28,8 +28,8 @@ Door2doc_Upload_Service_$(VERSION).exe: d2d-upload_windows_amd64.exe installer.n
 d2d-upload_windows_amd64.exe:	$(SOURCES)
 	$(MAKE) generate
 	docker run --rm \
-		-v "$(shell pwd)":/gopath/src/github.com/publysher/d2d-uploader \
-		-w /gopath/src/github.com/publysher/d2d-uploader tcnksm/gox:1.10.3 \
+		-v "$(shell pwd)":/gopath/src/github.com/door2doc/d2d-uploader \
+		-w /gopath/src/github.com/door2doc/d2d-uploader tcnksm/gox:1.10.3 \
 		gox \
 			-osarch="windows/amd64" \
 			-ldflags '-X "main.GitCommit=$(COMMIT)" \

@@ -10,11 +10,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/publysher/d2d-uploader/pkg/uploader/assets"
-	"github.com/publysher/d2d-uploader/pkg/uploader/config"
-	"github.com/publysher/d2d-uploader/pkg/uploader/db"
-	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
-	"github.com/publysher/d2d-uploader/pkg/uploader/history"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/assets"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/config"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/db"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/dlog"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/history"
 )
 
 const (

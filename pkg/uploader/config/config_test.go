@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/door2doc/d2d-uploader/pkg/uploader/db"
 	_ "github.com/lib/pq"
-	"github.com/publysher/d2d-uploader/pkg/uploader/db"
 )
 
 const (

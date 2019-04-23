@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/dlog"
 )
 
 // ExecuteVisitorQuery tries to execute the visitor query and marshal the result into records.

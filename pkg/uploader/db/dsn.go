@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/dlog"
 )
 
 type ConnectionData struct {

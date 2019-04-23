@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/publysher/d2d-uploader/pkg/uploader/config"
-	"github.com/publysher/d2d-uploader/pkg/uploader/history"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/config"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/history"
 )
 
 func TestTemplatesDontFail(t *testing.T) {

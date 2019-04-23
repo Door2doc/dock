@@ -5,8 +5,8 @@ import (
 	"html/template"
 	"strings"
 
-	"github.com/publysher/d2d-uploader/pkg/uploader/config"
-	"github.com/publysher/d2d-uploader/pkg/uploader/db"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/config"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/db"
 )
 
 // Humanize turns an error into a human-friendly error message.

@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/publysher/d2d-uploader/pkg/uploader/config"
-	"github.com/publysher/d2d-uploader/pkg/uploader/db"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/config"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/db"
 )
 
 func TestHumanize(t *testing.T) {

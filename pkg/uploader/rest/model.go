@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/publysher/d2d-uploader/pkg/uploader/db"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/db"
 )
 
 // VisitorRecord defines a single mutation on a visit.

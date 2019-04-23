@@ -11,9 +11,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/door2doc/d2d-uploader/pkg/uploader/db"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/dlog"
 	"github.com/pkg/errors"
-	"github.com/publysher/d2d-uploader/pkg/uploader/db"
-	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
 	"github.com/shibukawa/configdir"
 )
 

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/publysher/d2d-uploader/pkg/uploader/db"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/db"
 )
 
 func tm(s string) *time.Time {

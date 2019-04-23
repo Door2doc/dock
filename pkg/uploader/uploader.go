@@ -10,12 +10,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/door2doc/d2d-uploader/pkg/uploader/config"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/db"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/dlog"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/history"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/rest"
 	"github.com/pkg/errors"
-	"github.com/publysher/d2d-uploader/pkg/uploader/config"
-	"github.com/publysher/d2d-uploader/pkg/uploader/db"
-	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
-	"github.com/publysher/d2d-uploader/pkg/uploader/history"
-	"github.com/publysher/d2d-uploader/pkg/uploader/rest"
 )
 
 type Uploader struct {
@@ -29,7 +29,7 @@ type Uploader struct {
 	db         *sql.DB
 }
 
-// Upload uses a configuration to run a query on the target database, convert the results to FHIR, and upload
+// Upload uses a configuration to run a query on the target database, convert the results to JSON, and upload
 // them to the door2doc integration service.
 func (u *Uploader) Upload(ctx context.Context) error {
 	u.mu.Lock()
@@ -123,12 +123,17 @@ func (u *Uploader) executeQuery(ctx context.Context) ([]db.VisitorRecord, error)
 }
 
 func (u *Uploader) upload(ctx context.Context, json *bytes.Buffer) error {
-	req, err := http.NewRequest(http.MethodPost, "https://integration.door2doc.net/services/v2/upload/bezoeken", json)
+	user, pass := u.Configuration.Credentials()
+	return UploadJSON(ctx, user, pass, json)
+}
+
+func UploadJSON(ctx context.Context, username, password string, json *bytes.Buffer) error {
+	req, err := http.NewRequest(http.MethodPost, config.Server, json)
 	if err != nil {
 		return err
 	}
-	user, pass := u.Configuration.Credentials()
-	req.SetBasicAuth(user, pass)
+	req.URL.Path = "/services/v2/upload/bezoeken"
+	req.SetBasicAuth(username, password)
 	req = req.WithContext(ctx)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Connection", "close")

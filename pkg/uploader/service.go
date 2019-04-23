@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/door2doc/d2d-uploader/pkg/uploader/assets"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/config"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/dlog"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/history"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/web"
 	"github.com/kardianos/service"
-	"github.com/publysher/d2d-uploader/pkg/uploader/assets"
-	"github.com/publysher/d2d-uploader/pkg/uploader/config"
-	"github.com/publysher/d2d-uploader/pkg/uploader/dlog"
-	"github.com/publysher/d2d-uploader/pkg/uploader/history"
-	"github.com/publysher/d2d-uploader/pkg/uploader/web"
 )
 
 // Service contains the definition to run the application as a service.

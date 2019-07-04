@@ -4,7 +4,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"encoding/csv"
 	"encoding/json"
 	"flag"
@@ -17,7 +16,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/door2doc/d2d-uploader/pkg/uploader"
 	"github.com/door2doc/d2d-uploader/pkg/uploader/config"
 	"github.com/door2doc/d2d-uploader/pkg/uploader/db"
 	"github.com/door2doc/d2d-uploader/pkg/uploader/rest"
@@ -126,11 +124,12 @@ func run() error {
 		}
 
 		for {
-			if err := uploader.UploadJSON(context.Background(), *username, *password, buf); err != nil {
-				log.Println("Error", err)
-				<-time.After(time.Second)
-				continue
-			}
+			panic("fix this part")
+			//if err := uploader.UploadJSON(context.Background(), *username, *password, buf); err != nil {
+			//	log.Println("Error", err)
+			//	<-time.After(time.Second)
+			//	continue
+			//}
 			break
 		}
 		log.Printf("Upload %d--%d OK", visitorRecords[0].MutatieID, visitorRecords[len(visitorRecords)-1].MutatieID)

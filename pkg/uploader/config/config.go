@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"sync"
 	"time"
@@ -64,6 +65,8 @@ type Configuration struct {
 	active bool
 	// Pause between runs
 	interval time.Duration
+	// proxy server to use for all HTTP requests
+	proxy string
 
 	// results of the last call to UpdateValidation
 	validationResult *ValidationResult
@@ -90,6 +93,18 @@ func (c *Configuration) SetCredentials(username, password string) {
 
 	c.username = username
 	c.password = password
+}
+
+func (c *Configuration) Proxy() string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.proxy
+}
+
+func (c *Configuration) SetProxy(proxy string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.proxy = proxy
 }
 
 // Connection returns the connection data stored in the configuration.
@@ -158,7 +173,6 @@ func (c *Configuration) UpdateValidation(ctx context.Context) {
 	dbCtx, timeout := context.WithTimeout(ctx, DBValidationTimeout)
 	defer timeout()
 	res.QueryDuration, res.QueryResults, res.DatabaseConnection, res.VisitorQuery = c.checkDatabase(dbCtx)
-
 	c.validationResult = res
 	c.active = c.validationResult.IsValid()
 }
@@ -213,6 +227,7 @@ func (c *Configuration) Save() error {
 type persistentConfig struct {
 	Username string            `json:"username"`
 	Password string            `json:"password"`
+	Proxy    string            `json:"proxy"`
 	Dsn      db.ConnectionData `json:"dsn"`
 	Query    string            `json:"query"`
 }
@@ -224,6 +239,7 @@ func (c *Configuration) MarshalJSON() ([]byte, error) {
 	vars := persistentConfig{
 		Username: c.username,
 		Password: c.password,
+		Proxy:    c.proxy,
 		Dsn:      c.connection,
 		Query:    c.query,
 	}
@@ -241,6 +257,7 @@ func (c *Configuration) UnmarshalJSON(v []byte) error {
 
 	c.username = vars.Username
 	c.password = vars.Password
+	c.proxy = vars.Proxy
 	c.connection = vars.Dsn
 	c.query = vars.Query
 
@@ -255,41 +272,37 @@ func (c *Configuration) checkConnection(ctx context.Context) (connErr error, cre
 	req, err := http.NewRequest(http.MethodGet, Server, nil)
 	if err != nil {
 		dlog.Error("Failed to initialize connection to %s: %v", Server, err)
-		connErr = err
-		return
+		return err, credErr
 	}
 	req.URL.Path = PathPing
-	req.SetBasicAuth(c.username, c.password)
-	req = req.WithContext(ctx)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := c.do(ctx, req)
 	if err != nil {
 		dlog.Error("Failed to connect to %s: %v", Server, err)
-		connErr = ErrD2DConnectionFailed
-		return
+		return ErrD2DConnectionFailed, credErr
 	}
 	_, err = io.Copy(ioutil.Discard, res.Body)
 	if err != nil {
 		dlog.Error("Failed to drain response: %v", err)
-		connErr = err
-		return
+		return err, credErr
 	}
 	dlog.Close(res.Body)
 
 	if credErr != nil {
-		return
+		return nil, credErr
 	}
 
 	switch res.StatusCode {
 	case http.StatusOK:
-		credErr = nil
+		dlog.Info("Ping successful")
+		return nil, nil
 	case http.StatusUnauthorized:
-		credErr = ErrD2DCredentialsInvalid
+		dlog.Info("Ping not authorized")
+		return nil, ErrD2DCredentialsInvalid
 	default:
-		credErr = D2DCredentialsStatusError{StatusCode: res.StatusCode}
+		dlog.Info("Ping failed")
+		return nil, D2DCredentialsStatusError{StatusCode: res.StatusCode}
 	}
-
-	return
 }
 
 func (c *Configuration) checkDatabase(ctx context.Context) (queryDuration time.Duration, queryResult []db.VisitorRecord, connErr, queryErr error) {
@@ -361,4 +374,29 @@ func (c *Configuration) checkDatabase(ctx context.Context) (queryDuration time.D
 	queryResult = records[:max]
 
 	return
+}
+
+func (c *Configuration) Do(ctx context.Context, req *http.Request) (*http.Response, error) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	return c.do(ctx, req)
+}
+
+func (c *Configuration) do(ctx context.Context, req *http.Request) (*http.Response, error) {
+
+	req.SetBasicAuth(c.username, c.password)
+
+	t := &http.Transport{}
+	if c.proxy != "" {
+		proxyURL, err := url.Parse(c.proxy)
+		switch err {
+		case nil:
+			t.Proxy = http.ProxyURL(proxyURL)
+		default:
+			dlog.Error("Failed to set proxy server: %v", err)
+		}
+	}
+	client := &http.Client{Transport: t}
+	return client.Do(req.WithContext(ctx))
 }

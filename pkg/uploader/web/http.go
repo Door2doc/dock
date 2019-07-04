@@ -230,6 +230,7 @@ type UploadPage struct {
 
 	Username string
 	Password string
+	Proxy    string
 	Error    error
 }
 
@@ -240,6 +241,7 @@ func (m *ServeMux) UploadHandler() http.Handler {
 
 		if r.Method == http.MethodPost {
 			m.cfg.SetCredentials(r.FormValue("username"), r.FormValue("password"))
+			m.cfg.SetProxy(r.FormValue("proxy"))
 			m.cfg.UpdateValidation(r.Context())
 			if err := m.cfg.Save(); err != nil {
 				dlog.Error("While saving credentials: %v", err)
@@ -251,12 +253,17 @@ func (m *ServeMux) UploadHandler() http.Handler {
 		}
 
 		username, password := m.cfg.Credentials()
+		proxy := m.cfg.Proxy()
 		err := m.cfg.Validate().D2DCredentials
+		if err == nil {
+			err = m.cfg.Validate().D2DConnection
+		}
 
 		runTemplate(w, m.upload, UploadPage{
 			Page:     m.page(r.Context(), r.URL.Path),
 			Username: username,
 			Password: password,
+			Proxy:    proxy,
 			Error:    err,
 		})
 	})

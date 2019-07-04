@@ -18,7 +18,7 @@ func Humanize(err error) interface{} {
 		return `Invalid username/password.`
 	case config.ErrD2DConnectionFailed:
 		return template.HTML(`Unable to connect to <a href="https://integration.door2doc.net">integration.door2doc.net</a>. 
-			Please make sure the firewall allows outgoing connections to this server.`)
+			Please make sure the firewall allows outgoing connections to this server, or set your proxy server`)
 	case config.ErrVisitorQueryNotConfigured:
 		return `Visitor query not configured.`
 	case config.ErrDatabaseNotConfigured:

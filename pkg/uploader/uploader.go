@@ -123,22 +123,16 @@ func (u *Uploader) executeQuery(ctx context.Context) ([]db.VisitorRecord, error)
 }
 
 func (u *Uploader) upload(ctx context.Context, json *bytes.Buffer) error {
-	user, pass := u.Configuration.Credentials()
-	return UploadJSON(ctx, user, pass, json)
-}
-
-func UploadJSON(ctx context.Context, username, password string, json *bytes.Buffer) error {
 	req, err := http.NewRequest(http.MethodPost, config.Server, json)
 	if err != nil {
 		return err
 	}
 	req.URL.Path = "/services/v2/upload/bezoeken"
-	req.SetBasicAuth(username, password)
-	req = req.WithContext(ctx)
+
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Connection", "close")
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := u.Configuration.Do(ctx, req)
 	if err != nil {
 		return err
 	}

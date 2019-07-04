@@ -10,9 +10,13 @@
             <input type="password" id="d2d-password" required class="form-control {{ if .Error }}is-invalid{{ else }}is-valid{{ end }}" name="password" value="{{ .Password }}">
             <div class="invalid-feedback">
                 {{ if .Error }}
-                {{ .Error | humanize }}
+                    {{ .Error | humanize }}
                 {{ end }}
             </div>
+        </div>
+        <div class="form-group">
+            <label for="d2d-proxy">Proxy (if required):</label>
+            <input type="url" id="d2d-proxy" class="form-control {{ if .Error }}is-invalid{{ else }}is-valid{{ end }}" name="proxy" value="{{ .Proxy }}" placeholder="http://server:port">
             <div class="valid-feedback">
                 Connection to Door2doc is OK.
             </div>

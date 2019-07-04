@@ -21,7 +21,9 @@ endif
 installer: Door2doc_Upload_Service_$(VERSION).exe 
 
 Door2doc_Upload_Service_$(VERSION).exe: d2d-upload_windows_amd64.exe installer.nsi
-	docker run -it -v "$(shell pwd)":/app hp41/nsis:3.01-1 -DVERSION=$(VERSION) /app/installer.nsi
+	sync
+	-docker run -it -w /app -v "$(shell pwd)":/app hp41/nsis:3.01-1 -DVERSION=$(VERSION) installer.nsi
+	docker run -it -w /app -v "$(shell pwd)":/app hp41/nsis:3.01-1 -DVERSION=$(VERSION) installer.nsi
 	mv _installer.exe $@
 
 

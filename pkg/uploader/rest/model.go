@@ -12,50 +12,61 @@ import (
 
 // VisitorRecord defines a single mutation on a visit.
 type VisitorRecord struct {
-	// Required fields
-	ID        int    `json:"bezoek_id"`
-	MutatieID int    `json:"mutatie_id"`
-	Locatie   string `json:"code_locatie"`
+	// Identity
+	Locatie      string `json:"code_locatie"`
+	Afdeling     string `json:"code_afdeling"`
+	Bezoeknummer int    `json:"bezoeknummer"`
+	MutatieID    int    `json:"mutatie_id"`
+	Kamer        string `json:"kamer,omitempty"`
+	Bed          string `json:"bed,omitempty"`
+	Leeftijd     string `json:"leeftijd,omitempty"`
 
-	Aangemeld         *time.Time `json:"dt_aangemeld,omitempty"`
-	Binnenkomst       *time.Time `json:"dt_binnenkomst,omitempty"`
-	AanvangTriage     *time.Time `json:"dt_aanvang_triage,omitempty"`
-	NaarKamer         *time.Time `json:"dt_naar_behandelkamer,omitempty"`
-	EersteContact     *time.Time `json:"dt_eerste_contact_arts,omitempty"`
-	AfdelingGebeld    *time.Time `json:"dt_afdeling_gebeld,omitempty"`
-	GereedOpname      *time.Time `json:"dt_gereed_opname,omitempty"`
-	Vertrek           *time.Time `json:"dt_vertrek,omitempty"`
-	Kamer             string     `json:"behandelkamer,omitempty"`
-	Bed               string     `json:"bed,omitempty"`
-	Ingangsklacht     string     `json:"code_ingangsklacht,omitempty"`
-	Specialisme       string     `json:"code_specialisme,omitempty"`
-	Triage            string     `json:"code_triage,omitempty"`
-	Herkomst          string     `json:"code_herkomst,omitempty"`
-	Vervoerder        string     `json:"code_vervoerder,omitempty"`
-	Ontslagbestemming string     `json:"code_ontslagbestemming,omitempty"`
-	OpnameAfdeling    string     `json:"code_opnameafdeling,omitempty"`
-	OpnameSpecialisme string     `json:"code_opnamespecialisme,omitempty"`
-	Leeftijd          string     `json:"cat_leeftijd,omitempty"`
+	// Process
+	Aangemeld     *time.Time `json:"dt_aangemeld,omitempty"`
+	Binnenkomst   *time.Time `json:"dt_binnenkomst,omitempty"`
+	AanvangTriage *time.Time `json:"dt_aanvang_triage,omitempty"`
+	NaarKamer     *time.Time `json:"dt_naar_kamer,omitempty"`
+	BijArts       *time.Time `json:"dt_bij_arts,omitempty"`
+	ArtsKlaar     *time.Time `json:"dt_arts_klaar,omitempty"`
+	GereedOpname  *time.Time `json:"dt_gereed_opname,omitempty"`
+	Vertrek       *time.Time `json:"dt_vertrek,omitempty"`
+	Einde         *time.Time `json:"dt_einde,omitempty"`
+	Vervallen     bool       `json:"is_vervallen"`
+
+	// Misc
+	Ingangsklacht     string `json:"code_ingangsklacht,omitempty"`
+	Urgentie          string `json:"code_urgentie,omitempty"`
+	Specialisme       string `json:"code_specialisme,omitempty"`
+	Herkomst          string `json:"code_herkomst,omitempty"`
+	Vervoerder        string `json:"code_vervoerder,omitempty"`
+	Ontslagbestemming string `json:"code_ontslagbestemming,omitempty"`
+	OpnameAfdeling    string `json:"code_opnameafdeling,omitempty"`
+	OpnameSpecialisme string `json:"code_opnamespecialisme,omitempty"`
 }
 
 func (v *VisitorRecord) fromDB(r *db.VisitorRecord, loc *time.Location) error {
 	var err error
-	v.ID = r.ID
+	v.Bezoeknummer = r.Bezoeknummer
 	v.MutatieID = r.MutatieID
 	v.Locatie = r.Locatie
+	v.Afdeling = r.Afdeling
 	v.Kamer = r.Kamer
 	v.Bed = r.Bed
 	v.Ingangsklacht = r.Ingangsklacht
+	v.Urgentie = r.Urgentie
 	v.Specialisme = r.Specialisme
-	v.Triage = r.Triage
 	v.Herkomst = r.Herkomst
 	v.Vervoerder = r.Vervoerder
 	v.Ontslagbestemming = r.Ontslagbestemming
 	v.OpnameAfdeling = r.OpnameAfdeling
 	v.OpnameSpecialisme = r.OpnameSpecialisme
 
-	if !r.Aangemaakt.IsZero() {
-		v.Aangemeld = &r.Aangemaakt
+	if !r.Aangemeld.IsZero() {
+		aangemeld := r.Aangemeld.Format("2006-01-02 15:04")
+		t, err := time.ParseInLocation("2006-01-02 15:04", aangemeld, loc)
+		if err == nil {
+			v.Aangemeld = &t
+		}
 	}
 	v.Binnenkomst, err = datumTijd(r.BinnenkomstDatum, r.BinnenkomstTijd, loc)
 	if err != nil {
@@ -69,11 +80,11 @@ func (v *VisitorRecord) fromDB(r *db.VisitorRecord, loc *time.Location) error {
 	if err != nil {
 		return err
 	}
-	v.EersteContact, err = datumTijdRef(v.Binnenkomst, r.EersteContactTijd, loc)
+	v.BijArts, err = datumTijdRef(v.Binnenkomst, r.BijArtsTijd, loc)
 	if err != nil {
 		return err
 	}
-	v.AfdelingGebeld, err = datumTijdRef(v.Binnenkomst, r.AfdelingGebeldTijd, loc)
+	v.ArtsKlaar, err = datumTijdRef(v.Binnenkomst, r.ArtsKlaarTijd, loc)
 	if err != nil {
 		return err
 	}
@@ -85,6 +96,11 @@ func (v *VisitorRecord) fromDB(r *db.VisitorRecord, loc *time.Location) error {
 	if err != nil {
 		return err
 	}
+	v.Einde, err = datumTijdRef(v.Binnenkomst, r.EindTijd, loc)
+	if err != nil {
+		return err
+	}
+	v.Vervallen = r.Vervallen
 
 	if v.Binnenkomst != nil && !r.Geboortedatum.IsZero() {
 		leeftijd := age(v.Binnenkomst, r.Geboortedatum)

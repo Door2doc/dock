@@ -24,7 +24,8 @@ var (
 )
 
 const (
-	PathPing            = "/services/v2/upload/ping"
+	PathPing            = "/services/v3/upload/ping"
+	PathUpload          = "/services/v3/upload/bezoeken"
 	DBValidationTimeout = 5 * time.Second
 
 	config = "door2doc.json"

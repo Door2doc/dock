@@ -123,16 +123,16 @@ func run() error {
 			return err
 		}
 
-		for {
-			panic("fix this part")
-			//if err := uploader.UploadJSON(context.Background(), *username, *password, buf); err != nil {
-			//	log.Println("Error", err)
-			//	<-time.After(time.Second)
-			//	continue
-			//}
-			break
-		}
-		log.Printf("Upload %d--%d OK", visitorRecords[0].MutatieID, visitorRecords[len(visitorRecords)-1].MutatieID)
+		panic("fix this part")
+		//for {
+		//	if err := uploader.UploadJSON(context.Background(), *username, *password, buf); err != nil {
+		//		log.Println("Error", err)
+		//		<-time.After(time.Second)
+		//		continue
+		//	}
+		//	break
+		//}
+		//log.Printf("Upload %d--%d OK", visitorRecords[0].MutatieID, visitorRecords[len(visitorRecords)-1].MutatieID)
 	}
 	return nil
 }
@@ -231,29 +231,32 @@ func toVisitorRecords(records []record) ([]db.VisitorRecord, error) {
 		}
 
 		res = append(res, db.VisitorRecord{
-			ID:                 id,
-			MutatieID:          mutID,
-			Locatie:            rec.Locatie,
-			Aangemaakt:         aangemaakt,
-			BinnenkomstDatum:   rec.BinnenkomstDatum,
-			BinnenkomstTijd:    rec.BinnenkomstTijd,
-			AanvangTriageTijd:  rec.AanvangTriageTijd,
-			NaarKamerTijd:      rec.NaarKamerTijd,
-			EersteContactTijd:  rec.EersteContactTijd,
-			AfdelingGebeldTijd: rec.AfdelingGebeldTijd,
-			GereedOpnameTijd:   rec.GereedOpnameTijd,
-			VertrekTijd:        rec.VertrekTijd,
-			Kamer:              rec.Kamer,
-			Bed:                rec.Bed,
-			Ingangsklacht:      rec.Ingangsklacht,
-			Specialisme:        rec.Specialisme,
-			Triage:             rec.Triage,
-			Vervoerder:         rec.Vervoerder,
-			Geboortedatum:      geb,
-			OpnameAfdeling:     rec.OpnameAfdeling,
-			OpnameSpecialisme:  rec.OpnameSpecialisme,
-			Herkomst:           rec.Herkomst,
-			Ontslagbestemming:  rec.Ontslagbestemming,
+			Bezoeknummer:      id,
+			MutatieID:         mutID,
+			Locatie:           rec.Locatie,
+			Afdeling:          "seh",
+			Aangemeld:         aangemaakt,
+			BinnenkomstDatum:  rec.BinnenkomstDatum,
+			BinnenkomstTijd:   rec.BinnenkomstTijd,
+			AanvangTriageTijd: rec.AanvangTriageTijd,
+			NaarKamerTijd:     rec.NaarKamerTijd,
+			BijArtsTijd:       rec.EersteContactTijd,
+			ArtsKlaarTijd:     "", // TODO
+			GereedOpnameTijd:  rec.GereedOpnameTijd,
+			VertrekTijd:       rec.VertrekTijd,
+			EindTijd:          "", // TODO
+			Kamer:             rec.Kamer,
+			Bed:               rec.Bed,
+			Ingangsklacht:     rec.Ingangsklacht,
+			Specialisme:       rec.Specialisme,
+			Urgentie:          rec.Triage,
+			Vervoerder:        rec.Vervoerder,
+			Geboortedatum:     geb,
+			OpnameAfdeling:    rec.OpnameAfdeling,
+			OpnameSpecialisme: rec.OpnameSpecialisme,
+			Herkomst:          rec.Herkomst,
+			Ontslagbestemming: rec.Ontslagbestemming,
+			Vervallen:         false,
 		})
 	}
 	return res, nil

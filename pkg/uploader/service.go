@@ -151,6 +151,7 @@ func (s *Service) run(ctx context.Context, uploader *Uploader) error {
 	for {
 		// run the upload, IF the configuration is active
 		sleep := time.Second
+		s.cfg.UpdateValidation(ctx)
 		if s.cfg.Active() {
 			if err := uploader.Upload(ctx); err != nil {
 				dlog.Error("While processing upload: %v", err)

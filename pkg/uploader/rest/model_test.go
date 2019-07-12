@@ -39,12 +39,12 @@ func TestVisitorRecordFromDB(t *testing.T) {
 		Want  *VisitorRecord
 	}{
 		"minimal": {
-			Given: &db.VisitorRecord{ID: 12, MutatieID: 100, Locatie: "qqq"},
-			Want:  &VisitorRecord{ID: 12, MutatieID: 100, Locatie: "qqq"},
+			Given: &db.VisitorRecord{Bezoeknummer: 12, MutatieID: 100, Locatie: "qqq"},
+			Want:  &VisitorRecord{Bezoeknummer: 12, MutatieID: 100, Locatie: "qqq"},
 		},
 		"Aangemeld": {
-			Given: &db.VisitorRecord{Aangemaakt: time.Date(2017, time.July, 24, 12, 0, 0, 0, time.UTC)},
-			Want:  &VisitorRecord{Aangemeld: tm("2017-07-24T12:00:00Z")},
+			Given: &db.VisitorRecord{Aangemeld: time.Date(2017, time.July, 24, 12, 0, 0, 0, loc)},
+			Want:  &VisitorRecord{Aangemeld: tm("2017-07-24T10:00:00Z")},
 		},
 		"Binnenkomst": {
 			Given: &db.VisitorRecord{
@@ -105,24 +105,24 @@ func TestVisitorRecordFromDB(t *testing.T) {
 		},
 		"EersteContact": {
 			Given: &db.VisitorRecord{
-				BinnenkomstDatum:  "2017-01-01",
-				BinnenkomstTijd:   "00:20:00",
-				EersteContactTijd: "03:06",
+				BinnenkomstDatum: "2017-01-01",
+				BinnenkomstTijd:  "00:20:00",
+				BijArtsTijd:      "03:06",
 			},
 			Want: &VisitorRecord{
-				Binnenkomst:   tm("2017-01-01T00:20:00+01:00"),
-				EersteContact: tm("2017-01-01T03:06:00+01:00"),
+				Binnenkomst: tm("2017-01-01T00:20:00+01:00"),
+				BijArts:     tm("2017-01-01T03:06:00+01:00"),
 			},
 		},
-		"AfdelingGebeld": {
+		"ArtsKlaar": {
 			Given: &db.VisitorRecord{
-				BinnenkomstDatum:   "2017-01-01",
-				BinnenkomstTijd:    "00:20:00",
-				AfdelingGebeldTijd: "02:23",
+				BinnenkomstDatum: "2017-01-01",
+				BinnenkomstTijd:  "00:20:00",
+				ArtsKlaarTijd:    "02:23",
 			},
 			Want: &VisitorRecord{
-				Binnenkomst:    tm("2017-01-01T00:20:00+01:00"),
-				AfdelingGebeld: tm("2017-01-01T02:23:00+01:00"),
+				Binnenkomst: tm("2017-01-01T00:20:00+01:00"),
+				ArtsKlaar:   tm("2017-01-01T02:23:00+01:00"),
 			},
 		},
 		"GereedOpname": {
@@ -145,6 +145,17 @@ func TestVisitorRecordFromDB(t *testing.T) {
 			Want: &VisitorRecord{
 				Binnenkomst: tm("2017-01-01T00:20:00+01:00"),
 				Vertrek:     tm("2017-01-01T07:21:00+01:00"),
+			},
+		},
+		"Eind": {
+			Given: &db.VisitorRecord{
+				BinnenkomstDatum: "2017-01-01",
+				BinnenkomstTijd:  "00:20:00",
+				EindTijd:         "07:21",
+			},
+			Want: &VisitorRecord{
+				Binnenkomst: tm("2017-01-01T00:20:00+01:00"),
+				Einde:       tm("2017-01-01T07:21:00+01:00"),
 			},
 		},
 		"Kamer": {
@@ -181,10 +192,10 @@ func TestVisitorRecordFromDB(t *testing.T) {
 		},
 		"Triage": {
 			Given: &db.VisitorRecord{
-				Triage: "04",
+				Urgentie: "04",
 			},
 			Want: &VisitorRecord{
-				Triage: "04",
+				Urgentie: "04",
 			},
 		},
 		"Herkomst": {
@@ -252,11 +263,12 @@ func TestVisitorRecordFromDB(t *testing.T) {
 			got.Binnenkomst = u(got.Binnenkomst)
 			got.AanvangTriage = u(got.AanvangTriage)
 			got.NaarKamer = u(got.NaarKamer)
-			got.EersteContact = u(got.EersteContact)
-			got.AfdelingGebeld = u(got.AfdelingGebeld)
+			got.BijArts = u(got.BijArts)
+			got.ArtsKlaar = u(got.ArtsKlaar)
 			got.Vertrek = u(got.Vertrek)
 			got.Aangemeld = u(got.Aangemeld)
 			got.GereedOpname = u(got.GereedOpname)
+			got.Einde = u(got.Einde)
 
 			if !reflect.DeepEqual(got, test.Want) {
 				t.Errorf("VisitorRecordFromDB(\n\t%#v) == \n\t%v, got \n\t%v", test.Given, test.Want, got)

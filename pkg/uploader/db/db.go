@@ -67,54 +67,60 @@ func mapRow(rows *sql.Rows, rec *VisitorRecord, allColumns []string, col2index m
 	}
 
 	var (
-		id                 int
-		mutatieID          int
-		locatie            sql.NullString
-		aangemaakt         *time.Time
-		binnenkomstDatum   sql.NullString
-		binnenkomstTijd    sql.NullString
-		aanvangTriageTijd  sql.NullString
-		naarKamerTijd      sql.NullString
-		eersteContactTijd  sql.NullString
-		afdelingGebeldTijd sql.NullString
-		gereedOpnameTijd   sql.NullString
-		vertrekTijd        sql.NullString
-		kamer              sql.NullString
-		bed                sql.NullString
-		ingangsklacht      sql.NullString
-		specialisme        sql.NullString
-		triage             sql.NullString
-		vervoerder         sql.NullString
-		geboortedatum      *time.Time
-		opnameAfdeling     sql.NullString
-		opnameSpecialisme  sql.NullString
-		herkomst           sql.NullString
-		ontslagbestemming  sql.NullString
+		bezoeknummer      int
+		mutatieID         int
+		locatie           sql.NullString
+		afdeling          sql.NullString
+		aangemaakt        *time.Time
+		binnenkomstDatum  sql.NullString
+		binnenkomstTijd   sql.NullString
+		aanvangTriageTijd sql.NullString
+		naarKamerTijd     sql.NullString
+		bijArtsTijd       sql.NullString
+		artsKlaarTijd     sql.NullString
+		gereedOpnameTijd  sql.NullString
+		vertrekTijd       sql.NullString
+		eindTijd          sql.NullString
+		kamer             sql.NullString
+		bed               sql.NullString
+		ingangsklacht     sql.NullString
+		specialisme       sql.NullString
+		urgentie          sql.NullString
+		vervoerder        sql.NullString
+		geboortedatum     *time.Time
+		opnameAfdeling    sql.NullString
+		opnameSpecialisme sql.NullString
+		herkomst          sql.NullString
+		ontslagbestemming sql.NullString
+		vervallen         bool
 	)
 
-	target[col2index[ColID.Name]] = &id
+	target[col2index[ColBezoeknummer.Name]] = &bezoeknummer
 	target[col2index[ColMutatieID.Name]] = &mutatieID
 	target[col2index[ColLocatie.Name]] = &locatie
-	target[col2index[ColAangemaakt.Name]] = &aangemaakt
+	target[col2index[ColAfdeling.Name]] = &afdeling
+	target[col2index[ColAangemeld.Name]] = &aangemaakt
 	target[col2index[ColBinnenkomstDatum.Name]] = &binnenkomstDatum
 	target[col2index[ColBinnenkomstTijd.Name]] = &binnenkomstTijd
 	target[col2index[ColAanvangTriageTijd.Name]] = &aanvangTriageTijd
 	target[col2index[ColNaarKamerTijd.Name]] = &naarKamerTijd
-	target[col2index[ColEersteContactTijd.Name]] = &eersteContactTijd
-	target[col2index[ColAfdelingGebeldTijd.Name]] = &afdelingGebeldTijd
+	target[col2index[ColBijArtsTijd.Name]] = &bijArtsTijd
+	target[col2index[ColArtsKlaarTijd.Name]] = &artsKlaarTijd
 	target[col2index[ColGereedOpnameTijd.Name]] = &gereedOpnameTijd
 	target[col2index[ColVertrekTijd.Name]] = &vertrekTijd
+	target[col2index[ColEindTijd.Name]] = &eindTijd
 	target[col2index[ColKamer.Name]] = &kamer
 	target[col2index[ColBed.Name]] = &bed
 	target[col2index[ColIngangsklacht.Name]] = &ingangsklacht
 	target[col2index[ColSpecialisme.Name]] = &specialisme
-	target[col2index[ColTriage.Name]] = &triage
+	target[col2index[ColUrgentie.Name]] = &urgentie
 	target[col2index[ColVervoerder.Name]] = &vervoerder
 	target[col2index[ColGeboortedatum.Name]] = &geboortedatum
 	target[col2index[ColOpnameAfdeling.Name]] = &opnameAfdeling
 	target[col2index[ColOpnameSpecialisme.Name]] = &opnameSpecialisme
 	target[col2index[ColHerkomst.Name]] = &herkomst
 	target[col2index[ColOntslagbestemming.Name]] = &ontslagbestemming
+	target[col2index[ColVervallen.Name]] = &vervallen
 
 	if err := rows.Scan(target...); err != nil {
 		return err
@@ -131,29 +137,32 @@ func mapRow(rows *sql.Rows, rec *VisitorRecord, allColumns []string, col2index m
 	}
 
 	*rec = VisitorRecord{
-		ID:                 id,
-		MutatieID:          mutatieID,
-		Locatie:            locatie.String,
-		Aangemaakt:         created,
-		BinnenkomstDatum:   binnenkomstDatum.String,
-		BinnenkomstTijd:    asTime(binnenkomstTijd.String),
-		AanvangTriageTijd:  asTime(aanvangTriageTijd.String),
-		NaarKamerTijd:      asTime(naarKamerTijd.String),
-		EersteContactTijd:  asTime(eersteContactTijd.String),
-		AfdelingGebeldTijd: asTime(afdelingGebeldTijd.String),
-		GereedOpnameTijd:   asTime(gereedOpnameTijd.String),
-		VertrekTijd:        asTime(vertrekTijd.String),
-		Kamer:              kamer.String,
-		Bed:                bed.String,
-		Ingangsklacht:      ingangsklacht.String,
-		Specialisme:        specialisme.String,
-		Triage:             triage.String,
-		Vervoerder:         vervoerder.String,
-		Geboortedatum:      geb,
-		OpnameAfdeling:     opnameAfdeling.String,
-		OpnameSpecialisme:  opnameSpecialisme.String,
-		Herkomst:           herkomst.String,
-		Ontslagbestemming:  ontslagbestemming.String,
+		Bezoeknummer:      bezoeknummer,
+		MutatieID:         mutatieID,
+		Locatie:           locatie.String,
+		Afdeling:          afdeling.String,
+		Aangemeld:         created,
+		BinnenkomstDatum:  binnenkomstDatum.String,
+		BinnenkomstTijd:   asTime(binnenkomstTijd.String),
+		AanvangTriageTijd: asTime(aanvangTriageTijd.String),
+		NaarKamerTijd:     asTime(naarKamerTijd.String),
+		BijArtsTijd:       asTime(bijArtsTijd.String),
+		ArtsKlaarTijd:     asTime(artsKlaarTijd.String),
+		GereedOpnameTijd:  asTime(gereedOpnameTijd.String),
+		VertrekTijd:       asTime(vertrekTijd.String),
+		EindTijd:          asTime(eindTijd.String),
+		Kamer:             kamer.String,
+		Bed:               bed.String,
+		Ingangsklacht:     ingangsklacht.String,
+		Specialisme:       specialisme.String,
+		Urgentie:          urgentie.String,
+		Vervoerder:        vervoerder.String,
+		Geboortedatum:     geb,
+		OpnameAfdeling:    opnameAfdeling.String,
+		OpnameSpecialisme: opnameSpecialisme.String,
+		Herkomst:          herkomst.String,
+		Ontslagbestemming: ontslagbestemming.String,
+		Vervallen:         vervallen,
 	}
 
 	return nil

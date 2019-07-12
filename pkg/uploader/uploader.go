@@ -127,7 +127,7 @@ func (u *Uploader) upload(ctx context.Context, json *bytes.Buffer) error {
 	if err != nil {
 		return err
 	}
-	req.URL.Path = "/services/v2/upload/bezoeken"
+	req.URL.Path = config.PathUpload
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Connection", "close")

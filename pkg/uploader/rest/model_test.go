@@ -64,32 +64,32 @@ func TestVisitorRecordFromDB(t *testing.T) {
 				Binnenkomst: tm("2017-01-01T00:20:00+01:00"),
 			},
 		},
-		"AanvangTriageTijd": {
+		"TriageTijd": {
 			Given: &db.VisitorRecord{
-				BinnenkomstDatum:  "2017-01-01",
-				BinnenkomstTijd:   "00:20:00",
-				AanvangTriageTijd: "00:24",
+				BinnenkomstDatum: "2017-01-01",
+				BinnenkomstTijd:  "00:20:00",
+				TriageTijd:       "00:24",
 			},
 			Want: &VisitorRecord{
-				Binnenkomst:   tm("2017-01-01T00:20:00+01:00"),
-				AanvangTriage: tm("2017-01-01T00:24:00+01:00"),
+				Binnenkomst: tm("2017-01-01T00:20:00+01:00"),
+				Triage:      tm("2017-01-01T00:24:00+01:00"),
 			},
 		},
-		"AanvangTriageTijd, geen aankomst": {
+		"TriageTijd, geen aankomst": {
 			Given: &db.VisitorRecord{
-				AanvangTriageTijd: "00:24",
+				TriageTijd: "00:24",
 			},
 			Want: &VisitorRecord{},
 		},
-		"AanvangTriageTijd, volgende dag": {
+		"TriageTijd, volgende dag": {
 			Given: &db.VisitorRecord{
-				BinnenkomstDatum:  "2017-01-01",
-				BinnenkomstTijd:   "23:20:00",
-				AanvangTriageTijd: "00:24",
+				BinnenkomstDatum: "2017-01-01",
+				BinnenkomstTijd:  "23:20:00",
+				TriageTijd:       "00:24",
 			},
 			Want: &VisitorRecord{
-				Binnenkomst:   tm("2017-01-01T23:20:00+01:00"),
-				AanvangTriage: tm("2017-01-02T00:24:00+01:00"),
+				Binnenkomst: tm("2017-01-01T23:20:00+01:00"),
+				Triage:      tm("2017-01-02T00:24:00+01:00"),
 			},
 		},
 		"NaarKamer": {
@@ -156,6 +156,19 @@ func TestVisitorRecordFromDB(t *testing.T) {
 			Want: &VisitorRecord{
 				Binnenkomst: tm("2017-01-01T00:20:00+01:00"),
 				Einde:       tm("2017-01-01T07:21:00+01:00"),
+			},
+		},
+		"Mutatie Eindtijd/Status": {
+			Given: &db.VisitorRecord{
+				BinnenkomstDatum: "2017-01-01",
+				BinnenkomstTijd:  "00:20:00",
+				MutatieEindTijd:  "03:15",
+				Mutatiestatus:    "NH",
+			},
+			Want: &VisitorRecord{
+				Binnenkomst:   tm("2017-01-01T00:20:00+01:00"),
+				MutatieEinde:  tm("2017-01-01T03:15:00+01:00"),
+				Mutatiestatus: "NH",
 			},
 		},
 		"Kamer": {
@@ -261,7 +274,7 @@ func TestVisitorRecordFromDB(t *testing.T) {
 			}
 
 			got.Binnenkomst = u(got.Binnenkomst)
-			got.AanvangTriage = u(got.AanvangTriage)
+			got.Triage = u(got.Triage)
 			got.NaarKamer = u(got.NaarKamer)
 			got.BijArts = u(got.BijArts)
 			got.ArtsKlaar = u(got.ArtsKlaar)
@@ -269,6 +282,7 @@ func TestVisitorRecordFromDB(t *testing.T) {
 			got.Aangemeld = u(got.Aangemeld)
 			got.GereedOpname = u(got.GereedOpname)
 			got.Einde = u(got.Einde)
+			got.MutatieEinde = u(got.MutatieEinde)
 
 			if !reflect.DeepEqual(got, test.Want) {
 				t.Errorf("VisitorRecordFromDB(\n\t%#v) == \n\t%v, got \n\t%v", test.Given, test.Want, got)

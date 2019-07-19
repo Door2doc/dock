@@ -238,7 +238,7 @@ func toVisitorRecords(records []record) ([]db.VisitorRecord, error) {
 			Aangemeld:         aangemaakt,
 			BinnenkomstDatum:  rec.BinnenkomstDatum,
 			BinnenkomstTijd:   rec.BinnenkomstTijd,
-			AanvangTriageTijd: rec.AanvangTriageTijd,
+			TriageTijd:        rec.AanvangTriageTijd,
 			NaarKamerTijd:     rec.NaarKamerTijd,
 			BijArtsTijd:       rec.EersteContactTijd,
 			ArtsKlaarTijd:     "", // TODO

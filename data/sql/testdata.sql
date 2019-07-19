@@ -9,7 +9,7 @@ CREATE TABLE correct (
     aangemaakt        TIMESTAMP, -- aanmaak datum
     binnenkomstdatum  TEXT,      -- aankomst datum
     binnenkomsttijd   TEXT,      -- aankomst tijd
-    aanvangtriagetijd TEXT,      -- triage tijd
+    triagetijd        TEXT,      -- triage tijd
     naarkamertijd     TEXT,      -- tijd begin behandeling
     eerstecontacttijd TEXT,      -- tijd patient gezien
     artsklaartijd     TEXT,      -- tijd arts klaar
@@ -28,22 +28,30 @@ CREATE TABLE correct (
     opnamespecialisme TEXT,
     herkomst          TEXT,
     ontslagbestemming TEXT,
-    vervallen         INTEGER
+    vervallen         INTEGER,
+    mutatieeindtijd   TEXT,
+    mutatiestatus     TEXT
 );
 
-INSERT INTO correct(sehid, sehmutid, locatie, afdeling, aangemaakt, binnenkomstdatum, binnenkomsttijd, aanvangtriagetijd,
-                    naarkamertijd, eerstecontacttijd, artsklaartijd, gereedopnametijd, vertrektijd, eindtijd, kamer, bed,
+INSERT INTO correct(sehid, sehmutid, locatie, afdeling, aangemaakt, binnenkomstdatum, binnenkomsttijd,
+                    triagetijd,
+                    naarkamertijd, eerstecontacttijd, artsklaartijd, gereedopnametijd, vertrektijd, eindtijd, kamer,
+                    bed,
                     ingangsklacht, specialisme, triage, vervoerder, bestemming, geboortedatum, opnameafdeling,
                     opnamespecialisme, herkomst, ontslagbestemming, vervallen)
 VALUES (328996, 1091568, 'A', 'seh', '2017-07-13 13:00:00', '2017-07-13', '23:18', NULL, '23:18', '02:40', NULL,
-        '02:06', '04:34', '04:34', '', '', 'Pneumonie', '04', NULL, '2', 'A', '1977-07-24 12:00:00', NULL, NULL, NULL, NULL, 0);
+        '02:06', '04:34', '04:34', '', '', 'Pneumonie', '04', NULL, '2', 'A', '1977-07-24 12:00:00', NULL, NULL, NULL,
+        NULL, 0);
 
-INSERT INTO correct(sehid, sehmutid, locatie, afdeling, aangemaakt, binnenkomstdatum, binnenkomsttijd, aanvangtriagetijd,
-                    naarkamertijd, eerstecontacttijd, artsklaartijd, gereedopnametijd, vertrektijd, eindtijd, kamer, bed,
+INSERT INTO correct(sehid, sehmutid, locatie, afdeling, aangemaakt, binnenkomstdatum, binnenkomsttijd,
+                    triagetijd,
+                    naarkamertijd, eerstecontacttijd, artsklaartijd, gereedopnametijd, vertrektijd, eindtijd, kamer,
+                    bed,
                     ingangsklacht, specialisme, triage, vervoerder, bestemming, geboortedatum, opnameafdeling,
                     opnamespecialisme, herkomst, ontslagbestemming, vervallen)
 VALUES (1, 2, 'locatie', 'seh', '2018-07-04 12:04:00', 'binnenkomstdatum', 'binnenkomsttijd', 'aanvangtriagetijd',
-        'naarkamertijd', 'eerstecontacttijd', 'artsklaartijd', 'gereedopnametijd', 'vertrektijd', 'eindtijd', 'kamer', 'bed',
+        'naarkamertijd', 'eerstecontacttijd', 'artsklaartijd', 'gereedopnametijd', 'vertrektijd', 'eindtijd', 'kamer',
+        'bed',
         'ingangsklacht', 'specialisme', 'triage', 'vervoerder', 'bestemming', '1977-07-24 12:00:00', 'opnameafdeling',
         'opnamespecialisme', 'herkomst', 'ontslagbestemming', 0);
 

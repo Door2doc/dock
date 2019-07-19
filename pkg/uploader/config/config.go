@@ -39,7 +39,7 @@ type ValidationResult struct {
 	D2DCredentials     error
 
 	QueryDuration time.Duration
-	QueryResults  []db.VisitorRecord
+	QueryResults  db.VisitorRecords
 }
 
 // IsValid returns true if all possible validation errors are nil.

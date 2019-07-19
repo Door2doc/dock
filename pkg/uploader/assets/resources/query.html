@@ -17,47 +17,7 @@
                         These are the first {{ .QueryResults|len }} results:
                     </p>
                     <div style="overflow-x: scroll">
-                        <table class="table">
-                            <thead>
-                            <tr>
-                                {{ range $i, $row := .Columns }}
-                                <th>{{ $row.Name }}</th>
-                                {{ end }}
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {{ range $index, $row := .QueryResults }}
-                                <tr>
-                                    <td>{{ $row.Bezoeknummer }}</td>
-                                    <td>{{ $row.MutatieID }}</td>
-                                    <td>{{ $row.Locatie }}</td>
-                                    <td>{{ $row.Afdeling }}</td>
-                                    <td>{{ $row.Aangemeld }}</td>
-                                    <td>{{ $row.BinnenkomstDatum }}</td>
-                                    <td>{{ $row.BinnenkomstTijd }}</td>
-                                    <td>{{ $row.AanvangTriageTijd }}</td>
-                                    <td>{{ $row.NaarKamerTijd }}</td>
-                                    <td>{{ $row.BijArtsTijd }}</td>
-                                    <td>{{ $row.ArtsKlaarTijd }}</td>
-                                    <td>{{ $row.GereedOpnameTijd }}</td>
-                                    <td>{{ $row.VertrekTijd }}</td>
-                                    <td>{{ $row.EindTijd }}</td>
-                                    <td>{{ $row.Kamer }}</td>
-                                    <td>{{ $row.Bed }}</td>
-                                    <td>{{ $row.Ingangsklacht }}</td>
-                                    <td>{{ $row.Specialisme }}</td>
-                                    <td>{{ $row.Urgentie }}</td>
-                                    <td>{{ $row.Vervoerder }}</td>
-                                    <td>{{ $row.Geboortedatum }}</td>
-                                    <td>{{ $row.OpnameAfdeling }}</td>
-                                    <td>{{ $row.OpnameSpecialisme }}</td>
-                                    <td>{{ $row.Herkomst }}</td>
-                                    <td>{{ $row.Ontslagbestemming }}</td>
-                                    <td>{{ $row.Vervallen }}</td>
-                                </tr>
-                            {{ end }}
-                            </tbody>
-                        </table>
+                        {{ .QueryResults.AsTable }}
                     </div>
                 {{ end }}
             </div>

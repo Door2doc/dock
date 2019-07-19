@@ -24,13 +24,15 @@ type VisitorRecord struct {
 	// Process
 	Aangemeld     *time.Time `json:"dt_aangemeld,omitempty"`
 	Binnenkomst   *time.Time `json:"dt_binnenkomst,omitempty"`
-	AanvangTriage *time.Time `json:"dt_aanvang_triage,omitempty"`
+	Triage        *time.Time `json:"dt_triage,omitempty"`
 	NaarKamer     *time.Time `json:"dt_naar_kamer,omitempty"`
 	BijArts       *time.Time `json:"dt_bij_arts,omitempty"`
 	ArtsKlaar     *time.Time `json:"dt_arts_klaar,omitempty"`
 	GereedOpname  *time.Time `json:"dt_gereed_opname,omitempty"`
 	Vertrek       *time.Time `json:"dt_vertrek,omitempty"`
 	Einde         *time.Time `json:"dt_einde,omitempty"`
+	MutatieEinde  *time.Time `json:"dt_mutatie_einde,omitempty"`
+	Mutatiestatus string     `json:"code_mutatiestatus,omitempty"`
 	Vervallen     bool       `json:"is_vervallen"`
 
 	// Misc
@@ -72,7 +74,7 @@ func (v *VisitorRecord) fromDB(r *db.VisitorRecord, loc *time.Location) error {
 	if err != nil {
 		return err
 	}
-	v.AanvangTriage, err = datumTijdRef(v.Binnenkomst, r.AanvangTriageTijd, loc)
+	v.Triage, err = datumTijdRef(v.Binnenkomst, r.TriageTijd, loc)
 	if err != nil {
 		return err
 	}
@@ -100,6 +102,11 @@ func (v *VisitorRecord) fromDB(r *db.VisitorRecord, loc *time.Location) error {
 	if err != nil {
 		return err
 	}
+	v.MutatieEinde, err = datumTijdRef(v.Binnenkomst, r.MutatieEindTijd, loc)
+	if err != nil {
+		return err
+	}
+	v.Mutatiestatus = r.Mutatiestatus
 	v.Vervallen = r.Vervallen
 
 	if v.Binnenkomst != nil && !r.Geboortedatum.IsZero() {

@@ -51,7 +51,7 @@ func TestExecuteQuery(t *testing.T) {
 				Aangemeld:         time.Date(2017, time.July, 13, 13, 0, 0, 0, time.UTC),
 				BinnenkomstDatum:  "2017-07-13",
 				BinnenkomstTijd:   "23:18",
-				AanvangTriageTijd: "",
+				TriageTijd:        "",
 				NaarKamerTijd:     "23:18",
 				BijArtsTijd:       "02:40",
 				ArtsKlaarTijd:     "",
@@ -82,7 +82,7 @@ func TestExecuteQuery(t *testing.T) {
 				Aangemeld:         time.Date(2018, time.July, 4, 12, 4, 0, 0, time.UTC),
 				BinnenkomstDatum:  "binnenkomstdatum",
 				BinnenkomstTijd:   "binnenkomsttijd",
-				AanvangTriageTijd: "aanvangtriagetijd",
+				TriageTijd:        "aanvangtriagetijd",
 				NaarKamerTijd:     "naarkamertijd",
 				BijArtsTijd:       "eerstecontacttijd",
 				ArtsKlaarTijd:     "artsklaartijd",
@@ -113,13 +113,15 @@ func TestExecuteQuery(t *testing.T) {
 				ColAangemeld.Name,
 				ColBinnenkomstDatum.Name,
 				ColBinnenkomstTijd.Name,
-				ColAanvangTriageTijd.Name,
+				ColTriageTijd.Name,
 				ColNaarKamerTijd.Name,
 				ColBijArtsTijd.Name,
 				ColArtsKlaarTijd.Name,
 				ColGereedOpnameTijd.Name,
 				ColVertrekTijd.Name,
 				ColEindTijd.Name,
+				ColMutatieEindTijd.Name,
+				ColMutatieStatus.Name,
 				ColKamer.Name,
 				ColBed.Name,
 				ColIngangsklacht.Name,
@@ -175,7 +177,7 @@ func TestExecuteQueryPermutations(t *testing.T) {
 		"NULL AS aangemaakt",
 		"'binnenkomstdatum' AS binnenkomstdatum",
 		"'binnenkomsttijd' AS binnenkomsttijd",
-		"'aanvangtriagetijd' AS aanvangtriagetijd",
+		"'triagetijd' AS triagetijd",
 		"'naarkamertijd' AS naarkamertijd",
 		"'eerstecontacttijd' AS eerstecontacttijd",
 		"'artsklaartijd' AS artsklaartijd",
@@ -183,6 +185,8 @@ func TestExecuteQueryPermutations(t *testing.T) {
 		"'gereedopnametijd' AS gereedopnametijd",
 		"'vertrektijd' AS vertrektijd",
 		"'eindtijd' AS eindtijd",
+		"'mutatieeindtijd' AS mutatieeindtijd",
+		"'mutatiestatus' AS mutatiestatus",
 		"'kamer' AS kamer",
 		"'bed' AS bed",
 		"'ingangsklacht' AS ingangsklacht",
@@ -225,13 +229,15 @@ func TestExecuteQueryPermutations(t *testing.T) {
 		Aangemeld:         time.Time{},
 		BinnenkomstDatum:  "binnenkomstdatum",
 		BinnenkomstTijd:   "binnenkomsttijd",
-		AanvangTriageTijd: "aanvangtriagetijd",
+		TriageTijd:        "triagetijd",
 		NaarKamerTijd:     "naarkamertijd",
 		BijArtsTijd:       "eerstecontacttijd",
 		ArtsKlaarTijd:     "artsklaartijd",
 		GereedOpnameTijd:  "gereedopnametijd",
 		VertrekTijd:       "vertrektijd",
 		EindTijd:          "eindtijd",
+		MutatieEindTijd:   "mutatieeindtijd",
+		Mutatiestatus:     "mutatiestatus",
 		Kamer:             "kamer",
 		Bed:               "bed",
 		Ingangsklacht:     "ingangsklacht",
@@ -274,5 +280,15 @@ func setup(ctx context.Context, t *testing.T) (*sql.Tx, context.CancelFunc) {
 		if err := db.Close(); err != nil {
 			t.Error(err)
 		}
+	}
+}
+
+func TestVisitorRecordsAsTable(t *testing.T) {
+	v := VisitorRecords{
+		{}, {},
+	}
+	res := v.AsTable()
+	if res == "" {
+		t.Fail()
 	}
 }

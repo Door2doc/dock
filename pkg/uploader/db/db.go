@@ -81,6 +81,8 @@ func mapRow(rows *sql.Rows, rec *VisitorRecord, allColumns []string, col2index m
 		gereedOpnameTijd  sql.NullString
 		vertrekTijd       sql.NullString
 		eindTijd          sql.NullString
+		mutatieEindTijd   sql.NullString
+		mutatieStatus     sql.NullString
 		kamer             sql.NullString
 		bed               sql.NullString
 		ingangsklacht     sql.NullString
@@ -102,7 +104,7 @@ func mapRow(rows *sql.Rows, rec *VisitorRecord, allColumns []string, col2index m
 	target[col2index[ColAangemeld.Name]] = &aangemaakt
 	target[col2index[ColBinnenkomstDatum.Name]] = &binnenkomstDatum
 	target[col2index[ColBinnenkomstTijd.Name]] = &binnenkomstTijd
-	target[col2index[ColAanvangTriageTijd.Name]] = &aanvangTriageTijd
+	target[col2index[ColTriageTijd.Name]] = &aanvangTriageTijd
 	target[col2index[ColNaarKamerTijd.Name]] = &naarKamerTijd
 	target[col2index[ColBijArtsTijd.Name]] = &bijArtsTijd
 	target[col2index[ColArtsKlaarTijd.Name]] = &artsKlaarTijd
@@ -121,6 +123,8 @@ func mapRow(rows *sql.Rows, rec *VisitorRecord, allColumns []string, col2index m
 	target[col2index[ColHerkomst.Name]] = &herkomst
 	target[col2index[ColOntslagbestemming.Name]] = &ontslagbestemming
 	target[col2index[ColVervallen.Name]] = &vervallen
+	target[col2index[ColMutatieEindTijd.Name]] = &mutatieEindTijd
+	target[col2index[ColMutatieStatus.Name]] = &mutatieStatus
 
 	if err := rows.Scan(target...); err != nil {
 		return err
@@ -144,13 +148,15 @@ func mapRow(rows *sql.Rows, rec *VisitorRecord, allColumns []string, col2index m
 		Aangemeld:         created,
 		BinnenkomstDatum:  binnenkomstDatum.String,
 		BinnenkomstTijd:   asTime(binnenkomstTijd.String),
-		AanvangTriageTijd: asTime(aanvangTriageTijd.String),
+		TriageTijd:        asTime(aanvangTriageTijd.String),
 		NaarKamerTijd:     asTime(naarKamerTijd.String),
 		BijArtsTijd:       asTime(bijArtsTijd.String),
 		ArtsKlaarTijd:     asTime(artsKlaarTijd.String),
 		GereedOpnameTijd:  asTime(gereedOpnameTijd.String),
 		VertrekTijd:       asTime(vertrekTijd.String),
 		EindTijd:          asTime(eindTijd.String),
+		MutatieEindTijd:   asTime(mutatieEindTijd.String),
+		Mutatiestatus:     mutatieStatus.String,
 		Kamer:             kamer.String,
 		Bed:               bed.String,
 		Ingangsklacht:     ingangsklacht.String,

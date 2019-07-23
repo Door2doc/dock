@@ -70,7 +70,7 @@ func (u *Uploader) Upload(ctx context.Context) error {
 
 	// upload JSON to upload service
 	start = time.Now()
-	if err := u.upload(ctx, buf); err != nil {
+	if err := u.UploadJSON(ctx, buf); err != nil {
 		evt.Error = err
 		return err
 	}
@@ -122,7 +122,7 @@ func (u *Uploader) executeQuery(ctx context.Context) ([]db.VisitorRecord, error)
 	return records, nil
 }
 
-func (u *Uploader) upload(ctx context.Context, json *bytes.Buffer) error {
+func (u *Uploader) UploadJSON(ctx context.Context, json *bytes.Buffer) error {
 	req, err := http.NewRequest(http.MethodPost, config.Server, json)
 	if err != nil {
 		return err

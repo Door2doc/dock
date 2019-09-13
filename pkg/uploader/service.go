@@ -75,7 +75,7 @@ func (s *Service) Start(svc service.Service) error {
 	mux := http.DefaultServeMux
 	mux.Handle("/", handler)
 	s.srv = &http.Server{
-		Addr:    ":17226",
+		Addr:    "127.0.0.1:17226",
 		Handler: mux,
 	}
 

@@ -14,7 +14,10 @@ Voordat u aan de installatie kunt beginnen, dient over het volgende te beschikke
 
 ## Server 
 Een server waarop de Upload Service geïnstalleerd kan worden. Dit hoeft geen dedicated server te zijn. Deze server
-moet connectie kunnen maken met de ZIS database, en moet connectie kunnen maken met `https://integration.door2doc.net`.
+moet connectie kunnen maken met de ZIS database, en moet connectie kunnen maken met `https://integration.door2doc.net` 
+(al dan niet via een proxy).
+
+Op deze server dient een browser geïnstalleerd te zijn om de web interface te kunnen gebruiken. 
 
 ## Database gegevens
 Om verbinding te maken met de database is er een connectie string nodig. De Upload Service ondersteunt zowel ADO als ODBC 
@@ -40,24 +43,13 @@ U kunt de laatste versie van deze software downloaden van
 
 `https://github.com/Door2doc/d2d-uploader/releases`. 
 
-De software wordt geleverd als `.msi` bestand.  
+De software wordt geleverd als `.exe` bestand.  
 
 # Installatie
 
-## De-installatie 
-
-Als u een oudere versie van de door2doc Upload Service hebt draaien, dient u deze eerst te de-installeren. Dit gaat
-op de gebruikelijke manier: via het Start Menu kiest u Control Panel > Programs > Uninstall a program.
-
-![De-installeren van software](remove-software-1.png){height=50%}\ 
-
-Selecteer de "Door2doc Upload Service" en klik op Uninstall.
-
-![De-installeren van door2doc Upload Service](remove-software-2.png){height=50%}\  
-
 ## Installatie 
 
-Installatie vindt plaats door een dubbelklik op het `.msi` bestand:
+Installatie vindt plaats door een dubbelklik op het `.exe` bestand:
 
 ![Installatie van door2doc Upload Service](install-software-1.png){height=50%}\   
 

@@ -2,13 +2,13 @@ package uploader
 
 import (
 	"context"
-	"io/ioutil"
+	"fmt"
 	"net"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/door2doc/d2d-uploader/pkg/uploader/assets"
+	"4d63.com/tz"
 	"github.com/door2doc/d2d-uploader/pkg/uploader/config"
 	"github.com/door2doc/d2d-uploader/pkg/uploader/dlog"
 	"github.com/door2doc/d2d-uploader/pkg/uploader/history"
@@ -35,19 +35,9 @@ func NewService(development bool, version string) *Service {
 
 // Start starts running the service. It will return as soon as possible.
 func (s *Service) Start(svc service.Service) error {
-	// determine time zone
-	tzdata, err := assets.FS(false).Open("/zoneinfo/Europe/Amsterdam")
+	location, err := tz.LoadLocation("Europe/Amsterdam")
 	if err != nil {
-		return err
-	}
-	defer func() {
-		dlog.Close(tzdata)
-	}()
-	bs, err := ioutil.ReadAll(tzdata)
-
-	location, err := time.LoadLocationFromTZData("Europe/Amsterdam", bs)
-	if err != nil {
-		return err
+		return fmt.Errorf("failed to load Europe/Amsterdam: %v", err)
 	}
 
 	// set up history
@@ -75,7 +65,7 @@ func (s *Service) Start(svc service.Service) error {
 	mux := http.DefaultServeMux
 	mux.Handle("/", handler)
 	s.srv = &http.Server{
-		Addr:    "127.0.0.1:17226",
+		Addr:    ":17226",
 		Handler: mux,
 	}
 

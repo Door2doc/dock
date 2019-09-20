@@ -42,7 +42,7 @@ d2d-upload_windows_amd64.exe:	$(SOURCES)
 
 .PHONY:	clean
 clean:
-	rm -f d2d-upload_darwin_amd64 d2d-upload_windows_amd64.exe
+	rm -f *.exe
 
 .PHONY:	test
 test:

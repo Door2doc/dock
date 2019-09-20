@@ -47,6 +47,15 @@ func TestConnectionDataMarshal(t *testing.T) {
 			},
 			WantCanonical: "server=127.0.0.1; database=myDB; user id=username; password=password",
 		},
+		"MSSQL ADO with integrated security": {
+			Given: "Server=127.0.0.1; Database=myDB",
+			Want: &ConnectionData{
+				Driver:   "sqlserver",
+				Host:     "127.0.0.1",
+				Database: "myDB",
+			},
+			WantCanonical: "server=127.0.0.1; database=myDB; integrated security=SSPI",
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			c := new(ConnectionData)

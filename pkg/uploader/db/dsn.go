@@ -76,6 +76,9 @@ func (c *ConnectionData) unmarshalSqlServer(bs []byte) error {
 			c.Username = val
 		case "password":
 			c.Password = val
+		case "integrated security":
+			c.Username = ""
+			c.Password = ""
 		default:
 			if len(c.Params) != 0 {
 				c.Params += ";"
@@ -126,6 +129,9 @@ func (c *ConnectionData) marshalSqlServer() ([]byte, error) {
 	}
 	if c.Password != "" {
 		parts = append(parts, fmt.Sprintf("password=%s", c.Password))
+	}
+	if c.Username == "" && c.Password == "" {
+		parts = append(parts, "integrated security=SSPI")
 	}
 	if c.Params != "" {
 		parts = append(parts, c.Params)

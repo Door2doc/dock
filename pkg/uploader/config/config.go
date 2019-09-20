@@ -325,7 +325,7 @@ func (c *Configuration) checkDatabase(ctx context.Context) (queryDuration time.D
 
 	err = conn.PingContext(ctx)
 	if err != nil {
-		dlog.Error("Failed to ping database: %v", err)
+		dlog.Error("Failed to ping database %s: %v", c.connection.DSN(), err)
 		connErr = &DatabaseInvalidError{Cause: err.Error()}
 		return
 	}

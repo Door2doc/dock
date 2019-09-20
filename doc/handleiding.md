@@ -20,16 +20,8 @@ moet connectie kunnen maken met de ZIS database, en moet connectie kunnen maken 
 Op deze server dient een browser geïnstalleerd te zijn om de web interface te kunnen gebruiken. 
 
 ## Database gegevens
-Om verbinding te maken met de database is er een connectie string nodig. De Upload Service ondersteunt zowel ADO als ODBC 
-strings. 
-
-Voorbeeld van een ADO string: 
-
-`Server=myServerAddress;Database=myDataBase;User Id=myUsername; Password=myPassword;`
-
-Voorbeeld van een ODBC string: 
-
-`odbc:server=localhost;user id=sa;database=master;app name=MyAppName`
+Om verbinding te maken met de database zijn er connectie gegevens nodig. Gebruikersnaam en wachtwoord zijn niet verplicht;
+indien afwezig, wordt SQL Server Integrated Security gebruikt. 
 
 ## Door2doc Credentials
 Voor de upload naar door2doc heeft de service een door2doc gebruikersnaam en wachtwoord nodig. Deze krijgt u door ons geleverd. 

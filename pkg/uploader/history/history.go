@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+const MaxHistory = 10
+
 // History keeps track of recent events.
 type History struct {
 	mu     sync.Mutex
@@ -32,8 +34,8 @@ func (h *History) NewEvent() *Event {
 	e := &Event{Time: time.Now()}
 
 	h.events = append([]*Event{e}, h.events...)
-	if len(h.events) > 10 {
-		h.events = h.events[:10]
+	if len(h.events) > MaxHistory {
+		h.events = h.events[:MaxHistory]
 	}
 
 	return e

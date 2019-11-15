@@ -7,13 +7,13 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"os"
 	"sync"
 	"time"
 
 	"github.com/door2doc/d2d-uploader/pkg/uploader/db"
 	"github.com/door2doc/d2d-uploader/pkg/uploader/dlog"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/rest"
 	"github.com/pkg/errors"
 	"github.com/shibukawa/configdir"
 )
@@ -276,8 +276,9 @@ func (c *Configuration) checkConnection(ctx context.Context) (connErr error, cre
 		return err, credErr
 	}
 	req.URL.Path = PathPing
+	req.SetBasicAuth(c.username, c.password)
 
-	res, err := c.do(ctx, req)
+	res, err := rest.Do(ctx, c.proxy, req)
 	if err != nil {
 		dlog.Error("Failed to connect to %s: %v", Server, err)
 		return ErrD2DConnectionFailed, credErr
@@ -381,23 +382,6 @@ func (c *Configuration) Do(ctx context.Context, req *http.Request) (*http.Respon
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	return c.do(ctx, req)
-}
-
-func (c *Configuration) do(ctx context.Context, req *http.Request) (*http.Response, error) {
-
 	req.SetBasicAuth(c.username, c.password)
-
-	t := &http.Transport{}
-	if c.proxy != "" {
-		proxyURL, err := url.Parse(c.proxy)
-		switch err {
-		case nil:
-			t.Proxy = http.ProxyURL(proxyURL)
-		default:
-			dlog.Error("Failed to set proxy server: %v", err)
-		}
-	}
-	client := &http.Client{Transport: t}
-	return client.Do(req.WithContext(ctx))
+	return rest.Do(ctx, c.proxy, req)
 }

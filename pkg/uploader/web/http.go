@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io/ioutil"
 	"net/http"
+	"net/http/pprof"
 	"sync"
 	"time"
 
@@ -133,6 +134,10 @@ func NewServeMux(dev bool, version string, cfg *config.Configuration, h *history
 	res.Handle(pathDatabase, res.DatabaseHandler())
 	res.Handle(pathQuery, res.QueryHandler())
 	res.Handle(pathUpload, res.UploadHandler())
+	res.HandleFunc("/debug/pprof/", pprof.Index)
+	res.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	res.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	res.HandleFunc("/debug/pprof/trace", pprof.Trace)
 	return res, nil
 }
 

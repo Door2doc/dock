@@ -31,11 +31,35 @@ type Uploader struct {
 
 // Upload uses a configuration to run a query on the target database, convert the results to JSON, and upload
 // them to the door2doc integration service.
-func (u *Uploader) Upload(ctx context.Context) error {
+func (u *Uploader) Upload(ctx context.Context) {
 	u.mu.Lock()
 	defer u.mu.Unlock()
 
-	evt := u.History.NewEvent()
+	if err := u.upload(ctx, config.PathVisitorUpload, u.executeVisitorQuery); err != nil {
+		dlog.Error("While processing visitor upload: %v", err)
+	}
+
+	if u.Configuration.RadiologieQuery() != "" {
+		if err := u.upload(ctx, config.PathRadiologieUpload, u.executeRadiologieQuery); err != nil {
+			dlog.Error("While processing radiologie upload: %v", err)
+		}
+	}
+	if u.Configuration.LabQuery() != "" {
+		if err := u.upload(ctx, config.PathLabUpload, u.executeLabQuery); err != nil {
+			dlog.Error("While processing lab upload: %v", err)
+		}
+	}
+	if u.Configuration.ConsultQuery() != "" {
+		if err := u.upload(ctx, config.PathConsultUpload, u.executeConsultQuery); err != nil {
+			dlog.Error("While processing consult upload: %v", err)
+		}
+	}
+}
+
+type queryFunc func(ctx context.Context) (interface{}, int, error)
+
+func (u *Uploader) upload(ctx context.Context, path string, q queryFunc) error {
+	evt := u.History.NewEvent(path)
 
 	// ensure DB connection
 	if err := u.ensureDB(); err != nil {
@@ -45,19 +69,13 @@ func (u *Uploader) Upload(ctx context.Context) error {
 
 	// run query
 	start := time.Now()
-	records, err := u.executeQuery(ctx)
+	vRecs, size, err := q(ctx)
 	if err != nil {
 		evt.Error = err
 		return err
 	}
 	evt.QueryDuration = time.Since(start)
-
-	// convert query to JSON
-	vRecs, err := rest.VisitorRecordsFromDB(records, u.Location)
-	if err != nil {
-		evt.Error = err
-		return err
-	}
+	evt.Size = size
 
 	buf := new(bytes.Buffer)
 	enc := json.NewEncoder(buf)
@@ -66,16 +84,14 @@ func (u *Uploader) Upload(ctx context.Context) error {
 		return err
 	}
 	evt.JSON = buf.String()
-	evt.Size = len(vRecs)
 
 	// upload JSON to upload service
 	start = time.Now()
-	if err := u.UploadJSON(ctx, buf, false); err != nil {
+	if err := u.UploadJSON(ctx, buf, path, false); err != nil {
 		evt.Error = err
 		return err
 	}
 	evt.UploadDuration = time.Since(start)
-
 	return nil
 }
 
@@ -100,10 +116,10 @@ func (u *Uploader) ensureDB() error {
 	return nil
 }
 
-func (u *Uploader) executeQuery(ctx context.Context) ([]db.VisitorRecord, error) {
+func (u *Uploader) executeVisitorQuery(ctx context.Context) (interface{}, int, error) {
 	tx, err := u.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer func() {
 		if err := tx.Rollback(); err != nil && err != sql.ErrTxDone {
@@ -111,23 +127,109 @@ func (u *Uploader) executeQuery(ctx context.Context) ([]db.VisitorRecord, error)
 		}
 	}()
 
-	query := u.Configuration.Query()
-	records, err := db.ExecuteVisitorQuery(ctx, tx, query)
+	records, err := db.ExecuteVisitorQuery(ctx, tx, u.Configuration.VisitorQuery())
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	if err := tx.Commit(); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return records, nil
+
+	// convert query to JSON
+	vRecs, err := rest.VisitorRecordsFromDB(records, u.Location)
+	if err != nil {
+		return nil, 0, err
+	}
+	return vRecs, len(vRecs), nil
 }
 
-func (u *Uploader) UploadJSON(ctx context.Context, json *bytes.Buffer, importMode bool) error {
+func (u *Uploader) executeRadiologieQuery(ctx context.Context) (interface{}, int, error) {
+	tx, err := u.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer func() {
+		if err := tx.Rollback(); err != nil && err != sql.ErrTxDone {
+			dlog.Error("Failure while rolling back transaction: %v", err)
+		}
+	}()
+
+	records, err := db.ExecuteRadiologieQuery(ctx, tx, u.Configuration.RadiologieQuery())
+	if err != nil {
+		return nil, 0, err
+	}
+	if err := tx.Commit(); err != nil {
+		return nil, 0, err
+	}
+
+	// convert query to JSON
+	vRecs, err := rest.RadiologieRecordsFromDB(records, u.Location)
+	if err != nil {
+		return nil, 0, err
+	}
+	return vRecs, len(vRecs), nil
+}
+
+func (u *Uploader) executeLabQuery(ctx context.Context) (interface{}, int, error) {
+	tx, err := u.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer func() {
+		if err := tx.Rollback(); err != nil && err != sql.ErrTxDone {
+			dlog.Error("Failure while rolling back transaction: %v", err)
+		}
+	}()
+
+	records, err := db.ExecuteLabQuery(ctx, tx, u.Configuration.LabQuery())
+	if err != nil {
+		return nil, 0, err
+	}
+	if err := tx.Commit(); err != nil {
+		return nil, 0, err
+	}
+
+	// convert query to JSON
+	vRecs, err := rest.LabRecordsFromDB(records, u.Location)
+	if err != nil {
+		return nil, 0, err
+	}
+	return vRecs, len(vRecs), nil
+}
+
+func (u *Uploader) executeConsultQuery(ctx context.Context) (interface{}, int, error) {
+	tx, err := u.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer func() {
+		if err := tx.Rollback(); err != nil && err != sql.ErrTxDone {
+			dlog.Error("Failure while rolling back transaction: %v", err)
+		}
+	}()
+
+	records, err := db.ExecuteConsultQuery(ctx, tx, u.Configuration.ConsultQuery())
+	if err != nil {
+		return nil, 0, err
+	}
+	if err := tx.Commit(); err != nil {
+		return nil, 0, err
+	}
+
+	// convert query to JSON
+	vRecs, err := rest.ConsultRecordsFromDB(records, u.Location)
+	if err != nil {
+		return nil, 0, err
+	}
+	return vRecs, len(vRecs), nil
+}
+
+func (u *Uploader) UploadJSON(ctx context.Context, json *bytes.Buffer, path string, importMode bool) error {
 	req, err := http.NewRequest(http.MethodPost, config.Server, json)
 	if err != nil {
 		return err
 	}
-	req.URL.Path = config.PathUpload
+	req.URL.Path = path
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Connection", "close")

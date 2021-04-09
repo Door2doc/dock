@@ -55,7 +55,10 @@ func TestConfiguration_Validate(t *testing.T) {
 			},
 			Want: &ValidationResult{
 				DatabaseConnection: ErrDatabaseNotConfigured,
-				VisitorQuery:       ErrVisitorQueryNotConfigured,
+				VisitorQuery:       ErrQueryNotConfigured,
+				RadiologieQuery:    ErrQueryNotConfigured,
+				LabQuery:           ErrQueryNotConfigured,
+				ConsultQuery:       ErrQueryNotConfigured,
 				D2DConnection:      ErrD2DConnectionFailed,
 				D2DCredentials:     ErrD2DCredentialsNotConfigured,
 				Access:             ErrAccessNotConfigured,
@@ -66,7 +69,10 @@ func TestConfiguration_Validate(t *testing.T) {
 			},
 			Want: &ValidationResult{
 				DatabaseConnection: ErrDatabaseNotConfigured,
-				VisitorQuery:       ErrVisitorQueryNotConfigured,
+				VisitorQuery:       ErrQueryNotConfigured,
+				RadiologieQuery:    ErrQueryNotConfigured,
+				LabQuery:           ErrQueryNotConfigured,
+				ConsultQuery:       ErrQueryNotConfigured,
 				D2DCredentials:     ErrD2DCredentialsNotConfigured,
 				Access:             ErrAccessNotConfigured,
 			},
@@ -77,7 +83,10 @@ func TestConfiguration_Validate(t *testing.T) {
 			},
 			Want: &ValidationResult{
 				DatabaseConnection: ErrDatabaseNotConfigured,
-				VisitorQuery:       ErrVisitorQueryNotConfigured,
+				VisitorQuery:       ErrQueryNotConfigured,
+				RadiologieQuery:    ErrQueryNotConfigured,
+				LabQuery:           ErrQueryNotConfigured,
+				ConsultQuery:       ErrQueryNotConfigured,
 				Access:             ErrAccessNotConfigured,
 			},
 		},
@@ -87,7 +96,10 @@ func TestConfiguration_Validate(t *testing.T) {
 			},
 			Want: &ValidationResult{
 				DatabaseConnection: ErrDatabaseNotConfigured,
-				VisitorQuery:       ErrVisitorQueryNotConfigured,
+				VisitorQuery:       ErrQueryNotConfigured,
+				RadiologieQuery:    ErrQueryNotConfigured,
+				LabQuery:           ErrQueryNotConfigured,
+				ConsultQuery:       ErrQueryNotConfigured,
 				D2DCredentials:     ErrD2DCredentialsInvalid,
 				Access:             ErrAccessNotConfigured,
 			},
@@ -97,9 +109,12 @@ func TestConfiguration_Validate(t *testing.T) {
 				cfg.SetDSN("postgres", TestDSN)
 			},
 			Want: &ValidationResult{
-				D2DCredentials: ErrD2DCredentialsNotConfigured,
-				VisitorQuery:   ErrVisitorQueryNotConfigured,
-				Access:         ErrAccessNotConfigured,
+				D2DCredentials:  ErrD2DCredentialsNotConfigured,
+				VisitorQuery:    ErrQueryNotConfigured,
+				RadiologieQuery: ErrQueryNotConfigured,
+				LabQuery:        ErrQueryNotConfigured,
+				ConsultQuery:    ErrQueryNotConfigured,
+				Access:          ErrAccessNotConfigured,
 			},
 			RequiresDatabase: true,
 		},
@@ -111,9 +126,12 @@ func TestConfiguration_Validate(t *testing.T) {
 				DatabaseConnection: &DatabaseInvalidError{
 					Cause: `pq: password authentication failed for user "postgres"`,
 				},
-				D2DCredentials: ErrD2DCredentialsNotConfigured,
-				VisitorQuery:   ErrVisitorQueryNotConfigured,
-				Access:         ErrAccessNotConfigured,
+				D2DCredentials:  ErrD2DCredentialsNotConfigured,
+				VisitorQuery:    ErrQueryNotConfigured,
+				RadiologieQuery: ErrQueryNotConfigured,
+				LabQuery:        ErrQueryNotConfigured,
+				ConsultQuery:    ErrQueryNotConfigured,
+				Access:          ErrAccessNotConfigured,
 			},
 			RequiresDatabase: true,
 		},
@@ -125,9 +143,12 @@ func TestConfiguration_Validate(t *testing.T) {
 				DatabaseConnection: &DatabaseInvalidError{
 					Cause: `pq: password authentication failed for user "pguser"`,
 				},
-				D2DCredentials: ErrD2DCredentialsNotConfigured,
-				VisitorQuery:   ErrVisitorQueryNotConfigured,
-				Access:         ErrAccessNotConfigured,
+				D2DCredentials:  ErrD2DCredentialsNotConfigured,
+				VisitorQuery:    ErrQueryNotConfigured,
+				RadiologieQuery: ErrQueryNotConfigured,
+				LabQuery:        ErrQueryNotConfigured,
+				ConsultQuery:    ErrQueryNotConfigured,
+				Access:          ErrAccessNotConfigured,
 			},
 			RequiresDatabase: true,
 		},
@@ -139,9 +160,12 @@ func TestConfiguration_Validate(t *testing.T) {
 				DatabaseConnection: &DatabaseInvalidError{
 					Cause: `pq: database "database" does not exist`,
 				},
-				D2DCredentials: ErrD2DCredentialsNotConfigured,
-				VisitorQuery:   ErrVisitorQueryNotConfigured,
-				Access:         ErrAccessNotConfigured,
+				D2DCredentials:  ErrD2DCredentialsNotConfigured,
+				VisitorQuery:    ErrQueryNotConfigured,
+				RadiologieQuery: ErrQueryNotConfigured,
+				LabQuery:        ErrQueryNotConfigured,
+				ConsultQuery:    ErrQueryNotConfigured,
+				Access:          ErrAccessNotConfigured,
 			},
 			RequiresDatabase: true,
 		},
@@ -153,27 +177,66 @@ func TestConfiguration_Validate(t *testing.T) {
 				DatabaseConnection: &DatabaseInvalidError{
 					Cause: `dial tcp [::1]:9999: connect: connection refused`,
 				},
-				D2DCredentials: ErrD2DCredentialsNotConfigured,
-				VisitorQuery:   ErrVisitorQueryNotConfigured,
-				Access:         ErrAccessNotConfigured,
+				D2DCredentials:  ErrD2DCredentialsNotConfigured,
+				VisitorQuery:    ErrQueryNotConfigured,
+				RadiologieQuery: ErrQueryNotConfigured,
+				LabQuery:        ErrQueryNotConfigured,
+				ConsultQuery:    ErrQueryNotConfigured,
+				Access:          ErrAccessNotConfigured,
 			},
 		},
 		"correct query": {
 			Given: func(cfg *Configuration) {
 				cfg.SetDSN("postgres", TestDSN)
-				cfg.SetQuery(`select * from correct`)
+				cfg.SetVisitorQuery(`select * from correct`)
 			},
 			Want: &ValidationResult{
-				D2DCredentials: ErrD2DCredentialsNotConfigured,
-				Access:         ErrAccessNotConfigured,
+				D2DCredentials:  ErrD2DCredentialsNotConfigured,
+				RadiologieQuery: ErrQueryNotConfigured,
+				LabQuery:        ErrQueryNotConfigured,
+				ConsultQuery:    ErrQueryNotConfigured,
+				Access:          ErrAccessNotConfigured,
 			},
 			RequiresDatabase: true,
 		},
-		"correct configuration": {
+		"correct minimal configuration orders": {
 			Given: func(cfg *Configuration) {
 				cfg.SetDSN("postgres", TestDSN)
 				cfg.SetCredentials(TestUser, TestPassword)
-				cfg.SetQuery(`select * from correct`)
+				cfg.SetVisitorQuery(`select * from correct`)
+			},
+			Want: &ValidationResult{
+				RadiologieQuery: ErrQueryNotConfigured,
+				LabQuery:        ErrQueryNotConfigured,
+				ConsultQuery:    ErrQueryNotConfigured,
+				Access:          ErrAccessNotConfigured,
+			},
+			WantValid:        true,
+			RequiresDatabase: true,
+		},
+		"correct configuration without orders": {
+			Given: func(cfg *Configuration) {
+				cfg.SetDSN("postgres", TestDSN)
+				cfg.SetCredentials(TestUser, TestPassword)
+				cfg.SetVisitorQuery(`select * from correct`)
+				cfg.SetAccessCredentials(TestUser, TestPassword)
+			},
+			Want: &ValidationResult{
+				RadiologieQuery: ErrQueryNotConfigured,
+				LabQuery:        ErrQueryNotConfigured,
+				ConsultQuery:    ErrQueryNotConfigured,
+			},
+			WantValid:        true,
+			RequiresDatabase: true,
+		},
+		"correct configuration with orders": {
+			Given: func(cfg *Configuration) {
+				cfg.SetDSN("postgres", TestDSN)
+				cfg.SetCredentials(TestUser, TestPassword)
+				cfg.SetVisitorQuery(`select * from correct`)
+				cfg.SetRadiologieQuery(`select * from correct_radiologie`)
+				cfg.SetLabQuery(`select * from correct_lab`)
+				cfg.SetConsultQuery(`select * from correct_consult`)
 				cfg.SetAccessCredentials(TestUser, TestPassword)
 			},
 			Want:             &ValidationResult{},
@@ -197,8 +260,14 @@ func TestConfiguration_Validate(t *testing.T) {
 			got := cfg.Validate()
 
 			// reset this stuff
-			got.QueryDuration = 0
-			got.QueryResults = nil
+			got.VisitorQueryDuration = 0
+			got.VisitorQueryResults = nil
+			got.RadiologieQueryDuration = 0
+			got.RadiologieQueryResults = nil
+			got.LabQueryDuration = 0
+			got.LabQueryResults = nil
+			got.ConsultQueryDuration = 0
+			got.ConsultQueryResults = nil
 
 			if !reflect.DeepEqual(got, test.Want) {
 				t.Errorf("UpdateValidation() == \n\t%v, got \n\t%v", test.Want, got)
@@ -211,10 +280,12 @@ func TestConfiguration_Validate(t *testing.T) {
 }
 
 func TestConfigurationJSON(t *testing.T) {
+	defaultConnection := db.ConnectionData{Driver: "sqlserver"}
+
 	for name, test := range map[string]*Configuration{
-		"empty":    {connection: db.ConnectionData{Driver: "sqlserver"}},
-		"username": {username: "user", connection: db.ConnectionData{Driver: "sqlserver"}},
-		"password": {password: "pass", connection: db.ConnectionData{Driver: "sqlserver"}},
+		"empty":    {connection: defaultConnection},
+		"username": {username: "user", connection: defaultConnection},
+		"password": {password: "pass", connection: defaultConnection},
 		"dsn": {connection: db.ConnectionData{
 			Driver:   "postgres",
 			Host:     "localhost",
@@ -224,8 +295,9 @@ func TestConfigurationJSON(t *testing.T) {
 			Password: "pass",
 			Params:   "sslmode=disable",
 		}},
-		"query":  {query: "query", connection: db.ConnectionData{Driver: "sqlserver"}},
-		"access": {accessUsername: "username", accessPassword: "password", connection: db.ConnectionData{Driver: "sqlserver"}},
+		"query":         {visitorQuery: "query", connection: defaultConnection},
+		"order queries": {radiologieQuery: "a", labQuery: "b", consultQuery: "c", connection: defaultConnection},
+		"access":        {accessUsername: "username", accessPassword: "password", connection: db.ConnectionData{Driver: "sqlserver"}},
 	} {
 		t.Run(name, func(t *testing.T) {
 			bs, err := json.Marshal(test)

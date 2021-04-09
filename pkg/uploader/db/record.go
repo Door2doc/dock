@@ -42,38 +42,71 @@ var (
 	ColVervallen         = Column{"Vervallen", "seh_sehreg.VERVALL", "NUMBER", "Is dit record vervallen?"}
 	ColMutatieEindTijd   = Column{"MutatieEindTijd", "seh_sehmut.eindtijd", "STRING", "Eindtijd van deze mutatie"}
 	ColMutatieStatus     = Column{"MutatieStatus", "seh_sehmut.status", "STRING", "Statuscode van deze mutatie"}
+
+	ColOrderNummer      = Column{"ORDERNR", "ORDERNR", "NUMBER", "Uniek order nummer"}
+	ColOrderStart       = Column{"StartDatumTijd", "STARTDATUMTIJD_order", "TIMESTAMP", "Starttijd van de order"}
+	ColOrderEind        = Column{"EindDatumTijd", "EINDDATUMTIJD_order", "TIMESTAMP", "Eindtijd van de order (indien beschikbaar)"}
+	ColOrderStatus      = Column{"Status", "STATUS", "STRING", "Status van de order"}
+	ColOrderModule      = Column{"Module", "MODULE", "STRING", "Naam van de module"}
+	ColOrderSpecialisme = Column{"Specialisme", "RecipientRole", "STRING", "Specialisme voor consult"}
 )
 
-var VisitorColumns = []Column{
-	ColBezoeknummer,
-	ColMutatieID,
-	ColLocatie,
-	ColAfdeling,
-	ColAangemeld,
-	ColBinnenkomstDatum,
-	ColBinnenkomstTijd,
-	ColTriageTijd,
-	ColNaarKamerTijd,
-	ColBijArtsTijd,
-	ColArtsKlaarTijd,
-	ColGereedOpnameTijd,
-	ColVertrekTijd,
-	ColEindTijd,
-	ColMutatieEindTijd,
-	ColMutatieStatus,
-	ColKamer,
-	ColBed,
-	ColIngangsklacht,
-	ColSpecialisme,
-	ColUrgentie,
-	ColVervoerder,
-	ColGeboortedatum,
-	ColOpnameAfdeling,
-	ColOpnameSpecialisme,
-	ColHerkomst,
-	ColOntslagbestemming,
-	ColVervallen,
-}
+var (
+	VisitorColumns = []Column{
+		ColBezoeknummer,
+		ColMutatieID,
+		ColLocatie,
+		ColAfdeling,
+		ColAangemeld,
+		ColBinnenkomstDatum,
+		ColBinnenkomstTijd,
+		ColTriageTijd,
+		ColNaarKamerTijd,
+		ColBijArtsTijd,
+		ColArtsKlaarTijd,
+		ColGereedOpnameTijd,
+		ColVertrekTijd,
+		ColEindTijd,
+		ColMutatieEindTijd,
+		ColMutatieStatus,
+		ColKamer,
+		ColBed,
+		ColIngangsklacht,
+		ColSpecialisme,
+		ColUrgentie,
+		ColVervoerder,
+		ColGeboortedatum,
+		ColOpnameAfdeling,
+		ColOpnameSpecialisme,
+		ColHerkomst,
+		ColOntslagbestemming,
+		ColVervallen,
+	}
+
+	RadiologieColumns = []Column{
+		ColBezoeknummer,
+		ColOrderNummer,
+		ColOrderStatus,
+		ColOrderStart,
+		ColOrderEind,
+		ColOrderModule,
+	}
+	LabColumns = []Column{
+		ColBezoeknummer,
+		ColOrderNummer,
+		ColOrderStatus,
+		ColOrderStart,
+		ColOrderEind,
+	}
+	ConsultColumns = []Column{
+		ColBezoeknummer,
+		ColOrderNummer,
+		ColOrderStatus,
+		ColOrderStart,
+		ColOrderEind,
+		ColOrderSpecialisme,
+	}
+)
 
 type VisitorRecord struct {
 	Bezoeknummer      int
@@ -106,21 +139,28 @@ type VisitorRecord struct {
 	Vervallen         bool
 }
 
+func maxCount(length int) int {
+	if length > 10 {
+		return 10
+	}
+	return length
+}
+
 type VisitorRecords []VisitorRecord
 
 func (v VisitorRecords) AsTable() template.HTML {
 	var buf bytes.Buffer
-	if err := tableTmpl.Execute(&buf, struct {
+	if err := visitorTableTmpl.Execute(&buf, struct {
 		Columns      []Column
 		QueryResults []VisitorRecord
-	}{VisitorColumns, v}); err != nil {
+	}{VisitorColumns, v[:maxCount(len(v))]}); err != nil {
 		panic(err)
 	}
 
 	return template.HTML(buf.String())
 }
 
-var tableTmpl = template.Must(template.New("table").Parse(`
+var visitorTableTmpl = template.Must(template.New("table").Parse(`
 <table class="table">
 	<thead>
 	<tr>
@@ -160,6 +200,145 @@ var tableTmpl = template.Must(template.New("table").Parse(`
 			<td>{{ $row.Herkomst }}</td>
 			<td>{{ $row.Ontslagbestemming }}</td>
 			<td>{{ $row.Vervallen }}</td>
+		</tr>
+	{{ end }}
+	</tbody>
+</table>
+`))
+
+type RadiologieOrder struct {
+	Bezoeknummer int
+	Ordernummer  int
+	Status       string
+	Start        *time.Time
+	Eind         *time.Time
+	Module       string
+}
+
+type RadiologieOrders []RadiologieOrder
+
+func (r RadiologieOrders) AsTable() template.HTML {
+	var buf bytes.Buffer
+	if err := radiologieTableTmpl.Execute(&buf, struct {
+		Columns      []Column
+		QueryResults []RadiologieOrder
+	}{RadiologieColumns, r[:maxCount(len(r))]}); err != nil {
+		panic(err)
+	}
+
+	return template.HTML(buf.String())
+}
+
+var radiologieTableTmpl = template.Must(template.New("table").Parse(`
+<table class="table">
+	<thead>
+	<tr>
+		{{ range $i, $row := .Columns }}
+		<th>{{ $row.Name }}</th>
+		{{ end }}
+	</tr>
+	</thead>
+	<tbody>
+	{{ range $index, $row := .QueryResults }}
+		<tr>
+			<td>{{ $row.Bezoeknummer }}</td>
+			<td>{{ $row.Ordernummer }}</td>
+			<td>{{ $row.Status }}</td>
+			<td>{{ $row.Start }}</td>
+			<td>{{ $row.Eind }}</td>
+			<td>{{ $row.Module }}</td>
+		</tr>
+	{{ end }}
+	</tbody>
+</table>
+`))
+
+type LabOrder struct {
+	Bezoeknummer int
+	Ordernummer  int
+	Status       string
+	Start        *time.Time
+	Eind         *time.Time
+}
+
+type LabOrders []LabOrder
+
+func (r LabOrders) AsTable() template.HTML {
+	var buf bytes.Buffer
+	if err := labTableTmpl.Execute(&buf, struct {
+		Columns      []Column
+		QueryResults []LabOrder
+	}{LabColumns, r[:maxCount(len(r))]}); err != nil {
+		panic(err)
+	}
+
+	return template.HTML(buf.String())
+}
+
+var labTableTmpl = template.Must(template.New("table").Parse(`
+<table class="table">
+	<thead>
+	<tr>
+		{{ range $i, $row := .Columns }}
+		<th>{{ $row.Name }}</th>
+		{{ end }}
+	</tr>
+	</thead>
+	<tbody>
+	{{ range $index, $row := .QueryResults }}
+		<tr>
+			<td>{{ $row.Bezoeknummer }}</td>
+			<td>{{ $row.Ordernummer }}</td>
+			<td>{{ $row.Status }}</td>
+			<td>{{ $row.Start }}</td>
+			<td>{{ $row.Eind }}</td>
+		</tr>
+	{{ end }}
+	</tbody>
+</table>
+`))
+
+type ConsultOrder struct {
+	Bezoeknummer int
+	Ordernummer  int
+	Status       string
+	Start        *time.Time
+	Eind         *time.Time
+	Specialisme  string
+}
+
+type ConsultOrders []ConsultOrder
+
+func (r ConsultOrders) AsTable() template.HTML {
+	var buf bytes.Buffer
+	if err := consultTableTmpl.Execute(&buf, struct {
+		Columns      []Column
+		QueryResults []ConsultOrder
+	}{ConsultColumns, r[:maxCount(len(r))]}); err != nil {
+		panic(err)
+	}
+
+	return template.HTML(buf.String())
+}
+
+var consultTableTmpl = template.Must(template.New("table").Parse(`
+<table class="table">
+	<thead>
+	<tr>
+		{{ range $i, $row := .Columns }}
+		<th>{{ $row.Name }}</th>
+		{{ end }}
+	</tr>
+	</thead>
+	<tbody>
+	{{ range $index, $row := .QueryResults }}
+		<tr>
+			<td>{{ $row.Bezoeknummer }}</td>
+			<td>{{ $row.Ordernummer }}</td>
+			<td>{{ $row.Status }}</td>
+			<td>{{ $row.Start }}</td>
+			<td>{{ $row.Eind }}</td>
+			<td>{{ $row.Module }}</td>
 		</tr>
 	{{ end }}
 	</tbody>

@@ -19,6 +19,7 @@ func New() *History {
 
 // Event is a single line in the history.
 type Event struct {
+	Type           string
 	Time           time.Time
 	QueryDuration  time.Duration
 	UploadDuration time.Duration
@@ -27,11 +28,11 @@ type Event struct {
 	Error          error
 }
 
-func (h *History) NewEvent() *Event {
+func (h *History) NewEvent(typ string) *Event {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	e := &Event{Time: time.Now()}
+	e := &Event{Time: time.Now(), Type: typ}
 
 	h.events = append([]*Event{e}, h.events...)
 	if len(h.events) > MaxHistory {

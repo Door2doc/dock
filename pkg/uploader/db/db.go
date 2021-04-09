@@ -10,7 +10,7 @@ import (
 )
 
 // ExecuteVisitorQuery tries to execute the visitor query and marshal the result into records.
-func ExecuteVisitorQuery(ctx context.Context, tx *sql.Tx, query string) ([]VisitorRecord, error) {
+func ExecuteVisitorQuery(ctx context.Context, tx *sql.Tx, query string) (VisitorRecords, error) {
 	// execute query
 	rows, err := tx.QueryContext(ctx, query)
 	if err != nil {
@@ -38,7 +38,7 @@ func ExecuteVisitorQuery(ctx context.Context, tx *sql.Tx, query string) ([]Visit
 
 	for rows.Next() {
 		var rec VisitorRecord
-		err := mapRow(rows, &rec, names, col2index)
+		err := mapVisitorRow(rows, &rec, names, col2index)
 		if err != nil {
 			return nil, err
 		}
@@ -60,7 +60,7 @@ func ExecuteVisitorQuery(ctx context.Context, tx *sql.Tx, query string) ([]Visit
 	return res, nil
 }
 
-func mapRow(rows *sql.Rows, rec *VisitorRecord, allColumns []string, col2index map[string]int) error {
+func mapVisitorRow(rows *sql.Rows, rec *VisitorRecord, allColumns []string, col2index map[string]int) error {
 	target := make([]interface{}, len(allColumns))
 	for i := range target {
 		target[i] = new(sql.RawBytes)
@@ -174,6 +174,277 @@ func mapRow(rows *sql.Rows, rec *VisitorRecord, allColumns []string, col2index m
 	return nil
 }
 
+// ExecuteRadiologieQuery tries to execute the visitor query and marshal the result into records.
+func ExecuteRadiologieQuery(ctx context.Context, tx *sql.Tx, query string) (RadiologieOrders, error) {
+	// execute query
+	rows, err := tx.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := rows.Close(); err != nil {
+			dlog.Error("While closing result set: %v", err)
+		}
+	}()
+
+	// determine column names
+	names, err := rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	col2index, err := checkColumnNames(names, RadiologieColumns)
+	if err != nil {
+		return nil, err
+	}
+
+	// map result set to records
+	var res []RadiologieOrder
+
+	for rows.Next() {
+		var rec RadiologieOrder
+		err := mapRadiologieRow(rows, &rec, names, col2index)
+		if err != nil {
+			return nil, err
+		}
+
+		target := make([]interface{}, len(names))
+		for i := range target {
+			target[i] = new(sql.RawBytes)
+		}
+		if err := rows.Scan(target...); err != nil {
+			return nil, err
+		}
+
+		res = append(res, rec)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func mapRadiologieRow(rows *sql.Rows, rec *RadiologieOrder, allColumns []string, col2index map[string]int) error {
+	target := make([]interface{}, len(allColumns))
+	for i := range target {
+		target[i] = new(sql.RawBytes)
+	}
+
+	var (
+		bezoeknummer int
+		orderNummer  int
+		status       sql.NullString
+		start        sql.NullTime
+		eind         sql.NullTime
+		module       sql.NullString
+	)
+
+	target[col2index[ColBezoeknummer.Name]] = &bezoeknummer
+	target[col2index[ColOrderNummer.Name]] = &orderNummer
+	target[col2index[ColOrderStatus.Name]] = &status
+	target[col2index[ColOrderStart.Name]] = &start
+	target[col2index[ColOrderEind.Name]] = &eind
+	target[col2index[ColOrderModule.Name]] = &module
+
+	if err := rows.Scan(target...); err != nil {
+		return err
+	}
+
+	*rec = RadiologieOrder{
+		Bezoeknummer: bezoeknummer,
+		Ordernummer:  orderNummer,
+		Status:       status.String,
+		Start:        asTimeRef(start),
+		Eind:         asTimeRef(eind),
+		Module:       module.String,
+	}
+
+	return nil
+}
+
+// ExecuteLabQuery tries to execute the visitor query and marshal the result into records.
+func ExecuteLabQuery(ctx context.Context, tx *sql.Tx, query string) (LabOrders, error) {
+	// execute query
+	rows, err := tx.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := rows.Close(); err != nil {
+			dlog.Error("While closing result set: %v", err)
+		}
+	}()
+
+	// determine column names
+	names, err := rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	col2index, err := checkColumnNames(names, LabColumns)
+	if err != nil {
+		return nil, err
+	}
+
+	// map result set to records
+	var res []LabOrder
+
+	for rows.Next() {
+		var rec LabOrder
+		err := mapLabRow(rows, &rec, names, col2index)
+		if err != nil {
+			return nil, err
+		}
+
+		target := make([]interface{}, len(names))
+		for i := range target {
+			target[i] = new(sql.RawBytes)
+		}
+		if err := rows.Scan(target...); err != nil {
+			return nil, err
+		}
+
+		res = append(res, rec)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func mapLabRow(rows *sql.Rows, rec *LabOrder, allColumns []string, col2index map[string]int) error {
+	target := make([]interface{}, len(allColumns))
+	for i := range target {
+		target[i] = new(sql.RawBytes)
+	}
+
+	var (
+		bezoeknummer int
+		orderNummer  int
+		status       sql.NullString
+		start        sql.NullTime
+		eind         sql.NullTime
+	)
+
+	target[col2index[ColBezoeknummer.Name]] = &bezoeknummer
+	target[col2index[ColOrderNummer.Name]] = &orderNummer
+	target[col2index[ColOrderStatus.Name]] = &status
+	target[col2index[ColOrderStart.Name]] = &start
+	target[col2index[ColOrderEind.Name]] = &eind
+
+	if err := rows.Scan(target...); err != nil {
+		return err
+	}
+
+	*rec = LabOrder{
+		Bezoeknummer: bezoeknummer,
+		Ordernummer:  orderNummer,
+		Status:       status.String,
+		Start:        asTimeRef(start),
+		Eind:         asTimeRef(eind),
+	}
+
+	return nil
+}
+
+// ExecuteConsultQuery tries to execute the visitor query and marshal the result into records.
+func ExecuteConsultQuery(ctx context.Context, tx *sql.Tx, query string) (ConsultOrders, error) {
+	// execute query
+	rows, err := tx.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := rows.Close(); err != nil {
+			dlog.Error("While closing result set: %v", err)
+		}
+	}()
+
+	// determine column names
+	names, err := rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	col2index, err := checkColumnNames(names, ConsultColumns)
+	if err != nil {
+		return nil, err
+	}
+
+	// map result set to records
+	var res []ConsultOrder
+
+	for rows.Next() {
+		var rec ConsultOrder
+		err := mapConsultRow(rows, &rec, names, col2index)
+		if err != nil {
+			return nil, err
+		}
+
+		target := make([]interface{}, len(names))
+		for i := range target {
+			target[i] = new(sql.RawBytes)
+		}
+		if err := rows.Scan(target...); err != nil {
+			return nil, err
+		}
+
+		res = append(res, rec)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func mapConsultRow(rows *sql.Rows, rec *ConsultOrder, allColumns []string, col2index map[string]int) error {
+	target := make([]interface{}, len(allColumns))
+	for i := range target {
+		target[i] = new(sql.RawBytes)
+	}
+
+	var (
+		bezoeknummer int
+		orderNummer  int
+		status       sql.NullString
+		start        sql.NullTime
+		eind         sql.NullTime
+		specialisme  sql.NullString
+	)
+
+	target[col2index[ColBezoeknummer.Name]] = &bezoeknummer
+	target[col2index[ColOrderNummer.Name]] = &orderNummer
+	target[col2index[ColOrderStatus.Name]] = &status
+	target[col2index[ColOrderStart.Name]] = &start
+	target[col2index[ColOrderEind.Name]] = &eind
+	target[col2index[ColOrderSpecialisme.Name]] = &specialisme
+
+	if err := rows.Scan(target...); err != nil {
+		return err
+	}
+
+	*rec = ConsultOrder{
+		Bezoeknummer: bezoeknummer,
+		Ordernummer:  orderNummer,
+		Status:       status.String,
+		Start:        asTimeRef(start),
+		Eind:         asTimeRef(eind),
+		Specialisme:  specialisme.String,
+	}
+
+	return nil
+}
+
+func asTimeRef(t sql.NullTime) *time.Time {
+	if !t.Valid {
+		return nil
+	}
+	return &t.Time
+}
+
 func asTime(s string) string {
 	s = strings.TrimPrefix(s, "0001-01-01T")
 	s = strings.TrimSuffix(s, ":00Z")
@@ -205,7 +476,7 @@ func checkColumnNames(got []string, want []Column) (map[string]int, error) {
 	}
 
 	if len(missing) != 0 {
-		return nil, &SelectionError{Missing: missing}
+		return nil, &SelectionError{Missing: missing, Got: got}
 	}
 
 	return want2pos, nil

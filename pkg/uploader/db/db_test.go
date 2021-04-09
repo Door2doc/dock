@@ -32,13 +32,13 @@ func u(t time.Time) time.Time {
 	return t.In(time.UTC)
 }
 
-func TestExecuteQuery(t *testing.T) {
+func TestExecuteVisitorQuery(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
 	for name, test := range map[string]struct {
 		Query string
-		Want  []VisitorRecord
+		Want  VisitorRecords
 		Err   error
 	}{
 		"correct": {
@@ -105,36 +105,39 @@ func TestExecuteQuery(t *testing.T) {
 		},
 		"missing columns": {
 			Query: `select null as hello`,
-			Err: &SelectionError{Missing: []string{
-				ColBezoeknummer.Name,
-				ColMutatieID.Name,
-				ColLocatie.Name,
-				ColAfdeling.Name,
-				ColAangemeld.Name,
-				ColBinnenkomstDatum.Name,
-				ColBinnenkomstTijd.Name,
-				ColTriageTijd.Name,
-				ColNaarKamerTijd.Name,
-				ColBijArtsTijd.Name,
-				ColArtsKlaarTijd.Name,
-				ColGereedOpnameTijd.Name,
-				ColVertrekTijd.Name,
-				ColEindTijd.Name,
-				ColMutatieEindTijd.Name,
-				ColMutatieStatus.Name,
-				ColKamer.Name,
-				ColBed.Name,
-				ColIngangsklacht.Name,
-				ColSpecialisme.Name,
-				ColUrgentie.Name,
-				ColVervoerder.Name,
-				ColGeboortedatum.Name,
-				ColOpnameAfdeling.Name,
-				ColOpnameSpecialisme.Name,
-				ColHerkomst.Name,
-				ColOntslagbestemming.Name,
-				ColVervallen.Name,
-			}},
+			Err: &SelectionError{
+				Missing: []string{
+					ColBezoeknummer.Name,
+					ColMutatieID.Name,
+					ColLocatie.Name,
+					ColAfdeling.Name,
+					ColAangemeld.Name,
+					ColBinnenkomstDatum.Name,
+					ColBinnenkomstTijd.Name,
+					ColTriageTijd.Name,
+					ColNaarKamerTijd.Name,
+					ColBijArtsTijd.Name,
+					ColArtsKlaarTijd.Name,
+					ColGereedOpnameTijd.Name,
+					ColVertrekTijd.Name,
+					ColEindTijd.Name,
+					ColMutatieEindTijd.Name,
+					ColMutatieStatus.Name,
+					ColKamer.Name,
+					ColBed.Name,
+					ColIngangsklacht.Name,
+					ColSpecialisme.Name,
+					ColUrgentie.Name,
+					ColVervoerder.Name,
+					ColGeboortedatum.Name,
+					ColOpnameAfdeling.Name,
+					ColOpnameSpecialisme.Name,
+					ColHerkomst.Name,
+					ColOntslagbestemming.Name,
+					ColVervallen.Name,
+				},
+				Got: []string{"hello"},
+			},
 		},
 		"duplicate columns": {
 			Query: `select null as hello, null as hello`,
@@ -162,7 +165,7 @@ func TestExecuteQuery(t *testing.T) {
 	}
 }
 
-func TestExecuteQueryPermutations(t *testing.T) {
+func TestExecuteVisitorQueryPermutations(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
@@ -211,17 +214,13 @@ func TestExecuteQueryPermutations(t *testing.T) {
 		"'x' AS ignoreme_9",
 	}
 
-	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
-	rnd.Shuffle(len(parts), func(i, j int) {
-		parts[i], parts[j] = parts[j], parts[i]
-	})
-	query := "select " + strings.Join(parts, ",")
+	query := generateQuery(parts)
 	got, err := ExecuteVisitorQuery(ctx, tx, query)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	want := []VisitorRecord{{
+	want := VisitorRecords{{
 		Bezoeknummer:      1,
 		MutatieID:         2,
 		Locatie:           "locatie",
@@ -257,6 +256,15 @@ func TestExecuteQueryPermutations(t *testing.T) {
 	}
 }
 
+func generateQuery(parts []string) string {
+	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+	rnd.Shuffle(len(parts), func(i, j int) {
+		parts[i], parts[j] = parts[j], parts[i]
+	})
+	query := "select " + strings.Join(parts, ",")
+	return query
+}
+
 func setup(ctx context.Context, t *testing.T) (*sql.Tx, context.CancelFunc) {
 	if testing.Short() {
 		t.Skip("uses database")
@@ -290,5 +298,127 @@ func TestVisitorRecordsAsTable(t *testing.T) {
 	res := v.AsTable()
 	if res == "" {
 		t.Fail()
+	}
+}
+
+func timeP(s string) *time.Time {
+	res, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		panic(err)
+	}
+
+	return &res
+}
+
+func TestExecuteRadiologieQueryPermutations(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	tx, cancel := setup(ctx, t)
+	defer cancel()
+
+	parts := []string{
+		"1 AS sehid",
+		"2 AS ordernr",
+		"'status' as status",
+		"'1977-07-24 12:00'::timestamp as startdatumtijd",
+		"null as einddatumtijd",
+		"'module' as module",
+		"'specialisme' as specialisme",
+		"'x' AS ignoreme_1",
+	}
+
+	query := generateQuery(parts)
+	got, err := ExecuteRadiologieQuery(ctx, tx, query)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want := RadiologieOrders{{
+		Bezoeknummer: 1,
+		Ordernummer:  2,
+		Status:       "status",
+		Start:        timeP("1977-07-24T12:00:00+00:00"),
+		Eind:         nil,
+		Module:       "module",
+	}}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("ExecuteRadiologieQuery() == \n\t%v, want \n\t%v", got, want)
+	}
+}
+
+func TestExecuteLabQueryPermutations(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	tx, cancel := setup(ctx, t)
+	defer cancel()
+
+	parts := []string{
+		"1 AS sehid",
+		"2 AS ordernr",
+		"'status' as status",
+		"'1977-07-24 12:00'::timestamp as startdatumtijd",
+		"null as einddatumtijd",
+		"'module' as module",
+		"'specialisme' as specialisme",
+		"'x' AS ignoreme_1",
+	}
+
+	query := generateQuery(parts)
+	got, err := ExecuteLabQuery(ctx, tx, query)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want := LabOrders{{
+		Bezoeknummer: 1,
+		Ordernummer:  2,
+		Status:       "status",
+		Start:        timeP("1977-07-24T12:00:00+00:00"),
+		Eind:         nil,
+	}}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("ExecuteRadiologieQuery() == \n\t%v, want \n\t%v", got, want)
+	}
+}
+
+func TestExecuteConsultQueryPermutations(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	tx, cancel := setup(ctx, t)
+	defer cancel()
+
+	parts := []string{
+		"1 AS sehid",
+		"2 AS ordernr",
+		"'status' as status",
+		"'1977-07-24 12:00'::timestamp as startdatumtijd",
+		"null as einddatumtijd",
+		"'module' as module",
+		"'specialisme' as specialisme",
+		"'x' AS ignoreme_1",
+	}
+
+	query := generateQuery(parts)
+	got, err := ExecuteConsultQuery(ctx, tx, query)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want := ConsultOrders{{
+		Bezoeknummer: 1,
+		Ordernummer:  2,
+		Status:       "status",
+		Start:        timeP("1977-07-24T12:00:00+00:00"),
+		Eind:         nil,
+		Specialisme:  "specialisme",
+	}}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("ExecuteRadiologieQuery() == \n\t%v, want \n\t%v", got, want)
 	}
 }

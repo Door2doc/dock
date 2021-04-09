@@ -143,9 +143,7 @@ func (s *Service) run(ctx context.Context, uploader *Uploader) error {
 		sleep := time.Second
 		s.cfg.UpdateValidation(ctx)
 		if s.cfg.Active() {
-			if err := uploader.Upload(ctx); err != nil {
-				dlog.Error("While processing upload: %v", err)
-			}
+			uploader.Upload(ctx)
 			sleep = s.cfg.Interval()
 		}
 

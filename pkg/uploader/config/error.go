@@ -8,7 +8,7 @@ import (
 
 var (
 	ErrDatabaseNotConfigured       = errors.New("database connection not configured")
-	ErrVisitorQueryNotConfigured   = errors.New("visitor query not configured")
+	ErrQueryNotConfigured          = errors.New("query not configured")
 	ErrD2DConnectionFailed         = errors.New("connection failed")
 	ErrD2DCredentialsNotConfigured = errors.New("credentials not configured")
 	ErrD2DCredentialsInvalid       = errors.New("credentials invalid")

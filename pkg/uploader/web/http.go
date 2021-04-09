@@ -19,10 +19,13 @@ import (
 )
 
 const (
-	pathUpload   = "/upload"
-	pathDatabase = "/database"
-	pathQuery    = "/query"
-	pathAccess   = "/access"
+	pathUpload    = "/upload"
+	pathDatabase  = "/database"
+	pathQuery     = "/query"
+	pathAccess    = "/access"
+	pathRadiology = "/orders/radiology"
+	pathLab       = "/orders/lab"
+	pathConsult   = "/orders/consult"
 )
 
 type ServeMux struct {
@@ -33,13 +36,16 @@ type ServeMux struct {
 	cfg     *config.Configuration
 	history *history.History
 
-	mu       sync.RWMutex
-	err      error
-	database *template.Template
-	query    *template.Template
-	status   *template.Template
-	upload   *template.Template
-	access   *template.Template
+	mu        sync.RWMutex
+	err       error
+	database  *template.Template
+	query     *template.Template
+	status    *template.Template
+	upload    *template.Template
+	access    *template.Template
+	radiology *template.Template
+	lab       *template.Template
+	consult   *template.Template
 }
 
 func (m *ServeMux) load(templates ...string) *template.Template {
@@ -52,7 +58,7 @@ func (m *ServeMux) load(templates ...string) *template.Template {
 		err := func() error {
 			r, err := m.fs.Open(name)
 			if err != nil {
-				return err
+				return fmt.Errorf("%s: %v", name, err)
 			}
 			defer func() {
 				if err := r.Close(); err != nil {
@@ -89,6 +95,9 @@ func (m *ServeMux) initTemplates() {
 	m.status = m.load("/status.html", "/_layout.html")
 	m.upload = m.load("/upload.html", "/_layout.html")
 	m.access = m.load("/access.html", "/_layout.html")
+	m.radiology = m.load("/orders-radiology.html", "/_layout.html")
+	m.lab = m.load("/orders-lab.html", "/_layout.html")
+	m.consult = m.load("/orders-consult.html", "/_layout.html")
 }
 
 func runTemplate(w http.ResponseWriter, tmpl *template.Template, data interface{}) {
@@ -135,9 +144,12 @@ func NewServeMux(dev bool, version string, cfg *config.Configuration, h *history
 	res.Handle("/assets/", http.FileServer(res.fs))
 	res.Handle("/", res.Secured(res.StatusHandler()))
 	res.Handle(pathDatabase, res.Secured(res.DatabaseHandler()))
-	res.Handle(pathQuery, res.Secured(res.QueryHandler()))
+	res.Handle(pathQuery, res.Secured(res.VisitorQueryHandler()))
 	res.Handle(pathUpload, res.Secured(res.UploadHandler()))
 	res.Handle(pathAccess, res.Secured(res.AccessHandler()))
+	res.Handle(pathRadiology, res.Secured(res.RadiologyQueryHandler()))
+	res.Handle(pathLab, res.Secured(res.LabQueryHandler()))
+	res.Handle(pathConsult, res.Secured(res.ConsultQueryHandler()))
 	res.HandleFunc("/debug/pprof/", pprof.Index)
 	res.HandleFunc("/debug/pprof/profile", pprof.Profile)
 	res.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
@@ -169,7 +181,10 @@ func (m *ServeMux) page(ctx context.Context, path string) *Page {
 		"Upload":   p.Validation.D2DCredentials != nil,
 	}
 	p.Warnings = map[string]bool{
-		"Access": p.Validation.Access != nil,
+		"Access":    p.Validation.Access != nil,
+		"Radiology": p.Validation.RadiologieQuery != nil,
+		"Lab":       p.Validation.LabQuery != nil,
+		"Consult":   p.Validation.ConsultQuery != nil,
 	}
 
 	return p
@@ -288,16 +303,16 @@ type QueryPage struct {
 	Error         error
 	Columns       []db.Column
 	QueryDuration time.Duration
-	QueryResults  db.VisitorRecords
+	QueryResults  config.QueryResult
 }
 
-func (m *ServeMux) QueryHandler() http.Handler {
+func (m *ServeMux) VisitorQueryHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		m.mu.RLock()
 		defer m.mu.RUnlock()
 
 		if r.Method == http.MethodPost {
-			m.cfg.SetQuery(r.FormValue("query"))
+			m.cfg.SetVisitorQuery(r.FormValue("query"))
 			m.cfg.UpdateValidation(r.Context())
 			if m.cfg.Validate().IsValid() {
 				if err := m.cfg.Save(); err != nil {
@@ -313,11 +328,104 @@ func (m *ServeMux) QueryHandler() http.Handler {
 		v := m.cfg.Validate()
 		runTemplate(w, m.query, QueryPage{
 			Page:          m.page(r.Context(), r.URL.Path),
-			Query:         m.cfg.Query(),
+			Query:         m.cfg.VisitorQuery(),
 			Error:         v.VisitorQuery,
 			Columns:       db.VisitorColumns,
-			QueryDuration: v.QueryDuration,
-			QueryResults:  v.QueryResults,
+			QueryDuration: v.VisitorQueryDuration,
+			QueryResults:  v.VisitorQueryResults,
+		})
+	})
+}
+
+func (m *ServeMux) RadiologyQueryHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		m.mu.RLock()
+		defer m.mu.RUnlock()
+
+		if r.Method == http.MethodPost {
+			m.cfg.SetRadiologieQuery(r.FormValue("query"))
+			m.cfg.UpdateValidation(r.Context())
+			if m.cfg.Validate().IsValid() {
+				if err := m.cfg.Save(); err != nil {
+					dlog.Error("While saving query: %v", err)
+				}
+			}
+
+			w.Header().Set("Location", pathRadiology)
+			w.WriteHeader(http.StatusFound)
+			return
+		}
+
+		v := m.cfg.Validate()
+		runTemplate(w, m.radiology, QueryPage{
+			Page:          m.page(r.Context(), r.URL.Path),
+			Query:         m.cfg.RadiologieQuery(),
+			Error:         v.RadiologieQuery,
+			Columns:       db.RadiologieColumns,
+			QueryDuration: v.RadiologieQueryDuration,
+			QueryResults:  v.RadiologieQueryResults,
+		})
+	})
+}
+
+func (m *ServeMux) LabQueryHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		m.mu.RLock()
+		defer m.mu.RUnlock()
+
+		if r.Method == http.MethodPost {
+			m.cfg.SetLabQuery(r.FormValue("query"))
+			m.cfg.UpdateValidation(r.Context())
+			if m.cfg.Validate().IsValid() {
+				if err := m.cfg.Save(); err != nil {
+					dlog.Error("While saving query: %v", err)
+				}
+			}
+
+			w.Header().Set("Location", pathLab)
+			w.WriteHeader(http.StatusFound)
+			return
+		}
+
+		v := m.cfg.Validate()
+		runTemplate(w, m.lab, QueryPage{
+			Page:          m.page(r.Context(), r.URL.Path),
+			Query:         m.cfg.LabQuery(),
+			Error:         v.LabQuery,
+			Columns:       db.LabColumns,
+			QueryDuration: v.LabQueryDuration,
+			QueryResults:  v.LabQueryResults,
+		})
+	})
+}
+
+func (m *ServeMux) ConsultQueryHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		m.mu.RLock()
+		defer m.mu.RUnlock()
+
+		if r.Method == http.MethodPost {
+			m.cfg.SetConsultQuery(r.FormValue("query"))
+			m.cfg.UpdateValidation(r.Context())
+			if m.cfg.Validate().IsValid() {
+				if err := m.cfg.Save(); err != nil {
+					dlog.Error("While saving query: %v", err)
+				}
+			}
+
+			w.Header().Set("Location", pathConsult)
+			w.WriteHeader(http.StatusFound)
+			return
+		}
+
+		v := m.cfg.Validate()
+		runTemplate(w, m.consult, QueryPage{
+			Page:          m.page(r.Context(), r.URL.Path),
+			Query:         m.cfg.ConsultQuery(),
+			Error:         v.ConsultQuery,
+			Columns:       db.ConsultColumns,
+			QueryDuration: v.ConsultQueryDuration,
+			QueryResults:  v.ConsultQueryResults,
 		})
 	})
 }

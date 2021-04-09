@@ -1,0 +1,54 @@
+{{ define "title" }}Lab order query{{ end }}
+{{ define "body" }}
+<form method="post" action="/orders/lab">
+    <div class="form-group">
+        <label for="db-query">Database query:</label>
+        <textarea id="db-query" class="form-control {{ if .Error }}is-invalid{{ else }}is-valid{{ end }}" rows="10"
+                  name="query">{{ .Query }}</textarea>
+        <div class="invalid-feedback">
+            {{ if .Error }}{{ .Error | humanize }}{{ end }}
+        </div>
+        <div class="valid-feedback">
+            <p>
+                Query is correct and took <strong>{{ .QueryDuration.Seconds | printf "%0.3f"}}s</strong>.
+            </p>
+            {{ if .QueryResults }}
+            <p>
+                These are the first {{ .QueryResults|len }} results:
+            </p>
+            <div style="overflow-x: scroll">
+                {{ .QueryResults.AsTable }}
+            </div>
+            {{ end }}
+        </div>
+        <small class="form-text">
+            Deze query dient de laatste N mutaties uit de lab orders te selecteren. De volgende kolommen
+            of aliassen dienen aanwezig te zijn:
+            <table class="table table-sm table-hover">
+                <thead>
+                <tr>
+                    <th>Alias</th>
+                    <th>Type</th>
+                    <th>Gebruikelijke bron</th>
+                    <th>Toelichting</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{ range $i, $row := .Columns }}
+                <tr>
+                    <td><code>{{.Name}}</code></td>
+                    <td>{{.Type}}</td>
+                    <td><code>{{.Source}}</code></td>
+                    <td>{{.Description}}</td>
+                </tr>
+                {{ end }}
+                </tbody>
+            </table>
+        </small>
+    </div>
+
+    <div class="text-right">
+        <button type="submit" class="btn btn-primary">Update</button>
+    </div>
+</form>
+{{ end }}

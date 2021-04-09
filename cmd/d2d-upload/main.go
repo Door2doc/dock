@@ -18,7 +18,7 @@ var _ mssql.Driver
 var _ pq.Driver
 
 var (
-	DevelopmentMode = flag.Bool("dev", false, "Run in development mode")
+	DevelopmentMode = flag.Bool("dev", false, "Run in development mode - this will cause live reloading of HTML templates.")
 )
 
 func main() {

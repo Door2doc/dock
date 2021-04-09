@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"html/template"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -24,22 +25,42 @@ var (
 )
 
 const (
-	PathPing            = "/services/v3/upload/ping"
-	PathUpload          = "/services/v3/upload/bezoeken"
-	DBValidationTimeout = 5 * time.Second
+	PathPing             = "/services/v3/upload/ping"
+	PathVisitorUpload    = "/services/v3/upload/bezoeken"
+	PathRadiologieUpload = "/services/v3/upload/orders/radiologie"
+	PathLabUpload        = "/services/v3/upload/orders/lab"
+	PathConsultUpload    = "/services/v3/upload/orders/consult"
+	DBValidationTimeout  = 5 * time.Second
 
 	config = "door2doc.json"
 )
 
+type QueryResult interface {
+	AsTable() template.HTML
+}
+
 // ValidationResult contains the results of validating the current configuration.
 type ValidationResult struct {
 	DatabaseConnection error
-	VisitorQuery       error
-	D2DConnection      error
-	D2DCredentials     error
 
-	QueryDuration time.Duration
-	QueryResults  db.VisitorRecords
+	VisitorQuery         error
+	VisitorQueryDuration time.Duration
+	VisitorQueryResults  QueryResult
+
+	RadiologieQuery         error
+	RadiologieQueryDuration time.Duration
+	RadiologieQueryResults  QueryResult
+
+	LabQuery         error
+	LabQueryDuration time.Duration
+	LabQueryResults  QueryResult
+
+	ConsultQuery         error
+	ConsultQueryDuration time.Duration
+	ConsultQueryResults  QueryResult
+
+	D2DConnection  error
+	D2DCredentials error
 
 	Access error
 }
@@ -63,7 +84,13 @@ type Configuration struct {
 	// database connection data
 	connection db.ConnectionData
 	// Query to execute to retrieve visitor information
-	query string
+	visitorQuery string
+	// Query to execute to retrieve radiologie aanvragen
+	radiologieQuery string
+	// Query to execute to retrieve lab aanvragen
+	labQuery string
+	// Query to execute to retrieve intercollegiaal consulten
+	consultQuery string
 	// Set to true if the service should be active
 	active bool
 	// Pause between runs
@@ -136,18 +163,60 @@ func (c *Configuration) SetDSN(driver, dsn string) {
 	_ = c.connection.UnmarshalText([]byte(dsn))
 }
 
-// Query returns the visitor query stored in the configuration.
-func (c *Configuration) Query() string {
+// VisitorQuery returns the visitor query stored in the configuration.
+func (c *Configuration) VisitorQuery() string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return c.query
+	return c.visitorQuery
 }
 
-func (c *Configuration) SetQuery(query string) {
+func (c *Configuration) SetVisitorQuery(query string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.query = query
+	c.visitorQuery = query
+}
+
+// RadiologieQuery returns the radiologie query stored in the configuration.
+func (c *Configuration) RadiologieQuery() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.radiologieQuery
+}
+
+func (c *Configuration) SetRadiologieQuery(query string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.radiologieQuery = query
+}
+
+// LabQuery returns the lab query stored in the configuration.
+func (c *Configuration) LabQuery() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.labQuery
+}
+
+func (c *Configuration) SetLabQuery(query string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.labQuery = query
+}
+
+// ConsultQuery returns the consult query stored in the configuration.
+func (c *Configuration) ConsultQuery() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.consultQuery
+}
+
+func (c *Configuration) SetConsultQuery(query string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.consultQuery = query
 }
 
 func (c *Configuration) AccessCredentials() (username, password string) {
@@ -202,7 +271,19 @@ func (c *Configuration) UpdateValidation(ctx context.Context) {
 	// check db connection
 	dbCtx, timeout := context.WithTimeout(ctx, DBValidationTimeout)
 	defer timeout()
-	res.QueryDuration, res.QueryResults, res.DatabaseConnection, res.VisitorQuery = c.checkDatabase(dbCtx)
+	res.VisitorQueryDuration, res.VisitorQueryResults, res.DatabaseConnection, res.VisitorQuery = c.checkDatabase(dbCtx, c.visitorQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
+		return db.ExecuteVisitorQuery(ctx, tx, query)
+	})
+	res.RadiologieQueryDuration, res.RadiologieQueryResults, res.DatabaseConnection, res.RadiologieQuery = c.checkDatabase(dbCtx, c.radiologieQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
+		return db.ExecuteRadiologieQuery(ctx, tx, query)
+	})
+	res.LabQueryDuration, res.LabQueryResults, res.DatabaseConnection, res.LabQuery = c.checkDatabase(dbCtx, c.labQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
+		return db.ExecuteLabQuery(ctx, tx, query)
+	})
+	res.ConsultQueryDuration, res.ConsultQueryResults, res.DatabaseConnection, res.ConsultQuery = c.checkDatabase(dbCtx, c.consultQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
+		return db.ExecuteConsultQuery(ctx, tx, query)
+	})
+
 	c.validationResult = res
 	c.active = c.validationResult.IsValid()
 }
@@ -255,13 +336,16 @@ func (c *Configuration) Save() error {
 }
 
 type persistentConfig struct {
-	Username       string            `json:"username"`
-	Password       string            `json:"password"`
-	Proxy          string            `json:"proxy"`
-	Dsn            db.ConnectionData `json:"dsn"`
-	Query          string            `json:"query"`
-	AccessUsername string            `json:"accessUsername"`
-	AccessPassword string            `json:"accessPassword"`
+	Username        string            `json:"username"`
+	Password        string            `json:"password"`
+	Proxy           string            `json:"proxy"`
+	Dsn             db.ConnectionData `json:"dsn"`
+	VisitorQuery    string            `json:"query"`
+	RadiologieQuery string            `json:"radiologie"`
+	LabQuery        string            `json:"lab"`
+	ConsultQuery    string            `json:"consult"`
+	AccessUsername  string            `json:"accessUsername"`
+	AccessPassword  string            `json:"accessPassword"`
 }
 
 func (c *Configuration) MarshalJSON() ([]byte, error) {
@@ -269,13 +353,16 @@ func (c *Configuration) MarshalJSON() ([]byte, error) {
 	defer c.mu.RUnlock()
 
 	vars := persistentConfig{
-		Username:       c.username,
-		Password:       c.password,
-		Proxy:          c.proxy,
-		Dsn:            c.connection,
-		Query:          c.query,
-		AccessUsername: c.accessUsername,
-		AccessPassword: c.accessPassword,
+		Username:        c.username,
+		Password:        c.password,
+		Proxy:           c.proxy,
+		Dsn:             c.connection,
+		VisitorQuery:    c.visitorQuery,
+		RadiologieQuery: c.radiologieQuery,
+		LabQuery:        c.labQuery,
+		ConsultQuery:    c.consultQuery,
+		AccessUsername:  c.accessUsername,
+		AccessPassword:  c.accessPassword,
 	}
 	return json.Marshal(vars)
 }
@@ -293,7 +380,10 @@ func (c *Configuration) UnmarshalJSON(v []byte) error {
 	c.password = vars.Password
 	c.proxy = vars.Proxy
 	c.connection = vars.Dsn
-	c.query = vars.Query
+	c.visitorQuery = vars.VisitorQuery
+	c.radiologieQuery = vars.RadiologieQuery
+	c.labQuery = vars.LabQuery
+	c.consultQuery = vars.ConsultQuery
 	c.accessUsername = vars.AccessUsername
 	c.accessPassword = vars.AccessPassword
 
@@ -342,9 +432,11 @@ func (c *Configuration) checkConnection(ctx context.Context) (connErr error, cre
 	}
 }
 
-func (c *Configuration) checkDatabase(ctx context.Context) (queryDuration time.Duration, queryResult []db.VisitorRecord, connErr, queryErr error) {
-	if c.query == "" {
-		queryErr = ErrVisitorQueryNotConfigured
+type checker func(context.Context, *sql.Tx, string) (QueryResult, error)
+
+func (c *Configuration) checkDatabase(ctx context.Context, query string, f checker) (queryDuration time.Duration, queryResult QueryResult, connErr, queryErr error) {
+	if query == "" {
+		queryErr = ErrQueryNotConfigured
 	}
 
 	if !c.connection.IsValid() {
@@ -375,7 +467,7 @@ func (c *Configuration) checkDatabase(ctx context.Context) (queryDuration time.D
 
 	tx, err := conn.BeginTx(ctx, nil)
 	if err != nil {
-		dlog.Error("Failed to start read-only transaction: %v", err)
+		dlog.Error("Failed to start transaction: %v", err)
 		connErr = &DatabaseInvalidError{Cause: err.Error()}
 		return
 	}
@@ -386,7 +478,7 @@ func (c *Configuration) checkDatabase(ctx context.Context) (queryDuration time.D
 	}()
 
 	queryStart := time.Now()
-	records, err := db.ExecuteVisitorQuery(ctx, tx, c.query)
+	queryResult, err = f(ctx, tx, query)
 	_, errIsSelection := err.(*db.SelectionError)
 
 	switch {
@@ -403,12 +495,6 @@ func (c *Configuration) checkDatabase(ctx context.Context) (queryDuration time.D
 	}
 
 	queryDuration = time.Since(queryStart)
-
-	max := 10
-	if max > len(records) {
-		max = len(records)
-	}
-	queryResult = records[:max]
 
 	return
 }

@@ -212,26 +212,27 @@ var _escData = map[string]*_escFile{
 	"/_layout.html": {
 		name:    "_layout.html",
 		local:   "pkg/uploader/assets/resources/_layout.html",
-		size:    3796,
-		modtime: 1619786120,
+		size:    5132,
+		modtime: 1619966455,
 		compressed: `
-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
+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
 `,
 	},
 
@@ -239,7 +240,7 @@ QHIcUpZGRsvj1nlxmoh5X7a/jF9Maf8R+3cAAAD//8RbwArUDgAA
 		name:    "access.html",
 		local:   "pkg/uploader/assets/resources/access.html",
 		size:    1197,
-		modtime: 1619786875,
+		modtime: 1619793986,
 		compressed: `
 H4sIAAAAAAAC/6RTsa7bMAzc31cctCfeiyRbtw4d+lB0lC06FipThkQ5dV3/eyHHSRzjvaJFtUQhebzj
 UR5HGKotE5RYcaQwTV+phGWhUOuKEKlKwcowjiA2mKaXFab0ZsiQFwA4dKf5N58vDcWMFbF8jtCB4NkN
@@ -2461,6 +2462,72 @@ NHX3BEqlcRYfQ+EGVAE/P7nPxPvxJTJz/Iepf/JwJMzkBvALRvPN1o4HX1Zb6xrAX0hTZyU/fHRkVkJm
 `,
 	},
 
+	"/orders-consult.html": {
+		name:    "orders-consult.html",
+		local:   "pkg/uploader/assets/resources/orders-consult.html",
+		size:    1990,
+		modtime: 1619863907,
+		compressed: `
+H4sIAAAAAAAC/5RVwW7jNhC95ysGxPZWS1v0FkgGFuuitwXaTT+AEkcW1xRHHY6cOIr+vaCkOnIsJ60P
+BknNzHvzyEf2PRisrEdQYsWhgmH4Sj50ToDYIMPfHfKp7wG9gWG4WyQUZE4x/i6riBtoUGoyuWopiAJd
+iiWfq3SsEtJyKqq2dwAAmbFHKJ0OIVcxebNn6tr54xjgdIEOKuJcmWIzklDbnRZd6IATqfssHaMWWYJP
+ohk1WLPIu0AqyQuTg74HW0HyGzMxDIMNG+uP2lkTe3UBp7Xzyti9AqbHkKtfPqsz5uvP6wZzNVPte0j+
+iEMYhiz9l9eC6kKBGXhTIZpCl4eFDvH3hmmsPI1foO4a7e0zTsvzFp0hUmOP64jv4mXt9qq7qRUboCRm
+LAW0NyBEB8iCMPn9a8O7jnXc++Q7luRNgBdo2XqpQP30Ofm1UsMQsnTOSi6R03a19bHunxgPUFh2eIvt
+Q40BQTOC1AiV5SBw5jfXeXHoYRiAp+n9+0RG8YKcHOaKjsiVo8fN0z2Eksk5dU3hLVzyJTzowuEV/ctN
+mlM/2MnQaOcuTnU8YG9Y7PB5NgoYi17AIDitJQjCN2g60WIxQGfHL9YLcknO4d5qh1AuL4EAghDQYSnI
+6BPYIRzJ7dEbhAM5ahr0F+BUgXZWh4B+REcPWvtHfLb7WOvZ/vBvFJdRnbmnaTL+b0IzD+oo/IrUmdSo
+zdo6b1dsOiZsv0R2WSr17ZCHU4vvR/yOBXf2gM7+OCAUTP6DioTOlrVYv18PzNI1zjH2RofxDl49fKz9
+HuGT/Rk+MT3CfQ7JV3Jd468M9IFUZpuVZHDb98k33WC8zcZ5loq5ndP3SZRvvPvMfyj9nTou/0fxHYaS
+bRvvmVsY61pem2sRf61mlo5nb+G9dDTf/IxNvrx60qIbN2z39dKTWdGJkAc5tZir0BWNlfPTVIiHQvym
+Zdvo+H781RotmKVT0gVclkbLb+9eW/knAAD//7ubBUrGBwAA
+`,
+	},
+
+	"/orders-lab.html": {
+		name:    "orders-lab.html",
+		local:   "pkg/uploader/assets/resources/orders-lab.html",
+		size:    1962,
+		modtime: 1619863885,
+		compressed: `
+H4sIAAAAAAAC/5RVwW7jNhC95ysGxPZWSVv0FlACFnXRS7FAu+kHUOLI4poi1eHIiaPo3wtKqiPHctL6
+YJDUzLw3j3zkMIDG2jgEwYYtChjH31UJnjQS/N0jnYYB0GkYx7tVcOn1KcbeydpTCy1y43UuOh9YgKrY
+eJeLbKoSMqtKUdwBAEhtjlBZFUIuYmKyJ993y8cpwKoSLdSecqHLZCIgip1iVaqAM6F7mU1RqyzGJ1aE
+Coxe5V0gVd4xeQvDAKaG9FciTzCOJiTGHZU1OvZpA85r55WpcwHkH0MufvoszpivP6dazMVCdRgg/SMO
+YRxl9i+vFdWVAgtwUiPqUlWHlQ7x94ZprDyPX6DpW+XMM87Ly/acITJtjtuI7+LJrrjqbm7FBKg8EVYM
+ymlg7w8gA5N3+9eGdz2puO/pN6y80wFeoCPjuAbxw+f051qMY5DZkpVeImfdZutT3T8x9JbDusNbbB8a
+DAiKELhBqA0FhjO/pc6LRQfjCDRP798nMokX+GQxF/6IVFv/mDzdQ6jIWyuuKbyFS7+EB1VavKJ/uUlL
+6gc7GVpl7cWpjgfsDYsdPi9GAW3QMWgEqxQHRvgKbc+KDQbozfJlMXsARghosWIkdCnsEI7e7tFphIO3
+vm3RXQD5GpQ1KgR0ExI6UMo94rPZx1rP5rt7oy5PSiz858n0n4R2GTRR5A1ZJTeo9NY6FRuWnBKKL5Gd
+zLi5HfJw6vD9iN+wpN4c0JrvB4SSvPugokdrqoaN228HymyLc4y90WG8azcPGim3R/hkfoRP5B/hPof0
+F2/71l2Z5QOpdCErr7EYhvSrajHeXNNcZqxv5wxDGuWb7jn9H0p/8z1V/6P4DkNFpot3yi2MbS2vjbSK
+v1ZTZtPZW/ksm4y2PFmzB6+er+i8hMy+WftPlj2zd8CnDnMR+rI1fH6GSnZQsks6Mq2Kb8VfnVaMMpuT
+LuBkFu1d3L228k8AAAD//wP1BASqBwAA
+`,
+	},
+
+	"/orders-radiology.html": {
+		name:    "orders-radiology.html",
+		local:   "pkg/uploader/assets/resources/orders-radiology.html",
+		size:    1981,
+		modtime: 1619866001,
+		compressed: `
+H4sIAAAAAAAC/5RVQW/jNhO951cMiP1un6UtegskA4u66G2B7qY/gBJHFtcURx2OnHUU/feCkuLIsZy0
+PhgkNTPvzSMf2fdgsLIeQYkVhwqG4Zs2lhztT0BskOHvDvnU94DewDDcLVIKMqeYcZdVxA00KDWZXLUU
+RIEuxZLPVTpWCSm/lFXbOwCAzNgjlE6HkKuYvtkzde38cQxwukAHFXGuTLEZaajtTosudMCJ1n2WjlGL
+LMGfohk1WLPIu0AqyQuTg74HW0HyOzMxDIMNG+uP2lkTu3UBp7Xzyti/AqbHkKtfPqsz5uvP6wZzNVPt
+e0j+jEMYhix94bWgulBgBt5UiKbQ5WGhQ/y9YRorT+NnqLtGe/uE0/K8SWeI1NjjOuK7eFm7vepuasUG
+KIkZSwHtDQjRAbIgTH7/2vCuYx13P/mOJXkT4Blatl4qUP/7nPxaqWEIWTpnJZfIabva+lj3G4bOSVh2
+eIvtQ40BQTOC1AiV5SBw5jfXeXboYRiAp+n9+0RG8YKcHOaKjsiVo8fNz3sIJZNz6prCW7jkS3jQhcMr
++pebNKd+sJOh0c5dnOp4wN6w2OHTbBQwFr2AQXBaSxCEr9B0osVigM6OX14canFyfgBBCOiwFGT0CewQ
+juT26A3CgRw1DfoLPKpAO6tDQD8Coget/SM+2X2s9WR/+DciyyjI3MY0Gf83oZkHddR6Rd1MatRmbZ23
+K84cE7ZfIrsslfp2yMOpxfcj/sCCO3tAZ38cEAom/0FFQmfLWqzfrwdm6RrnGHujw3jxrp431n6P8Mn+
+Hz4xPcJ9Dslv5LrGX3nmA6nMNivJ4Lbvk6+6wXiBjfMsFXM7p++TKN943Zl/Ufo7dVz+h+I7DCXbNl4t
+tzDWtbz20yL+Ws0sHc/ewm7p6Lf55ZqsePWKRQNu2O7rpQ2zohMhD3JqMVehKxor59eoEA+F+E3LttHx
+yfirNVowS6ekC7gsjS7f3r228k8AAAD//9bc0/K9BwAA
+`,
+	},
+
 	"/query.html": {
 		name:    "query.html",
 		local:   "pkg/uploader/assets/resources/query.html",
@@ -2487,22 +2554,22 @@ JC83biEOCnGblqnR8Ur8vTVaMEsnowvqaRknzvbuNdR/AgAA//9DJ3aYpggAAA==
 		name:    "status.html",
 		local:   "pkg/uploader/assets/resources/status.html",
 		size:    4994,
-		modtime: 1619786224,
+		modtime: 1619794228,
 		compressed: `
-H4sIAAAAAAAC/+RX32/TMBB+319xioYEE23G2F6qtNK0DgESSFA2HpEbX1qL1A6201Gy/u/ITrIlW37R
-be0k8pb48/nuu893lyQBigHjCI5mOkQH1uuJJjpWSQLIKazXewXMVNCVgewBACQJsAD6lyRklGgmeP+D
-si8GYBEF1JngAZvFMgWe+potMTeUPx5lS/BDotTQ8YmksFj1jp1RCVOF682RUJSg8bfuXc2ZRpjOeir2
-fVSqYr95JiiXzEdgCmTMOeOz+8e4lC07nG5JqT7Fi6q/m+eTUBok+sg14BK5VoNqG26NEU+TaYi5K/bF
-qT/O04alpnVZv5gZGH1jC/RcPW9HfolRrrpBL6JQENoNm2qzGeu5TaGYvS1EmITWrycJSMJnCPvsNezj
-UsNgCP33TGkhV/1zm8m7yq6wwQK7uX8upZBt+CxBpVz3qPFCOqPWneluOkqS9EiTxf47IRdEg/ORcPhx
-BG9OBofHg8MTc7s9V9PuVp8UHUm8cTtnynPN126GmrWQpQJDhRtloLnEbC8FuVV76cZ5kZ2gLzhV15Fk
-XAfgvDjsvw3U5tbTe/pk5ifsj8kCMI2Ll+oVxPY4pI+Z6LShPVAKrZUyi6yslSsiTZdxwBehiggfOsfO
-6LPISn97kM0BtgfnuQ11zXOtk6MuPfDOpxrSHreX5+S19vKIxApp11aeJO5BTTs/cCu4tHgCc4nB0HEl
-qniBTmlzyPhPZ/TVrmQK9lzSYM06dm+5guPb7BYYvzdmFYaxMdFkShSeCc7RN5+eNkdpO4KaHOXegH/r
-TkBY2D1Z/zJ3JUkbFdcwjxeEpzXnQS7AVEiKsqdFVDcF3kiGZo5UieYiokRbfm4HZaOdDe8krxzDC6Rc
-MsW0kLZn7FIZmR/wyzqyNU2Uwt+NGmzEz0EK46Px86gS6YixxcJQCryggo4y2JRsiRS5ZiRU/xvbhch3
-c+nSpvwcbt2p/XnY5eD0HafAuEYZkHR84kKDQj+WW9FDRsBudEDSX7dt6aD8VtDH3wAAAP//f0J7GIIT
-AAA=
+H4sIAAAAAAAC/+RXTW/bOBC951cMhCywG6ytbDa5GLKBIE7RFmiB1k16LGhxZBORSZWknLqK/3tBSkqk
+RF91YjtAdZP4OJx58zgzShKgGDCO4GimQ3RgvZ5oomOVJICcwnp9UMBMBV0ZyAEAQJIAC6B/TUJGiWaC
+998p+2IAFlFAXQgesFksU+C5r9kSc0P541G2BD8kSg0dn0gKi1Xv1BmVMFW43hwJRQkaf+je7ZxphOms
+p2LfR6Uq9ptngnLJfASmQMacMz57eoxL2bLD6ZaU6lO8qPq7eT4IpUGij1wDLpFrNai24dYY8TSZhpi7
+Yl+c+uM8bVhqWpf1i5mB0Re2QM/V83bkpxjlqhv0KgoFod2wqTabsZ7bFIrZ20KESWj9epKAJHyGcMj+
+hUNcahgMof+WKS3kqn9pM/lY2RU2WGA39y+lFLINnyWolOseNV5IZ9S6M91NR0mSHmmy2H8j5IJocN4T
+Dt9O4L+zwfHp4PjM3G7P1bS71a2iI4n3budMea752s1QsxayVGCocKMMNJeY3aUgt2ov3TgvshP0Bafq
+LpKM6wCcv477/wdqc+vpPd2a+Qn7abIATOPib/UPxPY4pC+Z6LShPVMKrZUyi6yslVsiTZdxwBehiggf
+OqfO6KPISn97kM0BtgfnuQ11zXOtk6MuPfDRpxrSXraX5+S19vKIxApp11aeJO5RTTs/ciu4tHgCc4nB
+0HElqniBTmlzyPiNM/psVzIFey5psGYde7JcwfFDdguMPxmzCsPYmGgyJQovBOfom0/bzVHajqAmR7k3
+4D+4ExAWdk/W78xdSdJGxR3M4wXhac15lgswFZKi7GkR1U2B95KhmSNVormKKNGWn4dB2WhnwzvJK8fw
+AinXTDEtpO0Z+1RG5gd8t47sTBOl8PejBhvxa5DC+GT8OqpEOmLssDCUAi+ooKMMNiVbIkWuGQnVn8Z2
+IfL9XLq0Kb+GW3dufx62IoBpSPyb9sHpK06BcY0yIOn4xIUGhX4sd6KHjID96ICkv2670kH5raCPXwEA
+AP//f/O2MoITAAA=
 `,
 	},
 
@@ -2543,6 +2610,9 @@ var _escDirs = map[string][]os.FileInfo{
 		_escData["/access.html"],
 		_escData["/assets"],
 		_escData["/database.html"],
+		_escData["/orders-consult.html"],
+		_escData["/orders-lab.html"],
+		_escData["/orders-radiology.html"],
 		_escData["/query.html"],
 		_escData["/status.html"],
 		_escData["/upload.html"],

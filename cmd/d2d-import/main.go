@@ -149,7 +149,7 @@ func run() error {
 		}
 
 		for {
-			if err := u.UploadJSON(context.Background(), buf, true); err != nil {
+			if err := u.UploadJSON(context.Background(), buf, config.PathVisitorUpload, true); err != nil {
 				log.Println("Error", err)
 				<-time.After(time.Second)
 				continue

@@ -118,3 +118,31 @@ CREATE TABLE vrlijst_antwview (
     antwoord TEXT,
     realvrid INTEGER REFERENCES vrlijst_vragen (vraagid)
 );
+
+DROP TABLE IF EXISTS correct_radiologie;
+DROP TABLE IF EXISTS correct_lab;
+DROP TABLE IF EXISTS correct_consult;
+
+CREATE TABLE correct_radiologie (
+    sehid          TEXT,
+    ordernr        TEXT,
+    status         TEXT,
+    startdatumtijd TIMESTAMP,
+    einddatumtijd  TIMESTAMP,
+    module         TEXT
+);
+CREATE TABLE correct_lab (
+    sehid          TEXT,
+    ordernr        TEXT,
+    status         TEXT,
+    startdatumtijd TIMESTAMP,
+    einddatumtijd  TIMESTAMP
+);
+CREATE TABLE correct_consult (
+    sehid          TEXT,
+    ordernr        TEXT,
+    status         TEXT,
+    startdatumtijd TIMESTAMP,
+    einddatumtijd  TIMESTAMP,
+    specialisme    TEXT
+);

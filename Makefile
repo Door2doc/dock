@@ -2,6 +2,7 @@ COMMIT =	$(shell git rev-list -1 HEAD | head -c 8)
 NOW = 		$(shell date +"%Y-%m-%d %H:%M:%S")
 CLEAN =		$(shell git status -s)
 SOURCES = 	$(shell find . -name '*.go')
+ESC = 		$(shell go env GOPATH)/bin/esc
 
 .PHONY:	release
 release:
@@ -39,9 +40,14 @@ clean:
 test:
 	go test ./...
 
-.PHONY:	generate
-generate:
-	go get -u github.com/mjibson/esc
 
-	$(shell go env GOPATH)/bin/esc -o pkg/uploader/assets/assets.go -pkg assets -prefix pkg/uploader/assets/resources pkg/uploader/assets/resources
+$(ESC):
+	go get -u github.com/mjibson/esc
+	git restore go.mod go.sum
+
+
+
+.PHONY:	generate
+generate:	$(ESC)
+	$(ESC) -o pkg/uploader/assets/assets.go -pkg assets -prefix pkg/uploader/assets/resources pkg/uploader/assets/resources
 

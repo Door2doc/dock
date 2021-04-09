@@ -8,8 +8,8 @@ import (
 func TestHistory_Events(t *testing.T) {
 	t.Run("two events", func(t *testing.T) {
 		h := New()
-		e1 := h.NewEvent()
-		e2 := h.NewEvent()
+		e1 := h.NewEvent("x")
+		e2 := h.NewEvent("x")
 
 		if e1 == e2 {
 			t.Fatal("did not create new event")
@@ -26,7 +26,7 @@ func TestHistory_Events(t *testing.T) {
 		h := New()
 		var want []*Event
 		for i := 0; i <= MaxHistory; i++ {
-			e := h.NewEvent()
+			e := h.NewEvent("x")
 			if i == 0 {
 				// first event should be filtered out
 				continue
@@ -43,7 +43,7 @@ func TestHistory_Events(t *testing.T) {
 	t.Run("lots and lots of events", func(t *testing.T) {
 		h := New()
 		for i := 0; i < MaxHistory*1000; i++ {
-			h.NewEvent()
+			h.NewEvent("x")
 		}
 		got := h.Events()
 

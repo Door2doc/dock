@@ -72,6 +72,13 @@
                             <span class="badge badge-danger badge-pill">!</span>
                         {{ end }}
                     </a>
+                    <a href="/access"
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center  {{ if eq .Path "/access" }} active {{ end }}">
+                        Security
+                        {{ if .Warnings.Access }}
+                        <span class="badge badge-warning badge-pill">!</span>
+                        {{ end }}
+                    </a>
                 </ul>
             </nav>
             <main class="col-sm-9">

@@ -58,6 +58,7 @@ func TestConfiguration_Validate(t *testing.T) {
 				VisitorQuery:       ErrVisitorQueryNotConfigured,
 				D2DConnection:      ErrD2DConnectionFailed,
 				D2DCredentials:     ErrD2DCredentialsNotConfigured,
+				Access:             ErrAccessNotConfigured,
 			},
 		},
 		"unconfigured with endpoint access": {
@@ -67,6 +68,7 @@ func TestConfiguration_Validate(t *testing.T) {
 				DatabaseConnection: ErrDatabaseNotConfigured,
 				VisitorQuery:       ErrVisitorQueryNotConfigured,
 				D2DCredentials:     ErrD2DCredentialsNotConfigured,
+				Access:             ErrAccessNotConfigured,
 			},
 		},
 		"correct credentials": {
@@ -76,6 +78,7 @@ func TestConfiguration_Validate(t *testing.T) {
 			Want: &ValidationResult{
 				DatabaseConnection: ErrDatabaseNotConfigured,
 				VisitorQuery:       ErrVisitorQueryNotConfigured,
+				Access:             ErrAccessNotConfigured,
 			},
 		},
 		"incorrect credentials": {
@@ -86,6 +89,7 @@ func TestConfiguration_Validate(t *testing.T) {
 				DatabaseConnection: ErrDatabaseNotConfigured,
 				VisitorQuery:       ErrVisitorQueryNotConfigured,
 				D2DCredentials:     ErrD2DCredentialsInvalid,
+				Access:             ErrAccessNotConfigured,
 			},
 		},
 		"correct database": {
@@ -95,6 +99,7 @@ func TestConfiguration_Validate(t *testing.T) {
 			Want: &ValidationResult{
 				D2DCredentials: ErrD2DCredentialsNotConfigured,
 				VisitorQuery:   ErrVisitorQueryNotConfigured,
+				Access:         ErrAccessNotConfigured,
 			},
 			RequiresDatabase: true,
 		},
@@ -108,6 +113,7 @@ func TestConfiguration_Validate(t *testing.T) {
 				},
 				D2DCredentials: ErrD2DCredentialsNotConfigured,
 				VisitorQuery:   ErrVisitorQueryNotConfigured,
+				Access:         ErrAccessNotConfigured,
 			},
 			RequiresDatabase: true,
 		},
@@ -121,6 +127,7 @@ func TestConfiguration_Validate(t *testing.T) {
 				},
 				D2DCredentials: ErrD2DCredentialsNotConfigured,
 				VisitorQuery:   ErrVisitorQueryNotConfigured,
+				Access:         ErrAccessNotConfigured,
 			},
 			RequiresDatabase: true,
 		},
@@ -134,6 +141,7 @@ func TestConfiguration_Validate(t *testing.T) {
 				},
 				D2DCredentials: ErrD2DCredentialsNotConfigured,
 				VisitorQuery:   ErrVisitorQueryNotConfigured,
+				Access:         ErrAccessNotConfigured,
 			},
 			RequiresDatabase: true,
 		},
@@ -147,6 +155,7 @@ func TestConfiguration_Validate(t *testing.T) {
 				},
 				D2DCredentials: ErrD2DCredentialsNotConfigured,
 				VisitorQuery:   ErrVisitorQueryNotConfigured,
+				Access:         ErrAccessNotConfigured,
 			},
 		},
 		"correct query": {
@@ -156,6 +165,7 @@ func TestConfiguration_Validate(t *testing.T) {
 			},
 			Want: &ValidationResult{
 				D2DCredentials: ErrD2DCredentialsNotConfigured,
+				Access:         ErrAccessNotConfigured,
 			},
 			RequiresDatabase: true,
 		},
@@ -164,6 +174,7 @@ func TestConfiguration_Validate(t *testing.T) {
 				cfg.SetDSN("postgres", TestDSN)
 				cfg.SetCredentials(TestUser, TestPassword)
 				cfg.SetQuery(`select * from correct`)
+				cfg.SetAccessCredentials(TestUser, TestPassword)
 			},
 			Want:             &ValidationResult{},
 			WantValid:        true,
@@ -213,7 +224,8 @@ func TestConfigurationJSON(t *testing.T) {
 			Password: "pass",
 			Params:   "sslmode=disable",
 		}},
-		"query": {query: "query", connection: db.ConnectionData{Driver: "sqlserver"}},
+		"query":  {query: "query", connection: db.ConnectionData{Driver: "sqlserver"}},
+		"access": {accessUsername: "username", accessPassword: "password", connection: db.ConnectionData{Driver: "sqlserver"}},
 	} {
 		t.Run(name, func(t *testing.T) {
 			bs, err := json.Marshal(test)

@@ -111,6 +111,20 @@
                 </div>
             </div>
         {{ end }}
+
+        {{ if .Validation.Access }}
+            <div class="card my-4">
+                <div class="card-header text-white bg-warning">
+                    Web interface is not secured
+                </div>
+                <div class="card-body">
+                    {{ .Validation.Access | humanize }}
+                </div>
+                <div class="card-body border-top">
+                    <a href="/access" class="card-link">Update configuration</a>
+                </div>
+            </div>
+        {{ end }}
     {{ end }}
 {{ end }}
 

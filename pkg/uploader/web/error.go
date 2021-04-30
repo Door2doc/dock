@@ -23,6 +23,8 @@ func Humanize(err error) interface{} {
 		return `Visitor query not configured.`
 	case config.ErrDatabaseNotConfigured:
 		return `Database connection not configured.`
+	case config.ErrAccessNotConfigured:
+		return `The web interface is freely accessible. Consider setting a username and password.`
 	}
 
 	switch e := err.(type) {

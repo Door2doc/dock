@@ -12,6 +12,7 @@ var (
 	ErrD2DConnectionFailed         = errors.New("connection failed")
 	ErrD2DCredentialsNotConfigured = errors.New("credentials not configured")
 	ErrD2DCredentialsInvalid       = errors.New("credentials invalid")
+	ErrAccessNotConfigured         = errors.New("access credentials have not been configured")
 )
 
 // D2DCredentialsStatusError indicates a general error while connecting to the door2doc cloud.

@@ -40,9 +40,11 @@ type ValidationResult struct {
 
 	QueryDuration time.Duration
 	QueryResults  db.VisitorRecords
+
+	Access error
 }
 
-// IsValid returns true if all possible validation errors are nil.
+// IsValid returns true if all fatal validation errors are nil.
 func (v *ValidationResult) IsValid() bool {
 	return v.DatabaseConnection == nil &&
 		v.VisitorQuery == nil &&
@@ -68,6 +70,11 @@ type Configuration struct {
 	interval time.Duration
 	// proxy server to use for all HTTP requests
 	proxy string
+
+	// username to access the web interface
+	accessUsername string
+	// password to access the web interface
+	accessPassword string
 
 	// results of the last call to UpdateValidation
 	validationResult *ValidationResult
@@ -143,6 +150,24 @@ func (c *Configuration) SetQuery(query string) {
 	c.query = query
 }
 
+func (c *Configuration) AccessCredentials() (username, password string) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.accessUsername, c.accessPassword
+}
+
+func (c *Configuration) SetAccessCredentials(username, password string) {
+	c.mu.Lock()
+	c.mu.Unlock()
+
+	if username == "" || password == "" {
+		username = ""
+		password = ""
+	}
+	c.accessUsername = username
+	c.accessPassword = password
+}
+
 func (c *Configuration) Active() bool {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -169,6 +194,10 @@ func (c *Configuration) UpdateValidation(ctx context.Context) {
 	defer timeout()
 
 	res.D2DConnection, res.D2DCredentials = c.checkConnection(connCtx)
+
+	if c.accessUsername == "" && c.accessPassword == "" {
+		res.Access = ErrAccessNotConfigured
+	}
 
 	// check db connection
 	dbCtx, timeout := context.WithTimeout(ctx, DBValidationTimeout)
@@ -226,11 +255,13 @@ func (c *Configuration) Save() error {
 }
 
 type persistentConfig struct {
-	Username string            `json:"username"`
-	Password string            `json:"password"`
-	Proxy    string            `json:"proxy"`
-	Dsn      db.ConnectionData `json:"dsn"`
-	Query    string            `json:"query"`
+	Username       string            `json:"username"`
+	Password       string            `json:"password"`
+	Proxy          string            `json:"proxy"`
+	Dsn            db.ConnectionData `json:"dsn"`
+	Query          string            `json:"query"`
+	AccessUsername string            `json:"accessUsername"`
+	AccessPassword string            `json:"accessPassword"`
 }
 
 func (c *Configuration) MarshalJSON() ([]byte, error) {
@@ -238,11 +269,13 @@ func (c *Configuration) MarshalJSON() ([]byte, error) {
 	defer c.mu.RUnlock()
 
 	vars := persistentConfig{
-		Username: c.username,
-		Password: c.password,
-		Proxy:    c.proxy,
-		Dsn:      c.connection,
-		Query:    c.query,
+		Username:       c.username,
+		Password:       c.password,
+		Proxy:          c.proxy,
+		Dsn:            c.connection,
+		Query:          c.query,
+		AccessUsername: c.accessUsername,
+		AccessPassword: c.accessPassword,
 	}
 	return json.Marshal(vars)
 }
@@ -261,6 +294,8 @@ func (c *Configuration) UnmarshalJSON(v []byte) error {
 	c.proxy = vars.Proxy
 	c.connection = vars.Dsn
 	c.query = vars.Query
+	c.accessUsername = vars.AccessUsername
+	c.accessPassword = vars.AccessPassword
 
 	return nil
 }

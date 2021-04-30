@@ -22,6 +22,7 @@ const (
 	pathUpload   = "/upload"
 	pathDatabase = "/database"
 	pathQuery    = "/query"
+	pathAccess   = "/access"
 )
 
 type ServeMux struct {
@@ -38,6 +39,7 @@ type ServeMux struct {
 	query    *template.Template
 	status   *template.Template
 	upload   *template.Template
+	access   *template.Template
 }
 
 func (m *ServeMux) load(templates ...string) *template.Template {
@@ -86,6 +88,7 @@ func (m *ServeMux) initTemplates() {
 	m.query = m.load("/query.html", "/_layout.html")
 	m.status = m.load("/status.html", "/_layout.html")
 	m.upload = m.load("/upload.html", "/_layout.html")
+	m.access = m.load("/access.html", "/_layout.html")
 }
 
 func runTemplate(w http.ResponseWriter, tmpl *template.Template, data interface{}) {
@@ -130,10 +133,11 @@ func NewServeMux(dev bool, version string, cfg *config.Configuration, h *history
 	}
 
 	res.Handle("/assets/", http.FileServer(res.fs))
-	res.Handle("/", res.StatusHandler())
-	res.Handle(pathDatabase, res.DatabaseHandler())
-	res.Handle(pathQuery, res.QueryHandler())
-	res.Handle(pathUpload, res.UploadHandler())
+	res.Handle("/", res.Secured(res.StatusHandler()))
+	res.Handle(pathDatabase, res.Secured(res.DatabaseHandler()))
+	res.Handle(pathQuery, res.Secured(res.QueryHandler()))
+	res.Handle(pathUpload, res.Secured(res.UploadHandler()))
+	res.Handle(pathAccess, res.Secured(res.AccessHandler()))
 	res.HandleFunc("/debug/pprof/", pprof.Index)
 	res.HandleFunc("/debug/pprof/profile", pprof.Profile)
 	res.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
@@ -145,6 +149,7 @@ type Page struct {
 	Version       string
 	Path          string
 	Problems      map[string]bool
+	Warnings      map[string]bool
 	GlobalError   error
 	Validation    *config.ValidationResult
 	Configuration *config.Configuration
@@ -162,6 +167,9 @@ func (m *ServeMux) page(ctx context.Context, path string) *Page {
 		"Database": p.Validation.DatabaseConnection != nil,
 		"Query":    p.Validation.VisitorQuery != nil,
 		"Upload":   p.Validation.D2DCredentials != nil,
+	}
+	p.Warnings = map[string]bool{
+		"Access": p.Validation.Access != nil,
 	}
 
 	return p
@@ -311,5 +319,61 @@ func (m *ServeMux) QueryHandler() http.Handler {
 			QueryDuration: v.QueryDuration,
 			QueryResults:  v.QueryResults,
 		})
+	})
+}
+
+type AccessPage struct {
+	*Page
+	Username string
+	Password string
+	Error    error
+}
+
+func (m *ServeMux) AccessHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		m.mu.RLock()
+		defer m.mu.RUnlock()
+
+		if r.Method == http.MethodPost {
+			m.cfg.SetAccessCredentials(r.FormValue("username"), r.FormValue("password"))
+			m.cfg.UpdateValidation(r.Context())
+			if m.cfg.Validate().IsValid() {
+				if err := m.cfg.Save(); err != nil {
+					dlog.Error("While saving access credentials: %v", err)
+				}
+			}
+			w.Header().Set("Location", pathAccess)
+			w.WriteHeader(http.StatusFound)
+			return
+		}
+
+		v := m.cfg.Validate()
+		username, password := m.cfg.AccessCredentials()
+		runTemplate(w, m.access, AccessPage{
+			Page:     m.page(r.Context(), r.URL.Path),
+			Username: username,
+			Password: password,
+			Error:    v.Access,
+		})
+	})
+}
+
+func (m *ServeMux) Secured(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		m.mu.RLock()
+		m.mu.RUnlock()
+
+		username, password := m.cfg.AccessCredentials()
+		if username != "" && password != "" {
+			// access required
+			u, p, _ := r.BasicAuth()
+			if username != u && password != p {
+				w.Header().Set("WWW-Authenticate", `Basic realm="Door2doc Upload Service Configuration"`)
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+		}
+
+		handler.ServeHTTP(w, r)
 	})
 }

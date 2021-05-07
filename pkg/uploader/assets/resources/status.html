@@ -17,6 +17,7 @@
                             <th>Time</th>
                             <th>Query</th>
                             <th>Upload</th>
+                            <th>Destination</th>
                             <th>Status</th>
                         </tr>
                         </thead>
@@ -27,6 +28,7 @@
                                     <td>{{ $evt.Time.Format "Jan _2 15:04:05" }}</td>
                                     <td></td>
                                     <td></td>
+                                    <td></td>
                                     <td><pre>{{ $evt.Error }}</pre></td>
                                 </tr>
                             {{ else }}
@@ -34,6 +36,7 @@
                                     <td>{{ $evt.Time.Format "Jan _2 15:04:05" }}</td>
                                     <td>{{ $evt.QueryDuration.Seconds|printf "%0.3fs" }}</td>
                                     <td>{{ $evt.UploadDuration.Seconds|printf "%0.3fs" }}</td>
+                                    <td>{{ $evt.Type }}</td>
                                     <td>{{ $evt.Size }} item(s) uploaded</td>
                                 </tr>
                             {{ end }}

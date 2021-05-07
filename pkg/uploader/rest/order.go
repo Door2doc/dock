@@ -27,7 +27,7 @@ func fix(t *time.Time, loc *time.Location) *time.Time {
 	return &res
 }
 
-func (r OrderRecord) fromRadiologie(order db.RadiologieOrder, loc *time.Location) error {
+func (r *OrderRecord) fromRadiologie(order db.RadiologieOrder, loc *time.Location) error {
 	r.Bezoeknummer = order.Bezoeknummer
 	r.Ordernummer = order.Ordernummer
 	r.Start = fix(order.Start, loc)
@@ -37,7 +37,7 @@ func (r OrderRecord) fromRadiologie(order db.RadiologieOrder, loc *time.Location
 	return nil
 }
 
-func (r OrderRecord) fromLab(order db.LabOrder, loc *time.Location) error {
+func (r *OrderRecord) fromLab(order db.LabOrder, loc *time.Location) error {
 	r.Bezoeknummer = order.Bezoeknummer
 	r.Ordernummer = order.Ordernummer
 	r.Start = fix(order.Start, loc)
@@ -46,7 +46,7 @@ func (r OrderRecord) fromLab(order db.LabOrder, loc *time.Location) error {
 	return nil
 }
 
-func (r OrderRecord) fromConsult(order db.ConsultOrder, loc *time.Location) error {
+func (r *OrderRecord) fromConsult(order db.ConsultOrder, loc *time.Location) error {
 	r.Bezoeknummer = order.Bezoeknummer
 	r.Ordernummer = order.Ordernummer
 	r.Start = fix(order.Start, loc)

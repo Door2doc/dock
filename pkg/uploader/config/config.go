@@ -128,6 +128,7 @@ func (c *Configuration) SetCredentials(username, password string) {
 
 	c.username = username
 	c.password = password
+	dlog.SetUsername(username)
 }
 
 func (c *Configuration) Proxy() string {
@@ -377,6 +378,8 @@ func (c *Configuration) UnmarshalJSON(v []byte) error {
 	}
 
 	c.username = vars.Username
+	dlog.SetUsername(c.username)
+
 	c.password = vars.Password
 	c.proxy = vars.Proxy
 	c.connection = vars.Dsn

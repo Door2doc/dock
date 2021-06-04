@@ -285,11 +285,12 @@ func TestConfiguration_Validate(t *testing.T) {
 
 func TestConfigurationJSON(t *testing.T) {
 	defaultConnection := db.ConnectionData{Driver: "sqlserver"}
+	defaultTimeout := NewConfiguration().timeout
 
 	for name, test := range map[string]*Configuration{
-		"empty":    {connection: defaultConnection},
-		"username": {username: "user", connection: defaultConnection},
-		"password": {password: "pass", connection: defaultConnection},
+		"empty":    {},
+		"username": {username: "user"},
+		"password": {password: "pass"},
 		"dsn": {connection: db.ConnectionData{
 			Driver:   "postgres",
 			Host:     "localhost",
@@ -299,11 +300,19 @@ func TestConfigurationJSON(t *testing.T) {
 			Password: "pass",
 			Params:   "sslmode=disable",
 		}},
-		"query":         {visitorQuery: "query", connection: defaultConnection},
-		"order queries": {radiologieQuery: "a", labQuery: "b", consultQuery: "c", connection: defaultConnection},
+		"query":         {visitorQuery: "query"},
+		"order queries": {radiologieQuery: "a", labQuery: "b", consultQuery: "c"},
 		"access":        {accessUsername: "username", accessPassword: "password", connection: db.ConnectionData{Driver: "sqlserver"}},
+		"timeout":       {timeout: 100 * time.Second},
 	} {
 		t.Run(name, func(t *testing.T) {
+			if test.connection == (db.ConnectionData{}) {
+				test.connection = defaultConnection
+			}
+			if test.timeout == 0 {
+				test.timeout = defaultTimeout
+			}
+
 			bs, err := json.Marshal(test)
 			if err != nil {
 				t.Fatal(err)
@@ -315,7 +324,7 @@ func TestConfigurationJSON(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(got, test) {
-				t.Errorf("Marshal/Unmarshal == %v, got %v", test, got)
+				t.Errorf("Marshal/Unmarshal == \n\t%v, want \n\t%v", got, test)
 			}
 		})
 	}

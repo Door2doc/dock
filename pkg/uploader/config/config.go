@@ -174,6 +174,13 @@ func (c *Configuration) Timeout() time.Duration {
 	return c.timeout
 }
 
+func (c *Configuration) SetTimeout(timeout time.Duration) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.timeout = timeout
+}
+
 // VisitorQuery returns the visitor query stored in the configuration.
 func (c *Configuration) VisitorQuery() string {
 	c.mu.RLock()
@@ -388,6 +395,7 @@ type persistentConfig struct {
 	Password        string            `json:"password"`
 	Proxy           string            `json:"proxy"`
 	Dsn             db.ConnectionData `json:"dsn"`
+	Timeout         int               `json:"timeout"`
 	VisitorQuery    string            `json:"query"`
 	RadiologieQuery string            `json:"radiologie"`
 	LabQuery        string            `json:"lab"`
@@ -411,6 +419,7 @@ func (c *Configuration) MarshalJSON() ([]byte, error) {
 		ConsultQuery:    c.consultQuery,
 		AccessUsername:  c.accessUsername,
 		AccessPassword:  c.accessPassword,
+		Timeout:         int(c.timeout / time.Second),
 	}
 	return json.Marshal(vars)
 }
@@ -422,6 +431,10 @@ func (c *Configuration) UnmarshalJSON(v []byte) error {
 	vars := &persistentConfig{}
 	if err := json.Unmarshal(v, &vars); err != nil {
 		return err
+	}
+
+	if vars.Timeout == 0 {
+		vars.Timeout = 5
 	}
 
 	c.username = vars.Username
@@ -436,6 +449,7 @@ func (c *Configuration) UnmarshalJSON(v []byte) error {
 	c.consultQuery = vars.ConsultQuery
 	c.accessUsername = vars.AccessUsername
 	c.accessPassword = vars.AccessPassword
+	c.timeout = time.Duration(vars.Timeout) * time.Second
 
 	return nil
 }

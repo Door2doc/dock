@@ -91,7 +91,7 @@ func (c *ConnectionData) unmarshalSqlServer(bs []byte) error {
 	return nil
 }
 
-// Implementation of encoding.TextMarshaler
+// MarshalText is an implementation of encoding.TextMarshaler
 func (c ConnectionData) MarshalText() ([]byte, error) {
 	if c.Driver == "postgres" {
 		return c.marshalPostgres()
@@ -148,4 +148,13 @@ func (c *ConnectionData) DSN() string {
 		return ""
 	}
 	return string(res)
+}
+
+func (c *ConnectionData) String() string {
+	pwd := "[unset]"
+	if c.Password != "" {
+		pwd = "redacted"
+	}
+
+	return fmt.Sprintf("{driver: %q, database: %q, username: %q, password: %q, params: %q}", c.Driver, c.Database, c.Username, pwd, c.Params)
 }

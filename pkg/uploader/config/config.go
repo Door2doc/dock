@@ -42,6 +42,7 @@ type QueryResult interface {
 // ValidationResult contains the results of validating the current configuration.
 type ValidationResult struct {
 	DatabaseConnection error
+	QueryTimeout       error
 
 	VisitorQuery         error
 	VisitorQueryDuration time.Duration
@@ -68,6 +69,7 @@ type ValidationResult struct {
 // IsValid returns true if all fatal validation errors are nil.
 func (v *ValidationResult) IsValid() bool {
 	return v.DatabaseConnection == nil &&
+		v.QueryTimeout == nil &&
 		v.VisitorQuery == nil &&
 		v.D2DConnection == nil &&
 		v.D2DCredentials == nil
@@ -284,6 +286,11 @@ func (c *Configuration) UpdateBaseValidation(ctx context.Context) {
 
 	if c.accessUsername == "" && c.accessPassword == "" {
 		res.Access = ErrAccessNotConfigured
+	}
+
+	// check timeout
+	if c.timeout <= 0 {
+		res.QueryTimeout = ErrInvalidTimeout
 	}
 
 	// check db connection

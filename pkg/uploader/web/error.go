@@ -25,6 +25,8 @@ func Humanize(err error) interface{} {
 		return `Database connection not configured.`
 	case config.ErrAccessNotConfigured:
 		return `The web interface is freely accessible. Consider setting a username and password.`
+	case config.ErrInvalidTimeout:
+		return `Invalid timeout.`
 	}
 
 	switch e := err.(type) {

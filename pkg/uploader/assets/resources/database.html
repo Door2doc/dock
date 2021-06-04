@@ -52,21 +52,16 @@
             </div>
         </div>
 
-        {{/*<div class="form-group">*/}}
-            {{/*<label for="db-dsn">Database connection string:</label>*/}}
-            {{/*<input type="text" id="db-dsn" class="form-control {{ if .Error }}is-invalid{{ else }}{{ if .DSN }}is-valid{{ end }}{{ end }}" placeholder="" name="dsn" value="{{ .DSN }}">*/}}
-            {{/*<div class="invalid-feedback">*/}}
-                {{/*{{ if .Error }}{{ .Error | humanize }}{{ end }}*/}}
-            {{/*</div>*/}}
-            {{/*<div class="valid-feedback">*/}}
-                {{/*Connection to database is OK.*/}}
-            {{/*</div>*/}}
-            {{/*<small class="form-text">*/}}
-                {{/*Example: <code>Server=127.0.0.1; Database=myDB; User Id=username; Password=password</code> <br/>*/}}
-                {{/*Refer to <a href="https://www.connectionstrings.com/sql-server/" target="_blank">this site</a> for more*/}}
-                {{/*examples of MSSQL Connection strings.*/}}
-            {{/*</small>*/}}
-        {{/*</div>*/}}
+        <div class="form-group">
+            <label for="timeout">Query timeout (in seconds):</label>
+            <input type="number" id="timeout" class="form-control {{ if .TimeoutError }}is-invalid{{ else }}{{ if .Timeout}}is-valid{{ end }}{{ end }}" placeholder="" name="timeout" value="{{ .Timeout }}">
+            <div class="valid-feedback">
+                Timeout is OK.
+            </div>
+            <div class="invalid-feedback">
+                {{ if .TimeoutError }}{{ .TimeoutError | humanize }}{{ end }}
+            </div>
+        </div>
 
         <div class="text-right">
             <button type="submit" class="btn btn-primary">Update</button>

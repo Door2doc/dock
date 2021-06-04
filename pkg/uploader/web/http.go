@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/pprof"
+	"strconv"
 	"sync"
 	"time"
 
@@ -210,8 +211,10 @@ func (m *ServeMux) StatusHandler() http.Handler {
 type DatabasePage struct {
 	*Page
 
-	Config db.ConnectionData
-	Error  error
+	Config       db.ConnectionData
+	Timeout      string
+	Error        error
+	TimeoutError error
 }
 
 func (m *ServeMux) DatabaseHandler() http.Handler {
@@ -230,8 +233,14 @@ func (m *ServeMux) DatabaseHandler() http.Handler {
 				Password: r.FormValue("password"),
 				Params:   r.FormValue("params"),
 			}
-
 			m.cfg.SetConnection(c)
+
+			timeoutStr := r.FormValue("timeout")
+			t, err := strconv.Atoi(timeoutStr)
+			if err == nil {
+				m.cfg.SetTimeout(time.Duration(t) * time.Second)
+			}
+
 			m.cfg.UpdateBaseValidation(r.Context())
 
 			if m.cfg.Validate().IsValid() {
@@ -246,9 +255,11 @@ func (m *ServeMux) DatabaseHandler() http.Handler {
 
 		connectionData := m.cfg.Connection()
 		runTemplate(w, m.database, DatabasePage{
-			Page:   m.page(r.Context(), r.URL.Path),
-			Config: connectionData,
-			Error:  m.cfg.Validate().DatabaseConnection,
+			Page:         m.page(r.Context(), r.URL.Path),
+			Config:       connectionData,
+			Timeout:      fmt.Sprintf("%d", m.cfg.Timeout()/time.Second),
+			Error:        m.cfg.Validate().DatabaseConnection,
+			TimeoutError: m.cfg.Validate().QueryTimeout,
 		})
 	})
 }

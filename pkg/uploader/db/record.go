@@ -338,7 +338,7 @@ var consultTableTmpl = template.Must(template.New("table").Parse(`
 			<td>{{ $row.Status }}</td>
 			<td>{{ $row.Start }}</td>
 			<td>{{ $row.Eind }}</td>
-			<td>{{ $row.Module }}</td>
+			<td>{{ $row.Specialisme }}</td>
 		</tr>
 	{{ end }}
 	</tbody>

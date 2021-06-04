@@ -137,8 +137,6 @@ func (s *Service) Stop(svc service.Service) error {
 
 func (s *Service) run(ctx context.Context, uploader *Uploader) error {
 	dlog.Info("Starting service")
-	s.cfg.UpdateBaseValidation(ctx)
-
 	for {
 		// run the upload, IF the configuration is active
 		sleep := time.Second

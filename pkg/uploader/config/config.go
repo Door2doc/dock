@@ -167,6 +167,13 @@ func (c *Configuration) SetDSN(driver, dsn string) {
 	_ = c.connection.UnmarshalText([]byte(dsn))
 }
 
+// Timeout returns the timeout used for all queries
+func (c *Configuration) Timeout() time.Duration {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.timeout
+}
+
 // VisitorQuery returns the visitor query stored in the configuration.
 func (c *Configuration) VisitorQuery() string {
 	c.mu.RLock()
@@ -273,10 +280,8 @@ func (c *Configuration) UpdateBaseValidation(ctx context.Context) {
 	}
 
 	// check db connection
-	dbCtx, timeout := context.WithTimeout(ctx, c.timeout)
-	defer timeout()
-	res.VisitorQueryDuration, res.VisitorQueryResults, res.DatabaseConnection, res.VisitorQuery = c.checkDatabase(dbCtx, c.visitorQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
-		return db.ExecuteVisitorQuery(ctx, tx, query)
+	res.VisitorQueryDuration, res.VisitorQueryResults, res.DatabaseConnection, res.VisitorQuery = c.checkDatabase(ctx, c.visitorQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
+		return db.ExecuteVisitorQuery(ctx, tx, query, c.timeout)
 	})
 
 	c.validationResult = res
@@ -294,10 +299,8 @@ func (c *Configuration) UpdateRadiologieValidation(ctx context.Context) {
 	res := c.validationResult
 
 	// check db connection
-	radiologieCtx, radiologieTimeout := context.WithTimeout(ctx, c.timeout)
-	defer radiologieTimeout()
-	res.RadiologieQueryDuration, res.RadiologieQueryResults, res.DatabaseConnection, res.RadiologieQuery = c.checkDatabase(radiologieCtx, c.radiologieQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
-		return db.ExecuteRadiologieQuery(ctx, tx, query)
+	res.RadiologieQueryDuration, res.RadiologieQueryResults, res.DatabaseConnection, res.RadiologieQuery = c.checkDatabase(ctx, c.radiologieQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
+		return db.ExecuteRadiologieQuery(ctx, tx, query, c.timeout)
 	})
 }
 
@@ -312,10 +315,8 @@ func (c *Configuration) UpdateLabValidation(ctx context.Context) {
 	res := c.validationResult
 
 	// check db connection
-	labCtx, labTimeout := context.WithTimeout(ctx, c.timeout)
-	defer labTimeout()
-	res.LabQueryDuration, res.LabQueryResults, res.DatabaseConnection, res.LabQuery = c.checkDatabase(labCtx, c.labQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
-		return db.ExecuteLabQuery(ctx, tx, query)
+	res.LabQueryDuration, res.LabQueryResults, res.DatabaseConnection, res.LabQuery = c.checkDatabase(ctx, c.labQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
+		return db.ExecuteLabQuery(ctx, tx, query, c.timeout)
 	})
 }
 
@@ -330,10 +331,8 @@ func (c *Configuration) UpdateConsultValidation(ctx context.Context) {
 	res := c.validationResult
 
 	// check db connection
-	consultCtx, consultTimeout := context.WithTimeout(ctx, c.timeout)
-	defer consultTimeout()
-	res.ConsultQueryDuration, res.ConsultQueryResults, res.DatabaseConnection, res.ConsultQuery = c.checkDatabase(consultCtx, c.consultQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
-		return db.ExecuteConsultQuery(ctx, tx, query)
+	res.ConsultQueryDuration, res.ConsultQueryResults, res.DatabaseConnection, res.ConsultQuery = c.checkDatabase(ctx, c.consultQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
+		return db.ExecuteConsultQuery(ctx, tx, query, c.timeout)
 	})
 }
 

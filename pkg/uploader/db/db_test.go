@@ -148,7 +148,7 @@ func TestExecuteVisitorQuery(t *testing.T) {
 			tx, cancel := setup(ctx, t)
 			defer cancel()
 
-			got, err := ExecuteVisitorQuery(ctx, tx, test.Query)
+			got, err := ExecuteVisitorQuery(ctx, tx, test.Query, time.Second)
 
 			for i := range got {
 				got[i].Aangemeld = u(got[i].Aangemeld)
@@ -215,7 +215,7 @@ func TestExecuteVisitorQueryPermutations(t *testing.T) {
 	}
 
 	query := generateQuery(parts)
-	got, err := ExecuteVisitorQuery(ctx, tx, query)
+	got, err := ExecuteVisitorQuery(ctx, tx, query, time.Second)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -329,7 +329,7 @@ func TestExecuteRadiologieQueryPermutations(t *testing.T) {
 	}
 
 	query := generateQuery(parts)
-	got, err := ExecuteRadiologieQuery(ctx, tx, query)
+	got, err := ExecuteRadiologieQuery(ctx, tx, query, time.Second)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -367,7 +367,7 @@ func TestExecuteLabQueryPermutations(t *testing.T) {
 	}
 
 	query := generateQuery(parts)
-	got, err := ExecuteLabQuery(ctx, tx, query)
+	got, err := ExecuteLabQuery(ctx, tx, query, time.Second)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -404,7 +404,7 @@ func TestExecuteConsultQueryPermutations(t *testing.T) {
 	}
 
 	query := generateQuery(parts)
-	got, err := ExecuteConsultQuery(ctx, tx, query)
+	got, err := ExecuteConsultQuery(ctx, tx, query, time.Second)
 	if err != nil {
 		t.Fatal(err)
 	}

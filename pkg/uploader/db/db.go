@@ -10,9 +10,12 @@ import (
 )
 
 // ExecuteVisitorQuery tries to execute the visitor query and marshal the result into records.
-func ExecuteVisitorQuery(ctx context.Context, tx *sql.Tx, query string) (VisitorRecords, error) {
+func ExecuteVisitorQuery(ctx context.Context, tx *sql.Tx, query string, timeout time.Duration) (VisitorRecords, error) {
+	dbCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	// execute query
-	rows, err := tx.QueryContext(ctx, query)
+	rows, err := tx.QueryContext(dbCtx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -175,9 +178,12 @@ func mapVisitorRow(rows *sql.Rows, rec *VisitorRecord, allColumns []string, col2
 }
 
 // ExecuteRadiologieQuery tries to execute the visitor query and marshal the result into records.
-func ExecuteRadiologieQuery(ctx context.Context, tx *sql.Tx, query string) (RadiologieOrders, error) {
+func ExecuteRadiologieQuery(ctx context.Context, tx *sql.Tx, query string, timeout time.Duration) (RadiologieOrders, error) {
+	dbCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	// execute query
-	rows, err := tx.QueryContext(ctx, query)
+	rows, err := tx.QueryContext(dbCtx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -264,9 +270,12 @@ func mapRadiologieRow(rows *sql.Rows, rec *RadiologieOrder, allColumns []string,
 }
 
 // ExecuteLabQuery tries to execute the visitor query and marshal the result into records.
-func ExecuteLabQuery(ctx context.Context, tx *sql.Tx, query string) (LabOrders, error) {
+func ExecuteLabQuery(ctx context.Context, tx *sql.Tx, query string, timeout time.Duration) (LabOrders, error) {
+	dbCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	// execute query
-	rows, err := tx.QueryContext(ctx, query)
+	rows, err := tx.QueryContext(dbCtx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -350,9 +359,12 @@ func mapLabRow(rows *sql.Rows, rec *LabOrder, allColumns []string, col2index map
 }
 
 // ExecuteConsultQuery tries to execute the visitor query and marshal the result into records.
-func ExecuteConsultQuery(ctx context.Context, tx *sql.Tx, query string) (ConsultOrders, error) {
+func ExecuteConsultQuery(ctx context.Context, tx *sql.Tx, query string, timeout time.Duration) (ConsultOrders, error) {
+	dbCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	// execute query
-	rows, err := tx.QueryContext(ctx, query)
+	rows, err := tx.QueryContext(dbCtx, query)
 	if err != nil {
 		return nil, err
 	}

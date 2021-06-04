@@ -127,7 +127,7 @@ func (u *Uploader) executeVisitorQuery(ctx context.Context) (interface{}, int, e
 		}
 	}()
 
-	records, err := db.ExecuteVisitorQuery(ctx, tx, u.Configuration.VisitorQuery())
+	records, err := db.ExecuteVisitorQuery(ctx, tx, u.Configuration.VisitorQuery(), u.Configuration.Timeout())
 	if err != nil {
 		return nil, 0, err
 	}
@@ -154,7 +154,7 @@ func (u *Uploader) executeRadiologieQuery(ctx context.Context) (interface{}, int
 		}
 	}()
 
-	records, err := db.ExecuteRadiologieQuery(ctx, tx, u.Configuration.RadiologieQuery())
+	records, err := db.ExecuteRadiologieQuery(ctx, tx, u.Configuration.RadiologieQuery(), u.Configuration.Timeout())
 	if err != nil {
 		return nil, 0, err
 	}
@@ -181,7 +181,7 @@ func (u *Uploader) executeLabQuery(ctx context.Context) (interface{}, int, error
 		}
 	}()
 
-	records, err := db.ExecuteLabQuery(ctx, tx, u.Configuration.LabQuery())
+	records, err := db.ExecuteLabQuery(ctx, tx, u.Configuration.LabQuery(), u.Configuration.Timeout())
 	if err != nil {
 		return nil, 0, err
 	}
@@ -208,7 +208,7 @@ func (u *Uploader) executeConsultQuery(ctx context.Context) (interface{}, int, e
 		}
 	}()
 
-	records, err := db.ExecuteConsultQuery(ctx, tx, u.Configuration.ConsultQuery())
+	records, err := db.ExecuteConsultQuery(ctx, tx, u.Configuration.ConsultQuery(), u.Configuration.Timeout())
 	if err != nil {
 		return nil, 0, err
 	}

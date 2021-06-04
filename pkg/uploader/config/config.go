@@ -83,6 +83,8 @@ type Configuration struct {
 	password string
 	// database connection data
 	connection db.ConnectionData
+	// database timeout
+	timeout time.Duration
 	// Query to execute to retrieve visitor information
 	visitorQuery string
 	// Query to execute to retrieve radiologie aanvragen
@@ -111,6 +113,7 @@ func NewConfiguration() *Configuration {
 	return &Configuration{
 		active:   true,
 		interval: time.Minute,
+		timeout:  5 * time.Second,
 	}
 }
 
@@ -252,8 +255,8 @@ func (c *Configuration) Interval() time.Duration {
 	return c.interval
 }
 
-// UpdateValidation validates the configuration and returns the results of those checks.
-func (c *Configuration) UpdateValidation(ctx context.Context) {
+// UpdateBaseValidation validates the base configuration and returns the results of those checks.
+func (c *Configuration) UpdateBaseValidation(ctx context.Context) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -270,23 +273,68 @@ func (c *Configuration) UpdateValidation(ctx context.Context) {
 	}
 
 	// check db connection
-	dbCtx, timeout := context.WithTimeout(ctx, DBValidationTimeout)
+	dbCtx, timeout := context.WithTimeout(ctx, c.timeout)
 	defer timeout()
 	res.VisitorQueryDuration, res.VisitorQueryResults, res.DatabaseConnection, res.VisitorQuery = c.checkDatabase(dbCtx, c.visitorQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
 		return db.ExecuteVisitorQuery(ctx, tx, query)
 	})
-	res.RadiologieQueryDuration, res.RadiologieQueryResults, res.DatabaseConnection, res.RadiologieQuery = c.checkDatabase(dbCtx, c.radiologieQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
-		return db.ExecuteRadiologieQuery(ctx, tx, query)
-	})
-	res.LabQueryDuration, res.LabQueryResults, res.DatabaseConnection, res.LabQuery = c.checkDatabase(dbCtx, c.labQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
-		return db.ExecuteLabQuery(ctx, tx, query)
-	})
-	res.ConsultQueryDuration, res.ConsultQueryResults, res.DatabaseConnection, res.ConsultQuery = c.checkDatabase(dbCtx, c.consultQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
-		return db.ExecuteConsultQuery(ctx, tx, query)
-	})
 
 	c.validationResult = res
 	c.active = c.validationResult.IsValid()
+}
+
+// UpdateRadiologieValidation validates the order configuration and returns the results of those checks.
+func (c *Configuration) UpdateRadiologieValidation(ctx context.Context) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if c.validationResult == nil {
+		c.validationResult = new(ValidationResult)
+	}
+	res := c.validationResult
+
+	// check db connection
+	radiologieCtx, radiologieTimeout := context.WithTimeout(ctx, c.timeout)
+	defer radiologieTimeout()
+	res.RadiologieQueryDuration, res.RadiologieQueryResults, res.DatabaseConnection, res.RadiologieQuery = c.checkDatabase(radiologieCtx, c.radiologieQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
+		return db.ExecuteRadiologieQuery(ctx, tx, query)
+	})
+}
+
+// UpdateLabValidation validates the order configuration and returns the results of those checks.
+func (c *Configuration) UpdateLabValidation(ctx context.Context) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if c.validationResult == nil {
+		c.validationResult = new(ValidationResult)
+	}
+	res := c.validationResult
+
+	// check db connection
+	labCtx, labTimeout := context.WithTimeout(ctx, c.timeout)
+	defer labTimeout()
+	res.LabQueryDuration, res.LabQueryResults, res.DatabaseConnection, res.LabQuery = c.checkDatabase(labCtx, c.labQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
+		return db.ExecuteLabQuery(ctx, tx, query)
+	})
+}
+
+// UpdateConsultValidation validates the order configuration and returns the results of those checks.
+func (c *Configuration) UpdateConsultValidation(ctx context.Context) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if c.validationResult == nil {
+		c.validationResult = new(ValidationResult)
+	}
+	res := c.validationResult
+
+	// check db connection
+	consultCtx, consultTimeout := context.WithTimeout(ctx, c.timeout)
+	defer consultTimeout()
+	res.ConsultQueryDuration, res.ConsultQueryResults, res.DatabaseConnection, res.ConsultQuery = c.checkDatabase(consultCtx, c.consultQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
+		return db.ExecuteConsultQuery(ctx, tx, query)
+	})
 }
 
 // Validate returns the result of the last validation.

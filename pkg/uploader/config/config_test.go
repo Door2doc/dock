@@ -256,7 +256,11 @@ func TestConfiguration_Validate(t *testing.T) {
 			cfg := NewConfiguration()
 
 			test.Given(cfg)
-			cfg.UpdateValidation(ctx)
+			cfg.UpdateBaseValidation(ctx)
+			cfg.UpdateRadiologieValidation(ctx)
+			cfg.UpdateLabValidation(ctx)
+			cfg.UpdateConsultValidation(ctx)
+
 			got := cfg.Validate()
 
 			// reset this stuff

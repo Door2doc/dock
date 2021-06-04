@@ -232,7 +232,7 @@ func (m *ServeMux) DatabaseHandler() http.Handler {
 			}
 
 			m.cfg.SetConnection(c)
-			m.cfg.UpdateValidation(r.Context())
+			m.cfg.UpdateBaseValidation(r.Context())
 
 			if m.cfg.Validate().IsValid() {
 				if err := m.cfg.Save(); err != nil {
@@ -270,7 +270,7 @@ func (m *ServeMux) UploadHandler() http.Handler {
 		if r.Method == http.MethodPost {
 			m.cfg.SetCredentials(r.FormValue("username"), r.FormValue("password"))
 			m.cfg.SetProxy(r.FormValue("proxy"))
-			m.cfg.UpdateValidation(r.Context())
+			m.cfg.UpdateBaseValidation(r.Context())
 			if err := m.cfg.Save(); err != nil {
 				dlog.Error("While saving credentials: %v", err)
 			}
@@ -313,7 +313,7 @@ func (m *ServeMux) VisitorQueryHandler() http.Handler {
 
 		if r.Method == http.MethodPost {
 			m.cfg.SetVisitorQuery(r.FormValue("query"))
-			m.cfg.UpdateValidation(r.Context())
+			m.cfg.UpdateBaseValidation(r.Context())
 			if m.cfg.Validate().IsValid() {
 				if err := m.cfg.Save(); err != nil {
 					dlog.Error("While saving query: %v", err)
@@ -344,7 +344,7 @@ func (m *ServeMux) RadiologyQueryHandler() http.Handler {
 
 		if r.Method == http.MethodPost {
 			m.cfg.SetRadiologieQuery(r.FormValue("query"))
-			m.cfg.UpdateValidation(r.Context())
+			m.cfg.UpdateRadiologieValidation(r.Context())
 			if m.cfg.Validate().IsValid() {
 				if err := m.cfg.Save(); err != nil {
 					dlog.Error("While saving query: %v", err)
@@ -375,7 +375,7 @@ func (m *ServeMux) LabQueryHandler() http.Handler {
 
 		if r.Method == http.MethodPost {
 			m.cfg.SetLabQuery(r.FormValue("query"))
-			m.cfg.UpdateValidation(r.Context())
+			m.cfg.UpdateLabValidation(r.Context())
 			if m.cfg.Validate().IsValid() {
 				if err := m.cfg.Save(); err != nil {
 					dlog.Error("While saving query: %v", err)
@@ -406,7 +406,7 @@ func (m *ServeMux) ConsultQueryHandler() http.Handler {
 
 		if r.Method == http.MethodPost {
 			m.cfg.SetConsultQuery(r.FormValue("query"))
-			m.cfg.UpdateValidation(r.Context())
+			m.cfg.UpdateConsultValidation(r.Context())
 			if m.cfg.Validate().IsValid() {
 				if err := m.cfg.Save(); err != nil {
 					dlog.Error("While saving query: %v", err)
@@ -444,7 +444,7 @@ func (m *ServeMux) AccessHandler() http.Handler {
 
 		if r.Method == http.MethodPost {
 			m.cfg.SetAccessCredentials(r.FormValue("username"), r.FormValue("password"))
-			m.cfg.UpdateValidation(r.Context())
+			m.cfg.UpdateBaseValidation(r.Context())
 			if m.cfg.Validate().IsValid() {
 				if err := m.cfg.Save(); err != nil {
 					dlog.Error("While saving access credentials: %v", err)

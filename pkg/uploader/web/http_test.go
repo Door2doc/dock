@@ -16,7 +16,7 @@ func TestTemplatesDontFail(t *testing.T) {
 	defer cancel()
 
 	cfg := config.NewConfiguration()
-	cfg.UpdateValidation(ctx)
+	cfg.UpdateBaseValidation(ctx)
 
 	m, err := NewServeMux(false, "testing", cfg, history.New())
 	if err != nil {

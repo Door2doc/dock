@@ -98,7 +98,7 @@ func (s *Service) Start(svc service.Service) error {
 	// run service
 	go func() {
 		// validate configuration
-		s.cfg.UpdateValidation(ctx)
+		s.cfg.UpdateBaseValidation(ctx)
 
 		err := s.run(ctx, uploader)
 		switch {
@@ -137,11 +137,11 @@ func (s *Service) Stop(svc service.Service) error {
 
 func (s *Service) run(ctx context.Context, uploader *Uploader) error {
 	dlog.Info("Starting service")
+	s.cfg.UpdateBaseValidation(ctx)
 
 	for {
 		// run the upload, IF the configuration is active
 		sleep := time.Second
-		s.cfg.UpdateValidation(ctx)
 		if s.cfg.Active() {
 			uploader.Upload(ctx)
 			sleep = s.cfg.Interval()

@@ -486,7 +486,7 @@ func (m *ServeMux) Secured(handler http.Handler) http.Handler {
 		if username != "" && password != "" {
 			// access required
 			u, p, _ := r.BasicAuth()
-			if username != u && password != p {
+			if username != u || password != p {
 				w.Header().Set("WWW-Authenticate", `Basic realm="Door2doc Upload Service Configuration"`)
 				w.WriteHeader(http.StatusUnauthorized)
 				return

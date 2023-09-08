@@ -16,10 +16,10 @@ endif
 	$(MAKE) clean
 	$(MAKE) Door2doc_Upload_Service_$(VERSION).exe
 	$(MAKE) -C doc handleiding.pdf
-	hub release create -d -a "Door2doc_Upload_Service_$(VERSION).exe#Windows installer" -m"$(VERSION)" $(VERSION)
-	hub release edit -d -a "doc/handleiding.pdf#Handleiding" -m"$(VERSION)" $(VERSION)
+	gh release create -d -a "Door2doc_Upload_Service_$(VERSION).exe#Windows installer" -m"$(VERSION)" $(VERSION)
+	gh release edit -d -a "doc/handleiding.pdf#Handleiding" -m"$(VERSION)" $(VERSION)
 
-installer: Door2doc_Upload_Service_$(VERSION).exe 
+installer: Door2doc_Upload_Service_$(VERSION).exe
 
 Door2doc_Upload_Service_$(VERSION).exe: d2d-upload_windows_amd64.exe installer.nsi
 	sync
@@ -50,4 +50,3 @@ $(ESC):
 .PHONY:	generate
 generate:	$(ESC)
 	$(ESC) -o pkg/uploader/assets/assets.go -pkg assets -prefix pkg/uploader/assets/resources pkg/uploader/assets/resources
-

@@ -1,3 +1,3 @@
 Vagrant.configure("2") do |config|
-  config.vm.box = "opentable/win-2012r2-standard-amd64-nocm"
+  config.vm.box =  "stromweld/windows-2012r2"
 end

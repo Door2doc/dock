@@ -53,6 +53,7 @@ Section
 
     ExecWait '"$INSTDIR\UploadService.exe" install'
     ExecWait '"$INSTDIR\UploadService.exe" start'
+    ExecWait '"$SYSDIR\sc.exe" config Door2docUploader depend= dnscache'
 
 SectionEnd
 

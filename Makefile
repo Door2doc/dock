@@ -16,8 +16,8 @@ endif
 	$(MAKE) clean
 	$(MAKE) Door2doc_Upload_Service_$(VERSION).exe
 	$(MAKE) -C doc handleiding.pdf
-	gh release create -d -a "Door2doc_Upload_Service_$(VERSION).exe#Windows installer" -m"$(VERSION)" $(VERSION)
-	gh release edit -d -a "doc/handleiding.pdf#Handleiding" -m"$(VERSION)" $(VERSION)
+	gh release create $(VERSION) --prerelease --title "$(VERSION)" --notes ""
+	gh release upload $(VERSION) "Door2doc_Upload_Service_$(VERSION).exe#Windows installer" "doc/handleiding.pdf#Handleiding"
 
 installer: Door2doc_Upload_Service_$(VERSION).exe
 

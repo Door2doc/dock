@@ -46,14 +46,6 @@ func ExecuteVisitorQuery(ctx context.Context, tx *sql.Tx, query string, timeout 
 			return nil, err
 		}
 
-		target := make([]interface{}, len(names))
-		for i := range target {
-			target[i] = new(sql.RawBytes)
-		}
-		if err := rows.Scan(target...); err != nil {
-			return nil, err
-		}
-
 		res = append(res, rec)
 	}
 	if err := rows.Err(); err != nil {
@@ -214,14 +206,6 @@ func ExecuteRadiologieQuery(ctx context.Context, tx *sql.Tx, query string, timeo
 			return nil, err
 		}
 
-		target := make([]interface{}, len(names))
-		for i := range target {
-			target[i] = new(sql.RawBytes)
-		}
-		if err := rows.Scan(target...); err != nil {
-			return nil, err
-		}
-
 		res = append(res, rec)
 	}
 	if err := rows.Err(); err != nil {
@@ -306,14 +290,6 @@ func ExecuteLabQuery(ctx context.Context, tx *sql.Tx, query string, timeout time
 			return nil, err
 		}
 
-		target := make([]interface{}, len(names))
-		for i := range target {
-			target[i] = new(sql.RawBytes)
-		}
-		if err := rows.Scan(target...); err != nil {
-			return nil, err
-		}
-
 		res = append(res, rec)
 	}
 	if err := rows.Err(); err != nil {
@@ -392,14 +368,6 @@ func ExecuteConsultQuery(ctx context.Context, tx *sql.Tx, query string, timeout 
 		var rec ConsultOrder
 		err := mapConsultRow(rows, &rec, names, col2index)
 		if err != nil {
-			return nil, err
-		}
-
-		target := make([]interface{}, len(names))
-		for i := range target {
-			target[i] = new(sql.RawBytes)
-		}
-		if err := rows.Scan(target...); err != nil {
 			return nil, err
 		}
 

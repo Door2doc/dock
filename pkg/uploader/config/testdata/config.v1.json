@@ -1,0 +1,13 @@
+{
+  "username": "upload-user",
+  "password": "upload-password",
+  "proxy": "proxy",
+  "dsn": "server=host\\instance; database=database; user id=db-username; password=db-password; p=a",
+  "timeout": 40,
+  "query": "visitor",
+  "radiologie": "radio",
+  "lab": "lab",
+  "consult": "consult",
+  "accessUsername": "web-user",
+  "accessPassword": "web-password"
+}

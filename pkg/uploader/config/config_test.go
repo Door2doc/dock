@@ -3,8 +3,10 @@ package config
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -188,7 +190,7 @@ func TestConfiguration_Validate(t *testing.T) {
 		"correct query": {
 			Given: func(cfg *Configuration) {
 				cfg.SetDSN("postgres", TestDSN)
-				cfg.SetVisitorQuery(`select * from correct`)
+				cfg.SetVisitorQuery(`SELECT * FROM correct`)
 			},
 			Want: &ValidationResult{
 				D2DCredentials:  ErrD2DCredentialsNotConfigured,
@@ -203,7 +205,7 @@ func TestConfiguration_Validate(t *testing.T) {
 			Given: func(cfg *Configuration) {
 				cfg.SetDSN("postgres", TestDSN)
 				cfg.SetCredentials(TestUser, TestPassword)
-				cfg.SetVisitorQuery(`select * from correct`)
+				cfg.SetVisitorQuery(`SELECT * FROM correct`)
 			},
 			Want: &ValidationResult{
 				RadiologieQuery: ErrQueryNotConfigured,
@@ -218,7 +220,7 @@ func TestConfiguration_Validate(t *testing.T) {
 			Given: func(cfg *Configuration) {
 				cfg.SetDSN("postgres", TestDSN)
 				cfg.SetCredentials(TestUser, TestPassword)
-				cfg.SetVisitorQuery(`select * from correct`)
+				cfg.SetVisitorQuery(`SELECT * FROM correct`)
 				cfg.SetAccessCredentials(TestUser, TestPassword)
 			},
 			Want: &ValidationResult{
@@ -233,10 +235,10 @@ func TestConfiguration_Validate(t *testing.T) {
 			Given: func(cfg *Configuration) {
 				cfg.SetDSN("postgres", TestDSN)
 				cfg.SetCredentials(TestUser, TestPassword)
-				cfg.SetVisitorQuery(`select * from correct`)
-				cfg.SetRadiologieQuery(`select * from correct_radiologie`)
-				cfg.SetLabQuery(`select * from correct_lab`)
-				cfg.SetConsultQuery(`select * from correct_consult`)
+				cfg.SetVisitorQuery(`SELECT * FROM correct`)
+				cfg.SetRadiologieQuery(`SELECT * FROM correct_radiologie`)
+				cfg.SetLabQuery(`SELECT * FROM correct_lab`)
+				cfg.SetConsultQuery(`SELECT * FROM correct_consult`)
 				cfg.SetAccessCredentials(TestUser, TestPassword)
 			},
 			Want:             &ValidationResult{},
@@ -326,6 +328,91 @@ func TestConfigurationJSON(t *testing.T) {
 			if !reflect.DeepEqual(got, test) {
 				t.Errorf("Marshal/Unmarshal == \n\t%v, want \n\t%v", got, test)
 			}
+		})
+	}
+}
+
+func TestConfigurationMarshal(t *testing.T) {
+	for file, want := range map[string]*Configuration{
+		"testdata/config.v1.json": {
+			username: "upload-user",
+			password: "upload-password",
+			connection: db.ConnectionData{
+				Driver:   "sqlserver",
+				Host:     "host",
+				Port:     "",
+				Instance: "instance",
+				Database: "database",
+				Username: "db-username",
+				Password: "db-password",
+				Params:   "p=a",
+			},
+			timeout:         40 * time.Second,
+			visitorQuery:    "visitor",
+			radiologieQuery: "radio",
+			labQuery:        "lab",
+			consultQuery:    "consult",
+			proxy:           "proxy",
+			accessUsername:  "web-user",
+			accessPassword:  "web-password",
+		},
+	} {
+		t.Run(file, func(t *testing.T) {
+			f, err := os.Open(file)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer func() { _ = f.Close() }()
+
+			data, err := io.ReadAll(f)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var got = new(Configuration)
+			if err := json.Unmarshal(data, &got); err != nil {
+				t.Fatal(err)
+			}
+
+			if got.username != want.username {
+				t.Errorf("Username == %q, want %q", got.username, want.username)
+			}
+			if got.password != want.password {
+				t.Errorf("Password == %v, want %v", got.password, want.password)
+			}
+			if !reflect.DeepEqual(got.connection, want.connection) {
+				t.Errorf("Connection == %v, want %v", got.connection, want.connection)
+			}
+			if got.timeout != want.timeout {
+				t.Errorf("Timeout == %s, want %s", got.timeout, want.timeout)
+			}
+			if got.visitorQuery != want.visitorQuery {
+				t.Errorf("Visitor query == %q, want %q", got.visitorQuery, want.visitorQuery)
+			}
+			if got.radiologieQuery != want.radiologieQuery {
+				t.Errorf("Radiologie query == %q, want %q", got.radiologieQuery, want.radiologieQuery)
+			}
+			if got.labQuery != want.labQuery {
+				t.Errorf("Lab query == %q, want %q", got.labQuery, want.labQuery)
+			}
+			if got.consultQuery != want.consultQuery {
+				t.Errorf("Consult query == %q, want %q", got.consultQuery, want.consultQuery)
+			}
+			if got.active != want.active {
+				t.Errorf("Active == %v, want %v", got.active, want.active)
+			}
+			if got.interval != want.interval {
+				t.Errorf("Interval == %s, want %s", got.interval, want.interval)
+			}
+			if got.proxy != want.proxy {
+				t.Errorf("Proxy == %q, want %q", got.proxy, want.proxy)
+			}
+			if got.accessUsername != want.accessUsername {
+				t.Errorf("Access username == %q, want %q", got.accessUsername, want.accessUsername)
+			}
+			if got.accessPassword != want.accessPassword {
+				t.Errorf("Access == %v, want %v", got.accessPassword, want.accessPassword)
+			}
+
 		})
 	}
 }

@@ -3,8 +3,11 @@ package config
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -188,7 +191,7 @@ func TestConfiguration_Validate(t *testing.T) {
 		"correct query": {
 			Given: func(cfg *Configuration) {
 				cfg.SetDSN("postgres", TestDSN)
-				cfg.SetVisitorQuery(`select * from correct`)
+				cfg.SetVisitorQuery(`SELECT * FROM correct`)
 			},
 			Want: &ValidationResult{
 				D2DCredentials:  ErrD2DCredentialsNotConfigured,
@@ -203,7 +206,7 @@ func TestConfiguration_Validate(t *testing.T) {
 			Given: func(cfg *Configuration) {
 				cfg.SetDSN("postgres", TestDSN)
 				cfg.SetCredentials(TestUser, TestPassword)
-				cfg.SetVisitorQuery(`select * from correct`)
+				cfg.SetVisitorQuery(`SELECT * FROM correct`)
 			},
 			Want: &ValidationResult{
 				RadiologieQuery: ErrQueryNotConfigured,
@@ -218,7 +221,7 @@ func TestConfiguration_Validate(t *testing.T) {
 			Given: func(cfg *Configuration) {
 				cfg.SetDSN("postgres", TestDSN)
 				cfg.SetCredentials(TestUser, TestPassword)
-				cfg.SetVisitorQuery(`select * from correct`)
+				cfg.SetVisitorQuery(`SELECT * FROM correct`)
 				cfg.SetAccessCredentials(TestUser, TestPassword)
 			},
 			Want: &ValidationResult{
@@ -233,10 +236,10 @@ func TestConfiguration_Validate(t *testing.T) {
 			Given: func(cfg *Configuration) {
 				cfg.SetDSN("postgres", TestDSN)
 				cfg.SetCredentials(TestUser, TestPassword)
-				cfg.SetVisitorQuery(`select * from correct`)
-				cfg.SetRadiologieQuery(`select * from correct_radiologie`)
-				cfg.SetLabQuery(`select * from correct_lab`)
-				cfg.SetConsultQuery(`select * from correct_consult`)
+				cfg.SetVisitorQuery(`SELECT * FROM correct`)
+				cfg.SetRadiologieQuery(`SELECT * FROM correct_radiologie`)
+				cfg.SetLabQuery(`SELECT * FROM correct_lab`)
+				cfg.SetConsultQuery(`SELECT * FROM correct_consult`)
 				cfg.SetAccessCredentials(TestUser, TestPassword)
 			},
 			Want:             &ValidationResult{},
@@ -326,6 +329,59 @@ func TestConfigurationJSON(t *testing.T) {
 			if !reflect.DeepEqual(got, test) {
 				t.Errorf("Marshal/Unmarshal == \n\t%v, want \n\t%v", got, test)
 			}
+		})
+	}
+}
+
+func TestConfigurationMarshal(t *testing.T) {
+	for file, want := range map[string]*Configuration{
+		"testdata/config.v1.json": {
+			username: "upload-user",
+			password: "upload-password",
+			connection: db.ConnectionData{
+				Driver:   "sqlserver",
+				Host:     "host",
+				Port:     "",
+				Instance: "instance",
+				Database: "database",
+				Username: "db-username",
+				Password: "db-password",
+				Params:   "p=a",
+			},
+			timeout:         40 * time.Second,
+			visitorQuery:    "visitor",
+			radiologieQuery: "radio",
+			labQuery:        "lab",
+			consultQuery:    "consult",
+			active:          true,
+			interval:        50 * time.Second,
+			proxy:           "proxy",
+			accessUsername:  "web-user",
+			accessPassword:  "web-password",
+		},
+	} {
+		t.Run(file, func(t *testing.T) {
+			bs, _ := json.Marshal(want)
+			fmt.Printf("%s\n", bs)
+
+			f, err := os.Open(file)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer func() { _ = f.Close() }()
+
+			data, err := io.ReadAll(f)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var got = new(Configuration)
+			if err := json.Unmarshal(data, &got); err != nil {
+				t.Fatal(err)
+			}
+			if !reflect.DeepEqual(got, want) {
+				t.Errorf("Parsing %s == \n\t%v, want \n\t%v", file, got, want)
+			}
+
 		})
 	}
 }

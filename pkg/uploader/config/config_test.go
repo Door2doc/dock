@@ -289,22 +289,24 @@ func TestConfigurationJSON(t *testing.T) {
 	defaultConnection := db.ConnectionData{Driver: "sqlserver"}
 	defaultTimeout := NewConfiguration().timeout
 
+	password := "password123"
+
 	for name, test := range map[string]*Configuration{
 		"empty":    {},
 		"username": {username: "user"},
-		"password": {password: "pass"},
+		"password": {password: password},
 		"dsn": {connection: db.ConnectionData{
 			Driver:   "postgres",
 			Host:     "localhost",
 			Port:     "5436",
 			Database: "pgdb",
 			Username: "pguser",
-			Password: "pass",
+			Password: password,
 			Params:   "sslmode=disable",
 		}},
 		"query":         {visitorQuery: "query"},
 		"order queries": {radiologieQuery: "a", labQuery: "b", consultQuery: "c"},
-		"access":        {accessUsername: "username", accessPassword: "password", connection: db.ConnectionData{Driver: "sqlserver"}},
+		"access":        {accessUsername: "username", accessPassword: password, connection: db.ConnectionData{Driver: "sqlserver"}},
 		"timeout":       {timeout: 100 * time.Second},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -328,6 +330,10 @@ func TestConfigurationJSON(t *testing.T) {
 			if !reflect.DeepEqual(got, test) {
 				t.Errorf("Marshal/Unmarshal == \n\t%v, want \n\t%v", got, test)
 			}
+
+			//if bytes.Contains(bs, []byte(password)) {
+			//	t.Errorf("Marshal stores passwords in plaintext: %s", bs)
+			//}
 		})
 	}
 }
@@ -335,6 +341,28 @@ func TestConfigurationJSON(t *testing.T) {
 func TestConfigurationMarshal(t *testing.T) {
 	for file, want := range map[string]*Configuration{
 		"testdata/config.v1.json": {
+			username: "upload-user",
+			password: "upload-password",
+			connection: db.ConnectionData{
+				Driver:   "sqlserver",
+				Host:     "host",
+				Port:     "",
+				Instance: "instance",
+				Database: "database",
+				Username: "db-username",
+				Password: "db-password",
+				Params:   "p=a",
+			},
+			timeout:         40 * time.Second,
+			visitorQuery:    "visitor",
+			radiologieQuery: "radio",
+			labQuery:        "lab",
+			consultQuery:    "consult",
+			proxy:           "proxy",
+			accessUsername:  "web-user",
+			accessPassword:  "web-password",
+		},
+		"testdata/config.v2.json": {
 			username: "upload-user",
 			password: "upload-password",
 			connection: db.ConnectionData{

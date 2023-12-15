@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/password"
 	"html/template"
 	"io"
 	"io/ioutil"
@@ -398,17 +399,19 @@ func (c *Configuration) Save() error {
 }
 
 type persistentConfig struct {
-	Username        string            `json:"username"`
-	Password        string            `json:"password"`
-	Proxy           string            `json:"proxy"`
-	Dsn             db.ConnectionData `json:"dsn"`
-	Timeout         int               `json:"timeout"`
-	VisitorQuery    string            `json:"query"`
-	RadiologieQuery string            `json:"radiologie"`
-	LabQuery        string            `json:"lab"`
-	ConsultQuery    string            `json:"consult"`
-	AccessUsername  string            `json:"accessUsername"`
-	AccessPassword  string            `json:"accessPassword"`
+	Username         string            `json:"username"`
+	PasswordV1       string            `json:"password,omitempty"`
+	PasswordV2       password.Password `json:"password_v2"`
+	Proxy            string            `json:"proxy"`
+	Dsn              db.ConnectionData `json:"dsn,omitempty"`
+	Timeout          int               `json:"timeout"`
+	VisitorQuery     string            `json:"query"`
+	RadiologieQuery  string            `json:"radiologie"`
+	LabQuery         string            `json:"lab"`
+	ConsultQuery     string            `json:"consult"`
+	AccessUsername   string            `json:"accessUsername"`
+	AccessPasswordV1 string            `json:"accessPassword,omitempty"`
+	AccessPasswordV2 password.Password `json:"access_password_v2"`
 }
 
 func (c *Configuration) MarshalJSON() ([]byte, error) {
@@ -416,17 +419,17 @@ func (c *Configuration) MarshalJSON() ([]byte, error) {
 	defer c.mu.RUnlock()
 
 	vars := persistentConfig{
-		Username:        c.username,
-		Password:        c.password,
-		Proxy:           c.proxy,
-		Dsn:             c.connection,
-		VisitorQuery:    c.visitorQuery,
-		RadiologieQuery: c.radiologieQuery,
-		LabQuery:        c.labQuery,
-		ConsultQuery:    c.consultQuery,
-		AccessUsername:  c.accessUsername,
-		AccessPassword:  c.accessPassword,
-		Timeout:         int(c.timeout / time.Second),
+		Username:         c.username,
+		PasswordV2:       password.Password(c.password),
+		Proxy:            c.proxy,
+		Dsn:              c.connection,
+		VisitorQuery:     c.visitorQuery,
+		RadiologieQuery:  c.radiologieQuery,
+		LabQuery:         c.labQuery,
+		ConsultQuery:     c.consultQuery,
+		AccessUsername:   c.accessUsername,
+		AccessPasswordV2: password.Password(c.accessPassword),
+		Timeout:          int(c.timeout / time.Second),
 	}
 	return json.Marshal(vars)
 }
@@ -447,7 +450,14 @@ func (c *Configuration) UnmarshalJSON(v []byte) error {
 	c.username = vars.Username
 	dlog.SetUsername(c.username)
 
-	c.password = vars.Password
+	switch {
+	case vars.PasswordV1 != "":
+		c.password = vars.PasswordV1
+	case vars.PasswordV2 != "":
+		c.password = vars.PasswordV2.PlainText()
+	default:
+		c.password = ""
+	}
 	c.proxy = vars.Proxy
 	c.connection = vars.Dsn
 	c.visitorQuery = vars.VisitorQuery
@@ -455,7 +465,14 @@ func (c *Configuration) UnmarshalJSON(v []byte) error {
 	c.labQuery = vars.LabQuery
 	c.consultQuery = vars.ConsultQuery
 	c.accessUsername = vars.AccessUsername
-	c.accessPassword = vars.AccessPassword
+	switch {
+	case vars.AccessPasswordV1 != "":
+		c.accessPassword = vars.AccessPasswordV1
+	case vars.AccessPasswordV2 != "":
+		c.accessPassword = vars.AccessPasswordV2.PlainText()
+	default:
+		c.accessPassword = ""
+	}
 	c.timeout = time.Duration(vars.Timeout) * time.Second
 
 	return nil

@@ -163,13 +163,6 @@ func (c *Configuration) SetConnection(cd db.ConnectionData) {
 	c.connection = cd
 }
 
-func (c *Configuration) SetDSN(driver, dsn string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	_ = c.connection.UnmarshalText([]byte(dsn))
-}
-
 // Timeout returns the timeout used for all queries
 func (c *Configuration) Timeout() time.Duration {
 	c.mu.RLock()

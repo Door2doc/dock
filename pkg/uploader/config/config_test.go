@@ -18,7 +18,18 @@ import (
 const (
 	TestUser     = "test-user"
 	TestPassword = "test-password"
-	TestDSN      = "postgres://pguser:pwd@localhost:5436/pgdb?sslmode=disable"
+)
+
+var (
+	TestConnection = db.ConnectionData{
+		Driver:   "postgres",
+		Host:     "localhost",
+		Port:     "5436",
+		Database: "pgdb",
+		Username: "pguser",
+		Password: "pwd",
+		Params:   "sslmode=disable",
+	}
 )
 
 func DummyHandler() http.Handler {
@@ -108,7 +119,7 @@ func TestConfiguration_Validate(t *testing.T) {
 		},
 		"correct database": {
 			Given: func(cfg *Configuration) {
-				cfg.SetDSN("postgres", TestDSN)
+				cfg.SetConnection(TestConnection)
 			},
 			Want: &ValidationResult{
 				D2DCredentials:  ErrD2DCredentialsNotConfigured,
@@ -122,7 +133,16 @@ func TestConfiguration_Validate(t *testing.T) {
 		},
 		"incorrect user": {
 			Given: func(cfg *Configuration) {
-				cfg.SetDSN("postgres", "postgres://postgres:pwd@localhost:5436/pgdb?sslmode=disable")
+				cfg.SetConnection(db.ConnectionData{
+					Driver:   "postgres",
+					Host:     "localhost",
+					Port:     "5436",
+					Instance: "",
+					Database: "pgdb",
+					Username: "postgres",
+					Password: "pwd",
+					Params:   "sslmode=disable",
+				})
 			},
 			Want: &ValidationResult{
 				DatabaseConnection: &DatabaseInvalidError{
@@ -139,7 +159,16 @@ func TestConfiguration_Validate(t *testing.T) {
 		},
 		"incorrect password": {
 			Given: func(cfg *Configuration) {
-				cfg.SetDSN("postgres", "postgres://pguser:password@localhost:5436/pgdb?sslmode=disable")
+				cfg.SetConnection(db.ConnectionData{
+					Driver:   "postgres",
+					Host:     "localhost",
+					Port:     "5436",
+					Instance: "",
+					Database: "pgdb",
+					Username: "pguser",
+					Password: "password",
+					Params:   "sslmode=disable",
+				})
 			},
 			Want: &ValidationResult{
 				DatabaseConnection: &DatabaseInvalidError{
@@ -156,7 +185,16 @@ func TestConfiguration_Validate(t *testing.T) {
 		},
 		"incorrect database": {
 			Given: func(cfg *Configuration) {
-				cfg.SetDSN("postgres", "postgres://pguser:pwd@localhost:5436/database?sslmode=disable")
+				cfg.SetConnection(db.ConnectionData{
+					Driver:   "postgres",
+					Host:     "localhost",
+					Port:     "5436",
+					Instance: "",
+					Database: "database",
+					Username: "pguser",
+					Password: "pwd",
+					Params:   "sslmode=disable",
+				})
 			},
 			Want: &ValidationResult{
 				DatabaseConnection: &DatabaseInvalidError{
@@ -189,7 +227,7 @@ func TestConfiguration_Validate(t *testing.T) {
 		//},
 		"correct query": {
 			Given: func(cfg *Configuration) {
-				cfg.SetDSN("postgres", TestDSN)
+				cfg.SetConnection(TestConnection)
 				cfg.SetVisitorQuery(`SELECT * FROM correct`)
 			},
 			Want: &ValidationResult{
@@ -203,7 +241,7 @@ func TestConfiguration_Validate(t *testing.T) {
 		},
 		"correct minimal configuration orders": {
 			Given: func(cfg *Configuration) {
-				cfg.SetDSN("postgres", TestDSN)
+				cfg.SetConnection(TestConnection)
 				cfg.SetCredentials(TestUser, TestPassword)
 				cfg.SetVisitorQuery(`SELECT * FROM correct`)
 			},
@@ -218,7 +256,7 @@ func TestConfiguration_Validate(t *testing.T) {
 		},
 		"correct configuration without orders": {
 			Given: func(cfg *Configuration) {
-				cfg.SetDSN("postgres", TestDSN)
+				cfg.SetConnection(TestConnection)
 				cfg.SetCredentials(TestUser, TestPassword)
 				cfg.SetVisitorQuery(`SELECT * FROM correct`)
 				cfg.SetAccessCredentials(TestUser, TestPassword)
@@ -233,7 +271,7 @@ func TestConfiguration_Validate(t *testing.T) {
 		},
 		"correct configuration with orders": {
 			Given: func(cfg *Configuration) {
-				cfg.SetDSN("postgres", TestDSN)
+				cfg.SetConnection(TestConnection)
 				cfg.SetCredentials(TestUser, TestPassword)
 				cfg.SetVisitorQuery(`SELECT * FROM correct`)
 				cfg.SetRadiologieQuery(`SELECT * FROM correct_radiologie`)

@@ -3,9 +3,11 @@ package config
 import (
 	"context"
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/password"
 	"html/template"
 	"io"
 	"net/http"
@@ -82,7 +84,7 @@ type Configuration struct {
 	// Set to true if the service should be active
 	active bool
 
-	data ConfigDataV1
+	data DataV2
 
 	// results of the last call to UpdateValidation
 	validationResult *ValidationResult
@@ -91,7 +93,7 @@ type Configuration struct {
 func NewConfiguration() *Configuration {
 	return &Configuration{
 		active: true,
-		data: ConfigDataV1{
+		data: DataV2{
 			Timeout: 5 * time.Second,
 		},
 	}
@@ -102,15 +104,15 @@ func (c *Configuration) Credentials() (string, string) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	return c.data.Username, c.data.Password
+	return c.data.Username, c.data.Password.PlainText()
 }
 
-func (c *Configuration) SetCredentials(username, password string) {
+func (c *Configuration) SetCredentials(username, pwd string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	c.data.Username = username
-	c.data.Password = password
+	c.data.Password = password.Password(pwd)
 	dlog.SetUsername(username)
 }
 
@@ -214,19 +216,19 @@ func (c *Configuration) SetConsultQuery(query string) {
 func (c *Configuration) AccessCredentials() (username, password string) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return c.data.AccessUsername, c.data.AccessPassword
+	return c.data.AccessUsername, c.data.AccessPassword.PlainText()
 }
 
-func (c *Configuration) SetAccessCredentials(username, password string) {
+func (c *Configuration) SetAccessCredentials(username, pwd string) {
 	c.mu.Lock()
 	c.mu.Unlock()
 
-	if username == "" || password == "" {
+	if username == "" || pwd == "" {
 		username = ""
-		password = ""
+		pwd = ""
 	}
 	c.data.AccessUsername = username
-	c.data.AccessPassword = password
+	c.data.AccessPassword = password.Password(pwd)
 }
 
 func (c *Configuration) Active() bool {
@@ -380,13 +382,24 @@ func (c *Configuration) UnmarshalJSON(v []byte) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if err := json.Unmarshal(v, &c.data); err != nil {
+	err := json.Unmarshal(v, &c.data)
+	if _, ok := err.(base64.CorruptInputError); ok {
+		// special case: we're parsing a v1
+		var v1 DataV1
+		if err := json.Unmarshal(v, &v1); err != nil {
+			return err
+		}
+		c.data, err = v1.ToV2()
+		if err != nil {
+			return err
+		}
+	} else if err != nil {
 		return err
 	}
+
 	if c.data.Timeout == 0 {
 		c.data.Timeout = 5 * time.Second
 	}
-
 	dlog.SetUsername(c.data.Username)
 
 	return nil
@@ -403,7 +416,7 @@ func (c *Configuration) checkConnection(ctx context.Context) (connErr error, cre
 		return err, credErr
 	}
 	req.URL.Path = PathPing
-	req.SetBasicAuth(c.data.Username, c.data.Password)
+	req.SetBasicAuth(c.data.Username, c.data.Password.PlainText())
 
 	res, err := rest.Do(ctx, c.data.Proxy, req)
 	if err != nil {

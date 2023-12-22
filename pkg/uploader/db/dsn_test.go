@@ -8,12 +8,12 @@ import (
 func TestConnectionDataMarshal(t *testing.T) {
 	for name, test := range map[string]struct {
 		Given         string
-		Want          *ConnectionData
+		Want          ConnectionData
 		WantCanonical string
 	}{
 		"postgres URL": {
 			Given: "postgres://pguser:pwd@localhost:5436/pgdb?sslmode=disable",
-			Want: &ConnectionData{
+			Want: ConnectionData{
 				Driver:   "postgres",
 				Host:     "localhost",
 				Port:     "5436",
@@ -26,7 +26,7 @@ func TestConnectionDataMarshal(t *testing.T) {
 		},
 		"MSSQL ADO with instance": {
 			Given: "server=localhost\\SQLExpress;user id=sa;database=master;app name=MyAppName",
-			Want: &ConnectionData{
+			Want: ConnectionData{
 				Driver:   "sqlserver",
 				Host:     "localhost",
 				Instance: "SQLExpress",
@@ -38,7 +38,7 @@ func TestConnectionDataMarshal(t *testing.T) {
 		},
 		"MSSQL ADO with password": {
 			Given: "Server=127.0.0.1; Database=myDB; User Id=username; Password=password ",
-			Want: &ConnectionData{
+			Want: ConnectionData{
 				Driver:   "sqlserver",
 				Host:     "127.0.0.1",
 				Database: "myDB",
@@ -49,7 +49,7 @@ func TestConnectionDataMarshal(t *testing.T) {
 		},
 		"MSSQL ADO with integrated security": {
 			Given: "Server=127.0.0.1; Database=myDB",
-			Want: &ConnectionData{
+			Want: ConnectionData{
 				Driver:   "sqlserver",
 				Host:     "127.0.0.1",
 				Database: "myDB",
@@ -58,19 +58,20 @@ func TestConnectionDataMarshal(t *testing.T) {
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			c := new(ConnectionData)
-			if err := c.UnmarshalText([]byte(test.Given)); err != nil {
-				t.Fatal(err)
-			}
-			if !reflect.DeepEqual(c, test.Want) {
-				t.Errorf("UnmarshalText() == \n\t%#v, got \n\t%#v", test.Want, c)
-			}
-			gotCanonical, err := c.MarshalText()
+			c, err := FromDSN(test.Given)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if !reflect.DeepEqual(string(gotCanonical), test.WantCanonical) {
-				t.Errorf("MarshalText() == \n\t%s, got \n\t%s", test.WantCanonical, gotCanonical)
+
+			if !reflect.DeepEqual(c, test.Want) {
+				t.Errorf("UnmarshalText() == \n\t%#v, got \n\t%#v", test.Want, c)
+			}
+			gotCanonical, err := c.toDSN()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !reflect.DeepEqual(gotCanonical, test.WantCanonical) {
+				t.Errorf("toDSN() == \n\t%s, got \n\t%s", test.WantCanonical, gotCanonical)
 			}
 		})
 	}

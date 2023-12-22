@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"io"
@@ -329,11 +330,11 @@ func TestConfigurationJSON(t *testing.T) {
 
 	password := "password123"
 
-	for name, test := range map[string]*Configuration{
+	for name, test := range map[string]DataV1{
 		"empty":    {},
-		"username": {data: ConfigDataV1{Username: "user"}},
-		"password": {data: ConfigDataV1{Password: password}},
-		"dsn": {data: ConfigDataV1{Connection: db.ConnectionData{
+		"username": {Username: "user"},
+		"password": {Password: password},
+		"dsn": {Connection: db.ConnectionData{
 			Driver:   "postgres",
 			Host:     "localhost",
 			Port:     "5436",
@@ -341,18 +342,26 @@ func TestConfigurationJSON(t *testing.T) {
 			Username: "pguser",
 			Password: password,
 			Params:   "sslmode=disable",
-		}}},
-		"query":         {data: ConfigDataV1{VisitorQuery: "query"}},
-		"order queries": {data: ConfigDataV1{RadiologieQuery: "a", LabQuery: "b", ConsultQuery: "c"}},
-		"access":        {data: ConfigDataV1{AccessUsername: "username", AccessPassword: password, Connection: db.ConnectionData{Driver: "sqlserver"}}},
-		"timeout":       {data: ConfigDataV1{Timeout: 100 * time.Second}},
+		}.DSN()},
+		"query": {
+			VisitorQuery: "query",
+		},
+		"order queries": {
+			RadiologieQuery: "a", LabQuery: "b", ConsultQuery: "c",
+		},
+		"access": {
+			AccessUsername: "username", AccessPassword: password,
+		},
+		"timeout": {
+			Timeout: 100 * time.Second,
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			if test.data.Connection == (db.ConnectionData{}) {
-				test.data.Connection = defaultConnection
+			if test.Connection == "" {
+				test.Connection = defaultConnection.DSN()
 			}
-			if test.data.Timeout == 0 {
-				test.data.Timeout = defaultTimeout
+			if test.Timeout == 0 {
+				test.Timeout = defaultTimeout
 			}
 
 			bs, err := json.Marshal(test)
@@ -360,7 +369,7 @@ func TestConfigurationJSON(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			got := &Configuration{}
+			got := DataV1{}
 			if err := json.Unmarshal(bs, &got); err != nil {
 				t.Fatal(err)
 			}
@@ -369,16 +378,17 @@ func TestConfigurationJSON(t *testing.T) {
 				t.Errorf("Marshal/Unmarshal == \n\t%v, want \n\t%v", got, test)
 			}
 
-			//if bytes.Contains(bs, []byte(password)) {
-			//	t.Errorf("Marshal stores passwords in plaintext: %s", bs)
-			//}
+			if bytes.Contains(bs, []byte(password)) {
+				t.Errorf("Marshal stores passwords in plaintext: %s", bs)
+			}
 		})
 	}
 }
 
 func TestConfigurationMarshal(t *testing.T) {
-	for file, want := range map[string]ConfigDataV1{
+	for file, want := range map[string]DataV2{
 		"testdata/config.v1.json": {
+			Version:  1,
 			Username: "upload-user",
 			Password: "upload-password",
 			Connection: db.ConnectionData{
@@ -400,28 +410,29 @@ func TestConfigurationMarshal(t *testing.T) {
 			AccessUsername:  "web-user",
 			AccessPassword:  "web-password",
 		},
-		//"testdata/config.v2.json": {
-		//	Username: "upload-user",
-		//	Password: "upload-password",
-		//	Connection: db.ConnectionData{
-		//		Driver:   "sqlserver",
-		//		Host:     "host",
-		//		Port:     "",
-		//		Instance: "instance",
-		//		Database: "database",
-		//		Username: "db-username",
-		//		Password: "db-password",
-		//		Params:   "p=a",
-		//	},
-		//	Timeout:         40 * time.Second,
-		//	VisitorQuery:    "visitor",
-		//	RadiologieQuery: "radio",
-		//	LabQuery:        "lab",
-		//	ConsultQuery:    "consult",
-		//	Proxy:           "proxy",
-		//	AccessUsername:  "web-user",
-		//	AccessPassword:  "web-password",
-		//},
+		"testdata/config.v2.json": {
+			Version:  2,
+			Username: "upload-user",
+			Password: "upload-password",
+			Connection: db.ConnectionData{
+				Driver:   "sqlserver",
+				Host:     "host",
+				Port:     "",
+				Instance: "instance",
+				Database: "database",
+				Username: "db-username",
+				Password: "db-password",
+				Params:   "p=a",
+			},
+			Timeout:         40 * time.Second,
+			VisitorQuery:    "visitor",
+			RadiologieQuery: "radio",
+			LabQuery:        "lab",
+			ConsultQuery:    "consult",
+			Proxy:           "proxy",
+			AccessUsername:  "web-user",
+			AccessPassword:  "web-password",
+		},
 	} {
 		t.Run(file, func(t *testing.T) {
 			f, err := os.Open(file)
@@ -436,7 +447,7 @@ func TestConfigurationMarshal(t *testing.T) {
 			}
 			var got = new(Configuration)
 			if err := json.Unmarshal(data, &got); err != nil {
-				t.Fatal(err)
+				t.Fatalf("%v", err)
 			}
 
 			if !reflect.DeepEqual(got.data, want) {

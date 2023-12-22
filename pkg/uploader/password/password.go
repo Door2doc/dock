@@ -15,6 +15,10 @@ type Password string
 
 //goland:noinspection GoMixedReceiverTypes
 func (p Password) MarshalJSON() ([]byte, error) {
+	if p.PlainText() == "" {
+		return []byte(`""`), nil
+	}
+
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -34,6 +38,11 @@ func (p Password) MarshalJSON() ([]byte, error) {
 
 //goland:noinspection GoMixedReceiverTypes
 func (p *Password) UnmarshalJSON(bs []byte) error {
+	if string(bs) == `""` {
+		*p = ""
+		return nil
+	}
+
 	var ciphertext []byte
 	if err := json.Unmarshal(bs, &ciphertext); err != nil {
 		return err

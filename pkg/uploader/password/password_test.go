@@ -41,6 +41,32 @@ func TestPassword_MarshalJSON(t *testing.T) {
 	}
 }
 
+func TestPassword_MarshalJSON_zero(t *testing.T) {
+	plaintext := ""
+	p := Password(plaintext)
+	j, err := json.Marshal(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := string(j)
+	want := `""`
+	if got != want {
+		t.Errorf("Marshal empty == %q, want %q", got, want)
+	}
+}
+
+func TestPassword_UnmarshalJSON_zero(t *testing.T) {
+	stored := []byte(`""`)
+	var got Password
+	if err := json.Unmarshal(stored, &got); err != nil {
+		t.Fatal(err)
+	}
+	want := Password("")
+	if got != want {
+		t.Errorf("Unmarshal empty == %q, want %q", got, want)
+	}
+}
+
 func TestPassword_JSON(t *testing.T) {
 	f := func(plain string) bool {
 		return roundTrip(plain) == nil

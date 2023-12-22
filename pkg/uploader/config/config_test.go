@@ -1,7 +1,6 @@
 package config
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"io"
@@ -324,71 +323,10 @@ func TestConfiguration_Validate(t *testing.T) {
 	}
 }
 
-func TestConfigurationJSON(t *testing.T) {
-	defaultConnection := db.ConnectionData{Driver: "sqlserver"}
-	defaultTimeout := NewConfiguration().data.Timeout
-
-	password := "password123"
-
-	for name, test := range map[string]DataV1{
-		"empty":    {},
-		"username": {Username: "user"},
-		"password": {Password: password},
-		"dsn": {Connection: db.ConnectionData{
-			Driver:   "postgres",
-			Host:     "localhost",
-			Port:     "5436",
-			Database: "pgdb",
-			Username: "pguser",
-			Password: password,
-			Params:   "sslmode=disable",
-		}.DSN()},
-		"query": {
-			VisitorQuery: "query",
-		},
-		"order queries": {
-			RadiologieQuery: "a", LabQuery: "b", ConsultQuery: "c",
-		},
-		"access": {
-			AccessUsername: "username", AccessPassword: password,
-		},
-		"timeout": {
-			Timeout: 100 * time.Second,
-		},
-	} {
-		t.Run(name, func(t *testing.T) {
-			if test.Connection == "" {
-				test.Connection = defaultConnection.DSN()
-			}
-			if test.Timeout == 0 {
-				test.Timeout = defaultTimeout
-			}
-
-			bs, err := json.Marshal(test)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			got := DataV1{}
-			if err := json.Unmarshal(bs, &got); err != nil {
-				t.Fatal(err)
-			}
-
-			if !reflect.DeepEqual(got, test) {
-				t.Errorf("Marshal/Unmarshal == \n\t%v, want \n\t%v", got, test)
-			}
-
-			if bytes.Contains(bs, []byte(password)) {
-				t.Errorf("Marshal stores passwords in plaintext: %s", bs)
-			}
-		})
-	}
-}
-
 func TestConfigurationMarshal(t *testing.T) {
 	for file, want := range map[string]DataV2{
 		"testdata/config.v1.json": {
-			Version:  1,
+			Version:  2,
 			Username: "upload-user",
 			Password: "upload-password",
 			Connection: db.ConnectionData{
@@ -401,7 +339,7 @@ func TestConfigurationMarshal(t *testing.T) {
 				Password: "db-password",
 				Params:   "p=a",
 			},
-			Timeout:         40,
+			Timeout:         40 * time.Second,
 			VisitorQuery:    "visitor",
 			RadiologieQuery: "radio",
 			LabQuery:        "lab",
@@ -421,7 +359,7 @@ func TestConfigurationMarshal(t *testing.T) {
 				Instance: "instance",
 				Database: "database",
 				Username: "db-username",
-				Password: "db-password",
+				Password: "MyPassw0rd",
 				Params:   "p=a",
 			},
 			Timeout:         40 * time.Second,

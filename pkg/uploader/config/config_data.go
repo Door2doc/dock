@@ -26,13 +26,18 @@ func (v DataV1) ToV2() (DataV2, error) {
 		return DataV2{}, err
 	}
 
+	timeout := v.Timeout
+	if timeout < 60 {
+		timeout = timeout * time.Second
+	}
+
 	return DataV2{
-		Version:         1,
+		Version:         2,
 		Username:        v.Username,
 		Password:        password.Password(v.Password),
 		Proxy:           v.Proxy,
 		Connection:      connectionData,
-		Timeout:         v.Timeout,
+		Timeout:         timeout,
 		VisitorQuery:    v.VisitorQuery,
 		RadiologieQuery: v.RadiologieQuery,
 		LabQuery:        v.LabQuery,

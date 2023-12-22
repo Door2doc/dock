@@ -3,7 +3,6 @@ package config
 import (
 	"context"
 	"database/sql"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -382,19 +381,39 @@ func (c *Configuration) UnmarshalJSON(v []byte) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	err := json.Unmarshal(v, &c.data)
-	if _, ok := err.(base64.CorruptInputError); ok {
-		// special case: we're parsing a v1
+	var detector struct {
+		Version int    `json:"version"`
+		DSN     string `json:"dsn"`
+	}
+
+	if err := json.Unmarshal(v, &detector); err != nil {
+		return err
+	}
+
+	version := detector.Version
+	if version == 0 && detector.DSN != "" {
+		version = 1
+	}
+
+	switch version {
+	case 0:
+		// no data available
+	case 1:
 		var v1 DataV1
 		if err := json.Unmarshal(v, &v1); err != nil {
 			return err
 		}
+		var err error
 		c.data, err = v1.ToV2()
 		if err != nil {
 			return err
 		}
-	} else if err != nil {
-		return err
+	case 2:
+		if err := json.Unmarshal(v, &c.data); err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("unsupported configuration version: %d", version)
 	}
 
 	if c.data.Timeout == 0 {

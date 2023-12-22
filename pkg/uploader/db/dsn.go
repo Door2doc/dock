@@ -3,6 +3,7 @@ package db
 import (
 	"errors"
 	"fmt"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/password"
 	"net/url"
 	"strings"
 
@@ -16,7 +17,7 @@ type ConnectionData struct {
 	Instance string
 	Database string
 	Username string
-	Password string
+	Password password.Password
 	Params   string
 }
 
@@ -44,7 +45,9 @@ func fromPostgresDSN(s string) (ConnectionData, error) {
 	c.Port = u.Port()
 	c.Database = strings.TrimPrefix(u.Path, "/")
 	c.Username = u.User.Username()
-	c.Password, _ = u.User.Password()
+
+	pwd, _ := u.User.Password()
+	c.Password = password.Password(pwd)
 	c.Params = u.RawQuery
 	return c, nil
 }
@@ -76,7 +79,7 @@ func fromSqlServerDSN(s string) (ConnectionData, error) {
 		case "user id":
 			c.Username = val
 		case "password":
-			c.Password = val
+			c.Password = password.Password(val)
 		case "integrated security":
 			c.Username = ""
 			c.Password = ""
@@ -103,7 +106,7 @@ func (c ConnectionData) toDSN() (string, error) {
 func (c ConnectionData) toPostgresDSN() (string, error) {
 	u := &url.URL{
 		Scheme:   "postgres",
-		User:     url.UserPassword(c.Username, c.Password),
+		User:     url.UserPassword(c.Username, c.Password.PlainText()),
 		Host:     c.Host,
 		Path:     "/" + c.Database,
 		RawQuery: c.Params,
@@ -128,7 +131,7 @@ func (c ConnectionData) toSqlServerDSN() (string, error) {
 		parts = append(parts, fmt.Sprintf("user id=%s", c.Username))
 	}
 	if c.Password != "" {
-		parts = append(parts, fmt.Sprintf("password=%s", c.Password))
+		parts = append(parts, fmt.Sprintf("password=%s", c.Password.PlainText()))
 	}
 	if c.Username == "" && c.Password == "" {
 		parts = append(parts, "integrated security=SSPI")

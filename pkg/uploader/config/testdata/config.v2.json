@@ -10,10 +10,9 @@
     "port": "",
     "database": "database",
     "username": "db-username",
-    "password": "db-password",
+    "password": "UfEdD14vg4kPPcIfWhHspuJjMK/Uem6KWVQ=",
     "params": "p=a"
   },
-  "dsn": "server=host\\instance; database=database; user id=db-username; password=db-password; p=a",
   "timeout": 40000000000,
   "query": "visitor",
   "radiologie": "radio",

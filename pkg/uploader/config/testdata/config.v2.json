@@ -1,13 +1,23 @@
 {
+  "version": 2,
   "username": "upload-user",
-  "password_v2": "2nDJqaCrMGPKxOx71G4D5pzfu9tPgbV+wc2U4UXJUg==",
+  "password": "2nDJqaCrMGPKxOx71G4D5pzfu9tPgbV+wc2U4UXJUg==",
   "proxy": "proxy",
+  "database": {
+    "server": "host",
+    "instance": "instance",
+    "port": 0,
+    "database": "database",
+    "username": "db-username",
+    "password": "db-password",
+    "params": "p=a"
+  },
   "dsn": "server=host\\instance; database=database; user id=db-username; password=db-password; p=a",
   "timeout": 40,
   "query": "visitor",
   "radiologie": "radio",
   "lab": "lab",
   "consult": "consult",
-  "accessUsername": "web-user",
-  "access_password_v2": "po9IsYfn+eY6zHsf/TN/jWkrOhXea2/FVP7bfA=="
+  "access_username": "web-user",
+  "access_password": "po9IsYfn+eY6zHsf/TN/jWkrOhXea2/FVP7bfA=="
 }

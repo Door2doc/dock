@@ -48,6 +48,9 @@ func (s *Service) Start(svc service.Service) error {
 	if err := s.cfg.Reload(); err != nil {
 		return err
 	}
+	if err := s.cfg.Save(); err != nil {
+		return err
+	}
 
 	// set up uploader
 	uploader := &Uploader{

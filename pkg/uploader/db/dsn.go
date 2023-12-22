@@ -1,9 +1,9 @@
 package db
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/password"
 	"net/url"
 	"strings"
 
@@ -17,7 +17,7 @@ type ConnectionData struct {
 	Instance string
 	Database string
 	Username string
-	Password string
+	Password password.Password
 	Params   string
 }
 
@@ -25,37 +25,41 @@ func (c ConnectionData) IsValid() bool {
 	return c.Driver != "" && c.Host != ""
 }
 
-// Implementation of encoding.TextUnmarshaler
-func (c *ConnectionData) UnmarshalText(bs []byte) error {
-	if bytes.HasPrefix(bs, []byte("postgres://")) {
-		c.Driver = "postgres"
-		return c.unmarshalPostgres(bs)
+func FromDSN(s string) (ConnectionData, error) {
+	if strings.HasPrefix(s, "postgres://") {
+		return fromPostgresDSN(s)
 	}
 
-	c.Driver = "sqlserver"
-	return c.unmarshalSqlServer(bs)
+	return fromSqlServerDSN(s)
 }
 
-func (c *ConnectionData) unmarshalPostgres(bs []byte) error {
-	u, err := url.Parse(string(bs))
+func fromPostgresDSN(s string) (ConnectionData, error) {
+	var c ConnectionData
+	c.Driver = "postgres"
+
+	u, err := url.Parse(s)
 	if err != nil {
-		return err
+		return c, err
 	}
 	c.Host = u.Hostname()
 	c.Port = u.Port()
 	c.Database = strings.TrimPrefix(u.Path, "/")
 	c.Username = u.User.Username()
-	c.Password, _ = u.User.Password()
+
+	pwd, _ := u.User.Password()
+	c.Password = password.Password(pwd)
 	c.Params = u.RawQuery
-	return nil
+	return c, nil
 }
 
-func (c *ConnectionData) unmarshalSqlServer(bs []byte) error {
-	parts := strings.Split(string(bs), ";")
+func fromSqlServerDSN(s string) (ConnectionData, error) {
+	var c ConnectionData
+	c.Driver = "sqlserver"
+	parts := strings.Split(s, ";")
 	for _, p := range parts {
 		keyVal := strings.Split(strings.TrimSpace(p), "=")
 		if len(keyVal) != 2 {
-			return errors.New("invalid connection string")
+			return c, errors.New("invalid connection string")
 		}
 		key, val := keyVal[0], keyVal[1]
 		switch strings.ToLower(key) {
@@ -68,14 +72,14 @@ func (c *ConnectionData) unmarshalSqlServer(bs []byte) error {
 				c.Host = serverInstance[0]
 				c.Instance = serverInstance[1]
 			default:
-				return errors.New("invalid server")
+				return c, errors.New("invalid server")
 			}
 		case "database":
 			c.Database = val
 		case "user id":
 			c.Username = val
 		case "password":
-			c.Password = val
+			c.Password = password.Password(val)
 		case "integrated security":
 			c.Username = ""
 			c.Password = ""
@@ -88,22 +92,21 @@ func (c *ConnectionData) unmarshalSqlServer(bs []byte) error {
 		_ = val
 	}
 
-	return nil
+	return c, nil
 }
 
-// MarshalText is an implementation of encoding.TextMarshaler
-func (c ConnectionData) MarshalText() ([]byte, error) {
+func (c ConnectionData) toDSN() (string, error) {
 	if c.Driver == "postgres" {
-		return c.marshalPostgres()
+		return c.toPostgresDSN()
 	}
 
-	return c.marshalSqlServer()
+	return c.toSqlServerDSN()
 }
 
-func (c ConnectionData) marshalPostgres() ([]byte, error) {
+func (c ConnectionData) toPostgresDSN() (string, error) {
 	u := &url.URL{
 		Scheme:   "postgres",
-		User:     url.UserPassword(c.Username, c.Password),
+		User:     url.UserPassword(c.Username, c.Password.PlainText()),
 		Host:     c.Host,
 		Path:     "/" + c.Database,
 		RawQuery: c.Params,
@@ -111,10 +114,10 @@ func (c ConnectionData) marshalPostgres() ([]byte, error) {
 	if c.Port != "" {
 		u.Host = u.Host + ":" + c.Port
 	}
-	return []byte(u.String()), nil
+	return u.String(), nil
 }
 
-func (c *ConnectionData) marshalSqlServer() ([]byte, error) {
+func (c ConnectionData) toSqlServerDSN() (string, error) {
 	var parts []string
 	server := c.Host
 	if c.Instance != "" {
@@ -128,7 +131,7 @@ func (c *ConnectionData) marshalSqlServer() ([]byte, error) {
 		parts = append(parts, fmt.Sprintf("user id=%s", c.Username))
 	}
 	if c.Password != "" {
-		parts = append(parts, fmt.Sprintf("password=%s", c.Password))
+		parts = append(parts, fmt.Sprintf("password=%s", c.Password.PlainText()))
 	}
 	if c.Username == "" && c.Password == "" {
 		parts = append(parts, "integrated security=SSPI")
@@ -138,11 +141,11 @@ func (c *ConnectionData) marshalSqlServer() ([]byte, error) {
 	}
 
 	dsn := strings.Join(parts, "; ")
-	return []byte(dsn), nil
+	return dsn, nil
 }
 
-func (c *ConnectionData) DSN() string {
-	res, err := c.MarshalText()
+func (c ConnectionData) DSN() string {
+	res, err := c.toDSN()
 	if err != nil {
 		dlog.Error("failed to convert DSN: %v", err)
 		return ""
@@ -150,7 +153,7 @@ func (c *ConnectionData) DSN() string {
 	return string(res)
 }
 
-func (c *ConnectionData) String() string {
+func (c ConnectionData) String() string {
 	pwd := "[unset]"
 	if c.Password != "" {
 		pwd = "redacted"

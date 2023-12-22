@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/password"
 	"html/template"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"sync"
@@ -15,7 +17,6 @@ import (
 	"github.com/door2doc/d2d-uploader/pkg/uploader/db"
 	"github.com/door2doc/d2d-uploader/pkg/uploader/dlog"
 	"github.com/door2doc/d2d-uploader/pkg/uploader/rest"
-	"github.com/pkg/errors"
 	"github.com/shibukawa/configdir"
 )
 
@@ -79,33 +80,10 @@ func (v *ValidationResult) IsValid() bool {
 type Configuration struct {
 	mu sync.RWMutex
 
-	// username to connect to the d2d upload service
-	username string
-	// password to connect to the d2d upload service
-	password string
-	// database connection data
-	connection db.ConnectionData
-	// database timeout
-	timeout time.Duration
-	// Query to execute to retrieve visitor information
-	visitorQuery string
-	// Query to execute to retrieve radiologie aanvragen
-	radiologieQuery string
-	// Query to execute to retrieve lab aanvragen
-	labQuery string
-	// Query to execute to retrieve intercollegiaal consulten
-	consultQuery string
 	// Set to true if the service should be active
 	active bool
-	// Pause between runs
-	interval time.Duration
-	// proxy server to use for all HTTP requests
-	proxy string
 
-	// username to access the web interface
-	accessUsername string
-	// password to access the web interface
-	accessPassword string
+	data DataV2
 
 	// results of the last call to UpdateValidation
 	validationResult *ValidationResult
@@ -113,9 +91,10 @@ type Configuration struct {
 
 func NewConfiguration() *Configuration {
 	return &Configuration{
-		active:   true,
-		interval: time.Minute,
-		timeout:  5 * time.Second,
+		active: true,
+		data: DataV2{
+			Timeout: 5 * time.Second,
+		},
 	}
 }
 
@@ -124,137 +103,131 @@ func (c *Configuration) Credentials() (string, string) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	return c.username, c.password
+	return c.data.Username, c.data.Password.PlainText()
 }
 
-func (c *Configuration) SetCredentials(username, password string) {
+func (c *Configuration) SetCredentials(username, pwd string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.username = username
-	c.password = password
+	c.data.Username = username
+	c.data.Password = password.Password(pwd)
 	dlog.SetUsername(username)
 }
 
 func (c *Configuration) Proxy() string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	return c.proxy
+	return c.data.Proxy
 }
 
 func (c *Configuration) SetProxy(proxy string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	c.proxy = proxy
+	c.data.Proxy = proxy
 }
 
 // Connection returns the connection data stored in the configuration.
 func (c *Configuration) Connection() db.ConnectionData {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return c.connection
+
+	return c.data.Connection
 }
 
 func (c *Configuration) SetConnection(cd db.ConnectionData) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.connection = cd
-}
-
-func (c *Configuration) SetDSN(driver, dsn string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	_ = c.connection.UnmarshalText([]byte(dsn))
+	c.data.Connection = cd
 }
 
 // Timeout returns the timeout used for all queries
 func (c *Configuration) Timeout() time.Duration {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return c.timeout
+	return c.data.Timeout
 }
 
 func (c *Configuration) SetTimeout(timeout time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.timeout = timeout
+	c.data.Timeout = timeout
 }
 
 // VisitorQuery returns the visitor query stored in the configuration.
 func (c *Configuration) VisitorQuery() string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return c.visitorQuery
+	return c.data.VisitorQuery
 }
 
 func (c *Configuration) SetVisitorQuery(query string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.visitorQuery = query
+	c.data.VisitorQuery = query
 }
 
 // RadiologieQuery returns the radiologie query stored in the configuration.
 func (c *Configuration) RadiologieQuery() string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return c.radiologieQuery
+	return c.data.RadiologieQuery
 }
 
 func (c *Configuration) SetRadiologieQuery(query string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.radiologieQuery = query
+	c.data.RadiologieQuery = query
 }
 
 // LabQuery returns the lab query stored in the configuration.
 func (c *Configuration) LabQuery() string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return c.labQuery
+	return c.data.LabQuery
 }
 
 func (c *Configuration) SetLabQuery(query string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.labQuery = query
+	c.data.LabQuery = query
 }
 
 // ConsultQuery returns the consult query stored in the configuration.
 func (c *Configuration) ConsultQuery() string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return c.consultQuery
+	return c.data.ConsultQuery
 }
 
 func (c *Configuration) SetConsultQuery(query string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.consultQuery = query
+	c.data.ConsultQuery = query
 }
 
 func (c *Configuration) AccessCredentials() (username, password string) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return c.accessUsername, c.accessPassword
+	return c.data.AccessUsername, c.data.AccessPassword.PlainText()
 }
 
-func (c *Configuration) SetAccessCredentials(username, password string) {
+func (c *Configuration) SetAccessCredentials(username, pwd string) {
 	c.mu.Lock()
 	c.mu.Unlock()
 
-	if username == "" || password == "" {
+	if username == "" || pwd == "" {
 		username = ""
-		password = ""
+		pwd = ""
 	}
-	c.accessUsername = username
-	c.accessPassword = password
+	c.data.AccessUsername = username
+	c.data.AccessPassword = password.Password(pwd)
 }
 
 func (c *Configuration) Active() bool {
@@ -268,7 +241,7 @@ func (c *Configuration) Interval() time.Duration {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	return c.interval
+	return time.Minute
 }
 
 // UpdateBaseValidation validates the base configuration and returns the results of those checks.
@@ -284,18 +257,18 @@ func (c *Configuration) UpdateBaseValidation(ctx context.Context) {
 
 	res.D2DConnection, res.D2DCredentials = c.checkConnection(connCtx)
 
-	if c.accessUsername == "" && c.accessPassword == "" {
+	if c.data.AccessUsername == "" && c.data.AccessPassword == "" {
 		res.Access = ErrAccessNotConfigured
 	}
 
 	// check timeout
-	if c.timeout <= 0 {
+	if c.data.Timeout <= 0 {
 		res.QueryTimeout = ErrInvalidTimeout
 	}
 
 	// check db connection
-	res.VisitorQueryDuration, res.VisitorQueryResults, res.DatabaseConnection, res.VisitorQuery = c.checkDatabase(ctx, c.visitorQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
-		return db.ExecuteVisitorQuery(ctx, tx, query, c.timeout)
+	res.VisitorQueryDuration, res.VisitorQueryResults, res.DatabaseConnection, res.VisitorQuery = c.checkDatabase(ctx, c.data.VisitorQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
+		return db.ExecuteVisitorQuery(ctx, tx, query, c.data.Timeout)
 	})
 
 	c.validationResult = res
@@ -313,8 +286,8 @@ func (c *Configuration) UpdateRadiologieValidation(ctx context.Context) {
 	res := c.validationResult
 
 	// check db connection
-	res.RadiologieQueryDuration, res.RadiologieQueryResults, res.DatabaseConnection, res.RadiologieQuery = c.checkDatabase(ctx, c.radiologieQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
-		return db.ExecuteRadiologieQuery(ctx, tx, query, c.timeout)
+	res.RadiologieQueryDuration, res.RadiologieQueryResults, res.DatabaseConnection, res.RadiologieQuery = c.checkDatabase(ctx, c.data.RadiologieQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
+		return db.ExecuteRadiologieQuery(ctx, tx, query, c.data.Timeout)
 	})
 }
 
@@ -329,8 +302,8 @@ func (c *Configuration) UpdateLabValidation(ctx context.Context) {
 	res := c.validationResult
 
 	// check db connection
-	res.LabQueryDuration, res.LabQueryResults, res.DatabaseConnection, res.LabQuery = c.checkDatabase(ctx, c.labQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
-		return db.ExecuteLabQuery(ctx, tx, query, c.timeout)
+	res.LabQueryDuration, res.LabQueryResults, res.DatabaseConnection, res.LabQuery = c.checkDatabase(ctx, c.data.LabQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
+		return db.ExecuteLabQuery(ctx, tx, query, c.data.Timeout)
 	})
 }
 
@@ -345,8 +318,8 @@ func (c *Configuration) UpdateConsultValidation(ctx context.Context) {
 	res := c.validationResult
 
 	// check db connection
-	res.ConsultQueryDuration, res.ConsultQueryResults, res.DatabaseConnection, res.ConsultQuery = c.checkDatabase(ctx, c.consultQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
-		return db.ExecuteConsultQuery(ctx, tx, query, c.timeout)
+	res.ConsultQueryDuration, res.ConsultQueryResults, res.DatabaseConnection, res.ConsultQuery = c.checkDatabase(ctx, c.data.ConsultQuery, func(ctx context.Context, tx *sql.Tx, query string) (QueryResult, error) {
+		return db.ExecuteConsultQuery(ctx, tx, query, c.data.Timeout)
 	})
 }
 
@@ -391,78 +364,68 @@ func (c *Configuration) Save() error {
 		return errors.New("failed to find configuration folder")
 	}
 	if err := folders[0].WriteFile(config, bs); err != nil {
-		return errors.Wrap(err, "while writing configuration file")
+		return fmt.Errorf("while writing configuration file: %w", err)
 	}
 	dlog.Info("Updated %s/%s", folders[0].Path, config)
 	return nil
-}
-
-type persistentConfig struct {
-	Username        string            `json:"username"`
-	Password        string            `json:"password"`
-	Proxy           string            `json:"proxy"`
-	Dsn             db.ConnectionData `json:"dsn"`
-	Timeout         int               `json:"timeout"`
-	VisitorQuery    string            `json:"query"`
-	RadiologieQuery string            `json:"radiologie"`
-	LabQuery        string            `json:"lab"`
-	ConsultQuery    string            `json:"consult"`
-	AccessUsername  string            `json:"accessUsername"`
-	AccessPassword  string            `json:"accessPassword"`
 }
 
 func (c *Configuration) MarshalJSON() ([]byte, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	vars := persistentConfig{
-		Username:        c.username,
-		Password:        c.password,
-		Proxy:           c.proxy,
-		Dsn:             c.connection,
-		VisitorQuery:    c.visitorQuery,
-		RadiologieQuery: c.radiologieQuery,
-		LabQuery:        c.labQuery,
-		ConsultQuery:    c.consultQuery,
-		AccessUsername:  c.accessUsername,
-		AccessPassword:  c.accessPassword,
-		Timeout:         int(c.timeout / time.Second),
-	}
-	return json.Marshal(vars)
+	return json.Marshal(c.data)
 }
 
 func (c *Configuration) UnmarshalJSON(v []byte) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	vars := &persistentConfig{}
-	if err := json.Unmarshal(v, &vars); err != nil {
+	var detector struct {
+		Version int    `json:"version"`
+		DSN     string `json:"dsn"`
+	}
+
+	if err := json.Unmarshal(v, &detector); err != nil {
 		return err
 	}
 
-	if vars.Timeout == 0 {
-		vars.Timeout = 5
+	version := detector.Version
+	if version == 0 && detector.DSN != "" {
+		version = 1
 	}
 
-	c.username = vars.Username
-	dlog.SetUsername(c.username)
+	switch version {
+	case 0:
+		// no data available
+	case 1:
+		var v1 DataV1
+		if err := json.Unmarshal(v, &v1); err != nil {
+			return err
+		}
+		var err error
+		c.data, err = v1.ToV2()
+		if err != nil {
+			return err
+		}
+	case 2:
+		if err := json.Unmarshal(v, &c.data); err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("unsupported configuration version: %d", version)
+	}
 
-	c.password = vars.Password
-	c.proxy = vars.Proxy
-	c.connection = vars.Dsn
-	c.visitorQuery = vars.VisitorQuery
-	c.radiologieQuery = vars.RadiologieQuery
-	c.labQuery = vars.LabQuery
-	c.consultQuery = vars.ConsultQuery
-	c.accessUsername = vars.AccessUsername
-	c.accessPassword = vars.AccessPassword
-	c.timeout = time.Duration(vars.Timeout) * time.Second
+	if c.data.Timeout == 0 {
+		c.data.Timeout = 5 * time.Second
+	}
+	dlog.SetUsername(c.data.Username)
 
 	return nil
 }
 
 func (c *Configuration) checkConnection(ctx context.Context) (connErr error, credErr error) {
-	if c.username == "" || c.password == "" {
+	if c.data.Username == "" || c.data.Password == "" {
 		credErr = ErrD2DCredentialsNotConfigured
 	}
 
@@ -472,14 +435,14 @@ func (c *Configuration) checkConnection(ctx context.Context) (connErr error, cre
 		return err, credErr
 	}
 	req.URL.Path = PathPing
-	req.SetBasicAuth(c.username, c.password)
+	req.SetBasicAuth(c.data.Username, c.data.Password.PlainText())
 
-	res, err := rest.Do(ctx, c.proxy, req)
+	res, err := rest.Do(ctx, c.data.Proxy, req)
 	if err != nil {
 		dlog.Error("Failed to connect to %s: %v", Server, err)
 		return ErrD2DConnectionFailed, credErr
 	}
-	_, err = io.Copy(ioutil.Discard, res.Body)
+	_, err = io.Copy(io.Discard, res.Body)
 	if err != nil {
 		dlog.Error("Failed to drain response: %v", err)
 		return err, credErr
@@ -510,12 +473,12 @@ func (c *Configuration) checkDatabase(ctx context.Context, query string, f check
 		queryErr = ErrQueryNotConfigured
 	}
 
-	if !c.connection.IsValid() {
+	if !c.data.Connection.IsValid() {
 		connErr = ErrDatabaseNotConfigured
 		return
 	}
 
-	conn, err := sql.Open(c.connection.Driver, c.connection.DSN())
+	conn, err := sql.Open(c.data.Connection.Driver, c.data.Connection.DSN())
 	if err != nil {
 		dlog.Error("Failed to connect to database: %v", err)
 		connErr = &DatabaseInvalidError{Cause: err.Error()}
@@ -524,7 +487,7 @@ func (c *Configuration) checkDatabase(ctx context.Context, query string, f check
 
 	err = conn.PingContext(ctx)
 	if err != nil {
-		dlog.Error("Failed to ping database %s: %v", c.connection, err)
+		dlog.Error("Failed to ping database %s: %v", c.data.Connection.Host, err)
 		connErr = &DatabaseInvalidError{Cause: err.Error()}
 		return
 	}
@@ -550,14 +513,15 @@ func (c *Configuration) checkDatabase(ctx context.Context, query string, f check
 
 	queryStart := time.Now()
 	queryResult, err = f(ctx, tx, query)
-	_, errIsSelection := err.(*db.SelectionError)
+	var selectionError *db.SelectionError
+	errIsSelection := errors.As(err, &selectionError)
 
 	switch {
 	case err == nil:
 	case errIsSelection:
 		queryErr = err
 		return
-	case err == context.DeadlineExceeded:
+	case errors.Is(err, context.DeadlineExceeded):
 		queryErr = err
 		return
 	default:
@@ -574,6 +538,6 @@ func (c *Configuration) Do(ctx context.Context, req *http.Request) (*http.Respon
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	req.SetBasicAuth(c.username, c.password)
-	return rest.Do(ctx, c.proxy, req)
+	req.SetBasicAuth(c.data.Username, c.data.Proxy)
+	return rest.Do(ctx, c.data.Proxy, req)
 }

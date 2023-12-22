@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "username": "upload-user",
+  "password": "2nDJqaCrMGPKxOx71G4D5pzfu9tPgbV+wc2U4UXJUg==",
+  "proxy": "proxy",
+  "database": {
+    "driver": "sqlserver",
+    "host": "host",
+    "instance": "instance",
+    "port": "",
+    "database": "database",
+    "username": "db-username",
+    "password": "UfEdD14vg4kPPcIfWhHspuJjMK/Uem6KWVQ=",
+    "params": "p=a"
+  },
+  "timeout": 40000000000,
+  "query": "visitor",
+  "radiologie": "radio",
+  "lab": "lab",
+  "consult": "consult",
+  "access_username": "web-user",
+  "access_password": "po9IsYfn+eY6zHsf/TN/jWkrOhXea2/FVP7bfA=="
+}

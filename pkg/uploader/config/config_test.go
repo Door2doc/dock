@@ -3,8 +3,10 @@ package config
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -16,7 +18,18 @@ import (
 const (
 	TestUser     = "test-user"
 	TestPassword = "test-password"
-	TestDSN      = "postgres://pguser:pwd@localhost:5436/pgdb?sslmode=disable"
+)
+
+var (
+	TestConnection = db.ConnectionData{
+		Driver:   "postgres",
+		Host:     "localhost",
+		Port:     "5436",
+		Database: "pgdb",
+		Username: "pguser",
+		Password: "pwd",
+		Params:   "sslmode=disable",
+	}
 )
 
 func DummyHandler() http.Handler {
@@ -106,7 +119,7 @@ func TestConfiguration_Validate(t *testing.T) {
 		},
 		"correct database": {
 			Given: func(cfg *Configuration) {
-				cfg.SetDSN("postgres", TestDSN)
+				cfg.SetConnection(TestConnection)
 			},
 			Want: &ValidationResult{
 				D2DCredentials:  ErrD2DCredentialsNotConfigured,
@@ -120,7 +133,16 @@ func TestConfiguration_Validate(t *testing.T) {
 		},
 		"incorrect user": {
 			Given: func(cfg *Configuration) {
-				cfg.SetDSN("postgres", "postgres://postgres:pwd@localhost:5436/pgdb?sslmode=disable")
+				cfg.SetConnection(db.ConnectionData{
+					Driver:   "postgres",
+					Host:     "localhost",
+					Port:     "5436",
+					Instance: "",
+					Database: "pgdb",
+					Username: "postgres",
+					Password: "pwd",
+					Params:   "sslmode=disable",
+				})
 			},
 			Want: &ValidationResult{
 				DatabaseConnection: &DatabaseInvalidError{
@@ -137,7 +159,16 @@ func TestConfiguration_Validate(t *testing.T) {
 		},
 		"incorrect password": {
 			Given: func(cfg *Configuration) {
-				cfg.SetDSN("postgres", "postgres://pguser:password@localhost:5436/pgdb?sslmode=disable")
+				cfg.SetConnection(db.ConnectionData{
+					Driver:   "postgres",
+					Host:     "localhost",
+					Port:     "5436",
+					Instance: "",
+					Database: "pgdb",
+					Username: "pguser",
+					Password: "password",
+					Params:   "sslmode=disable",
+				})
 			},
 			Want: &ValidationResult{
 				DatabaseConnection: &DatabaseInvalidError{
@@ -154,7 +185,16 @@ func TestConfiguration_Validate(t *testing.T) {
 		},
 		"incorrect database": {
 			Given: func(cfg *Configuration) {
-				cfg.SetDSN("postgres", "postgres://pguser:pwd@localhost:5436/database?sslmode=disable")
+				cfg.SetConnection(db.ConnectionData{
+					Driver:   "postgres",
+					Host:     "localhost",
+					Port:     "5436",
+					Instance: "",
+					Database: "database",
+					Username: "pguser",
+					Password: "pwd",
+					Params:   "sslmode=disable",
+				})
 			},
 			Want: &ValidationResult{
 				DatabaseConnection: &DatabaseInvalidError{
@@ -187,8 +227,8 @@ func TestConfiguration_Validate(t *testing.T) {
 		//},
 		"correct query": {
 			Given: func(cfg *Configuration) {
-				cfg.SetDSN("postgres", TestDSN)
-				cfg.SetVisitorQuery(`select * from correct`)
+				cfg.SetConnection(TestConnection)
+				cfg.SetVisitorQuery(`SELECT * FROM correct`)
 			},
 			Want: &ValidationResult{
 				D2DCredentials:  ErrD2DCredentialsNotConfigured,
@@ -201,9 +241,9 @@ func TestConfiguration_Validate(t *testing.T) {
 		},
 		"correct minimal configuration orders": {
 			Given: func(cfg *Configuration) {
-				cfg.SetDSN("postgres", TestDSN)
+				cfg.SetConnection(TestConnection)
 				cfg.SetCredentials(TestUser, TestPassword)
-				cfg.SetVisitorQuery(`select * from correct`)
+				cfg.SetVisitorQuery(`SELECT * FROM correct`)
 			},
 			Want: &ValidationResult{
 				RadiologieQuery: ErrQueryNotConfigured,
@@ -216,9 +256,9 @@ func TestConfiguration_Validate(t *testing.T) {
 		},
 		"correct configuration without orders": {
 			Given: func(cfg *Configuration) {
-				cfg.SetDSN("postgres", TestDSN)
+				cfg.SetConnection(TestConnection)
 				cfg.SetCredentials(TestUser, TestPassword)
-				cfg.SetVisitorQuery(`select * from correct`)
+				cfg.SetVisitorQuery(`SELECT * FROM correct`)
 				cfg.SetAccessCredentials(TestUser, TestPassword)
 			},
 			Want: &ValidationResult{
@@ -231,12 +271,12 @@ func TestConfiguration_Validate(t *testing.T) {
 		},
 		"correct configuration with orders": {
 			Given: func(cfg *Configuration) {
-				cfg.SetDSN("postgres", TestDSN)
+				cfg.SetConnection(TestConnection)
 				cfg.SetCredentials(TestUser, TestPassword)
-				cfg.SetVisitorQuery(`select * from correct`)
-				cfg.SetRadiologieQuery(`select * from correct_radiologie`)
-				cfg.SetLabQuery(`select * from correct_lab`)
-				cfg.SetConsultQuery(`select * from correct_consult`)
+				cfg.SetVisitorQuery(`SELECT * FROM correct`)
+				cfg.SetRadiologieQuery(`SELECT * FROM correct_radiologie`)
+				cfg.SetLabQuery(`SELECT * FROM correct_lab`)
+				cfg.SetConsultQuery(`SELECT * FROM correct_consult`)
 				cfg.SetAccessCredentials(TestUser, TestPassword)
 			},
 			Want:             &ValidationResult{},
@@ -283,48 +323,73 @@ func TestConfiguration_Validate(t *testing.T) {
 	}
 }
 
-func TestConfigurationJSON(t *testing.T) {
-	defaultConnection := db.ConnectionData{Driver: "sqlserver"}
-	defaultTimeout := NewConfiguration().timeout
-
-	for name, test := range map[string]*Configuration{
-		"empty":    {},
-		"username": {username: "user"},
-		"password": {password: "pass"},
-		"dsn": {connection: db.ConnectionData{
-			Driver:   "postgres",
-			Host:     "localhost",
-			Port:     "5436",
-			Database: "pgdb",
-			Username: "pguser",
-			Password: "pass",
-			Params:   "sslmode=disable",
-		}},
-		"query":         {visitorQuery: "query"},
-		"order queries": {radiologieQuery: "a", labQuery: "b", consultQuery: "c"},
-		"access":        {accessUsername: "username", accessPassword: "password", connection: db.ConnectionData{Driver: "sqlserver"}},
-		"timeout":       {timeout: 100 * time.Second},
+func TestConfigurationMarshal(t *testing.T) {
+	for file, want := range map[string]DataV2{
+		"testdata/config.v1.json": {
+			Version:  2,
+			Username: "upload-user",
+			Password: "upload-password",
+			Connection: db.ConnectionData{
+				Driver:   "sqlserver",
+				Host:     "host",
+				Port:     "",
+				Instance: "instance",
+				Database: "database",
+				Username: "db-username",
+				Password: "db-password",
+				Params:   "p=a",
+			},
+			Timeout:         40 * time.Second,
+			VisitorQuery:    "visitor",
+			RadiologieQuery: "radio",
+			LabQuery:        "lab",
+			ConsultQuery:    "consult",
+			Proxy:           "proxy",
+			AccessUsername:  "web-user",
+			AccessPassword:  "web-password",
+		},
+		"testdata/config.v2.json": {
+			Version:  2,
+			Username: "upload-user",
+			Password: "upload-password",
+			Connection: db.ConnectionData{
+				Driver:   "sqlserver",
+				Host:     "host",
+				Port:     "",
+				Instance: "instance",
+				Database: "database",
+				Username: "db-username",
+				Password: "MyPassw0rd",
+				Params:   "p=a",
+			},
+			Timeout:         40 * time.Second,
+			VisitorQuery:    "visitor",
+			RadiologieQuery: "radio",
+			LabQuery:        "lab",
+			ConsultQuery:    "consult",
+			Proxy:           "proxy",
+			AccessUsername:  "web-user",
+			AccessPassword:  "web-password",
+		},
 	} {
-		t.Run(name, func(t *testing.T) {
-			if test.connection == (db.ConnectionData{}) {
-				test.connection = defaultConnection
-			}
-			if test.timeout == 0 {
-				test.timeout = defaultTimeout
-			}
-
-			bs, err := json.Marshal(test)
+		t.Run(file, func(t *testing.T) {
+			f, err := os.Open(file)
 			if err != nil {
 				t.Fatal(err)
 			}
+			defer func() { _ = f.Close() }()
 
-			got := &Configuration{}
-			if err := json.Unmarshal(bs, &got); err != nil {
+			data, err := io.ReadAll(f)
+			if err != nil {
 				t.Fatal(err)
 			}
+			var got = new(Configuration)
+			if err := json.Unmarshal(data, &got); err != nil {
+				t.Fatalf("%v", err)
+			}
 
-			if !reflect.DeepEqual(got, test) {
-				t.Errorf("Marshal/Unmarshal == \n\t%v, want \n\t%v", got, test)
+			if !reflect.DeepEqual(got.data, want) {
+				t.Errorf("Got == %#v, want %#v", got.data, want)
 			}
 		})
 	}

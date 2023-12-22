@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/door2doc/d2d-uploader/pkg/uploader/password"
 	"html/template"
 	"io/ioutil"
 	"net/http"
@@ -230,7 +231,7 @@ func (m *ServeMux) DatabaseHandler() http.Handler {
 				Instance: r.FormValue("instance"),
 				Database: r.FormValue("database"),
 				Username: r.FormValue("username"),
-				Password: r.FormValue("password"),
+				Password: password.Password(r.FormValue("password")),
 				Params:   r.FormValue("params"),
 			}
 			m.cfg.SetConnection(c)

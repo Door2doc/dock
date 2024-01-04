@@ -538,6 +538,6 @@ func (c *Configuration) Do(ctx context.Context, req *http.Request) (*http.Respon
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	req.SetBasicAuth(c.data.Username, c.data.Proxy)
+	req.SetBasicAuth(c.data.Username, c.data.Password.PlainText())
 	return rest.Do(ctx, c.data.Proxy, req)
 }

@@ -1,11 +1,11 @@
 ---
-title: Handleiding Upload Service
+title: Handleiding Dock - de door2doc Upload Service
 author: door2doc 
 ---
 
 # Overzicht
 
-Dit document beschrijft de installatie van de door2doc Upload Service -- een Windows service die op regelmatige basis 
+Dit document beschrijft de installatie van Dock -- een Windows service die op regelmatige basis 
 data uitleest uit het ZIS en deze doorzet naar de door2doc Cloud omgeving.  
 
 # Voorbereidingen
@@ -13,7 +13,7 @@ data uitleest uit het ZIS en deze doorzet naar de door2doc Cloud omgeving.
 Voordat u aan de installatie kunt beginnen, dient over het volgende te beschikken:
 
 ## Server 
-Een server waarop de Upload Service geïnstalleerd kan worden. Dit hoeft geen dedicated server te zijn. Deze server
+Een server waarop Dock geïnstalleerd kan worden. Dit hoeft geen dedicated server te zijn. Deze server
 moet connectie kunnen maken met de ZIS database, en moet connectie kunnen maken met `https://integration.door2doc.net` 
 (al dan niet via een proxy).
 
@@ -27,13 +27,13 @@ indien afwezig, wordt SQL Server Integrated Security gebruikt.
 Voor de upload naar door2doc heeft de service een door2doc gebruikersnaam en wachtwoord nodig. Deze krijgt u door ons geleverd. 
 
 ## Queries
-De Upload Service voert op regelmatige basis queries uit om de data uit uw database te halen. Deze queries worden door
+Dock voert op regelmatige basis queries uit om de data uit uw database te halen. Deze queries worden door
 door2doc en uw dienst informatievoorziening opgesteld en aangeleverd. 
 
 ## Software
 U kunt de laatste versie van deze software downloaden van 
 
-`https://github.com/Door2doc/d2d-uploader/releases`. 
+`https://github.com/Door2doc/dock/releases`. 
 
 De software wordt geleverd als `.exe` bestand.  
 
@@ -43,7 +43,7 @@ De software wordt geleverd als `.exe` bestand.
 
 Installatie vindt plaats door een dubbelklik op het `.exe` bestand:
 
-![Installatie van door2doc Upload Service](install-software-1.png){height=50%}\   
+![Installatie van Dock](install-software-1.png){height=50%}\   
 
 Dit moet in enkele seconden afgerond zijn. U kunt de installatie verifiëren via Administrative Tools > Services. 
 Hier is nu de service Door2doc Upload Service te zien in de status Running. 

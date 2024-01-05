@@ -7,7 +7,7 @@
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
       <jdbc-url>jdbc:postgresql://localhost:5436/pgdb</jdbc-url>
     </data-source>
-    <data-source source="LOCAL" name="@localhost" uuid="29d69448-1a9d-406d-88ab-39283156c2cd">
+    <data-source source="LOCAL" name="MSSQL@localhost" uuid="29d69448-1a9d-406d-88ab-39283156c2cd">
       <driver-ref>sqlserver.ms</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</jdbc-driver>

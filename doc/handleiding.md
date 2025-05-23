@@ -1,6 +1,6 @@
 ---
 title: Handleiding Dock - de door2doc Upload Service
-author: door2doc 
+author: door2doc
 ---
 
 # Overzicht
@@ -43,23 +43,23 @@ De software wordt geleverd als `.exe` bestand.
 
 Installatie vindt plaats door een dubbelklik op het `.exe` bestand:
 
-![Installatie van Dock](install-software-1.png){height=50%}\   
+![Installatie van Dock](install-software-1.png){width=400px}\   
 
 Dit moet in enkele seconden afgerond zijn. U kunt de installatie verifiëren via Administrative Tools > Services. 
 Hier is nu de service Door2doc Upload Service te zien in de status Running. 
 
-![Services overzicht](running-service.png){height=50%}\ 
+![Services overzicht](running-service.png){width=400px}\ 
 
 # Configuratie
 
 De service dient nu geconfigureerd te worden. Dit gebeurt via een web interface op `http://localhost:17226`.
 
-![Configuratiescherm](config-scherm.png){height=50%}\ 
+![Configuratiescherm](config-scherm.png){width=400px}\ 
 
 Vul hier de gegevens in die u aan het begin verzameld hebt. Wanneer alle gegevens correct zijn ingevoerd, zal 
 de service de volgende status geven. 
 
-![Succes](configured-ok.png){height=50%}\ 
+![Succes](configured-ok.png){width=400px}\ 
 
 # Beheer
 
@@ -71,8 +71,14 @@ De service kan gepauzeerd worden via Administrative Tools > Services.
 
 Foutmeldingen worden naar de Windows event log gestuurd, en kunnen worden gemonitord via de Windows Event Viewer:
 
-![Event viewer](eventviewer.png){height=50%}\
+![Event viewer](eventviewer.png){width=400px}\
+   
 
 ## Configuratie
 
 Het configuratiebestand is te vinden in `C:\ProgramData\Door2doc`.
+     
+
+## Beveiliging
+
+De configuratie interface kan indien gewenst beveiligd worden onder de tab "Security".  

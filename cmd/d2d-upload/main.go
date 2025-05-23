@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	_ "time/tzdata"
 
 	"github.com/denisenkom/go-mssqldb"
 	"github.com/door2doc/d2d-uploader/pkg/uploader"

@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"sync"
@@ -15,7 +16,6 @@ import (
 	"github.com/door2doc/d2d-uploader/pkg/uploader/dlog"
 	"github.com/door2doc/d2d-uploader/pkg/uploader/history"
 	"github.com/door2doc/d2d-uploader/pkg/uploader/rest"
-	"github.com/pkg/errors"
 )
 
 type Uploader struct {
@@ -251,7 +251,7 @@ func (u *Uploader) UploadJSON(ctx context.Context, json *bytes.Buffer, path stri
 	_ = res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return errors.Errorf("Unexpected response: %s\n%s", res.Status, resBuf.String())
+		return fmt.Errorf("Unexpected response: %s\n%s", res.Status, resBuf.String())
 	}
 
 	return nil

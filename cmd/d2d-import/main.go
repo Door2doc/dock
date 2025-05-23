@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -22,7 +23,6 @@ import (
 	"github.com/door2doc/d2d-uploader/pkg/uploader/config"
 	"github.com/door2doc/d2d-uploader/pkg/uploader/db"
 	"github.com/door2doc/d2d-uploader/pkg/uploader/rest"
-	"github.com/pkg/errors"
 )
 
 var (

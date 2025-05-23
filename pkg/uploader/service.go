@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	_ "time/tzdata"
 
-	"4d63.com/tz"
 	"github.com/door2doc/d2d-uploader/pkg/uploader/config"
 	"github.com/door2doc/d2d-uploader/pkg/uploader/dlog"
 	"github.com/door2doc/d2d-uploader/pkg/uploader/history"
@@ -35,7 +35,7 @@ func NewService(development bool, version string) *Service {
 
 // Start starts running the service. It will return as soon as possible.
 func (s *Service) Start(svc service.Service) error {
-	location, err := tz.LoadLocation("Europe/Amsterdam")
+	location, err := time.LoadLocation("Europe/Amsterdam")
 	if err != nil {
 		return fmt.Errorf("failed to load Europe/Amsterdam: %v", err)
 	}

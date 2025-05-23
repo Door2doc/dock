@@ -213,7 +213,7 @@ var _escData = map[string]*_escFile{
 		name:    "_layout.html",
 		local:   "pkg/uploader/assets/resources/_layout.html",
 		size:    5132,
-		modtime: 1678803811,
+		modtime: 1619966579,
 		compressed: `
 H4sIAAAAAAAC/9RYS3PbNhC+61escQ7I+nFoO6RmUqfTSzvjxk16BoEViRoEaGApRePRf++AD5l6OGPl
 kMg+iAS4H/DtftiFgexCOUnrBqGi2sxnWXyAEbbMGVoWO1Co+QwAILvgHD7iY6s9KqiRBJAoA3A+fO+6
@@ -240,7 +240,7 @@ v3QBVF0dDrJjWzi1ZpDsu5SlkdF8/75hdhiI6WF2+xjumdLu8u//AAAA///7uoYJDBQAAA==
 		name:    "access.html",
 		local:   "pkg/uploader/assets/resources/access.html",
 		size:    1197,
-		modtime: 1678803811,
+		modtime: 1619793986,
 		compressed: `
 H4sIAAAAAAAC/6RTsa7bMAzc31cctCfeiyRbtw4d+lB0lC06FipThkQ5dV3/eyHHSRzjvaJFtUQhebzj
 UR5HGKotE5RYcaQwTV+phGWhUOuKEKlKwcowjiA2mKaXFab0ZsiQFwA4dKf5N58vDcWMFbF8jtCB4NkN
@@ -257,7 +257,7 @@ G9nOUyYRz4vlMZWtlbvFpTBK4V0XbKvDoE6vndFCh+IKepP5UOTFnF4ein8HAAD//3PzUjatBAAA
 		name:    "bootstrap.min.css",
 		local:   "pkg/uploader/assets/resources/assets/bootstrap.min.css",
 		size:    155758,
-		modtime: 1678803811,
+		modtime: 1553451733,
 		compressed: `
 H4sIAAAAAAAC/+y9bY/jOJIg/P35FdosFLpy2nJJsmU7nejGzg52cQtMz4fpW+CAvjpAtmhbU3o7Sa5U
 tuH97Q/4JvElSElOZ3fv3W3vVMpUMCLICAYjKDL4+U//9P85f3L+pSiauqmi0vm2nC/mvvPp1DRlvf38
@@ -653,7 +653,7 @@ AA==
 		name:    "bootstrap.min.css.map",
 		local:   "pkg/uploader/assets/resources/assets/bootstrap.min.css.map",
 		size:    625953,
-		modtime: 1678803811,
+		modtime: 1553451733,
 		compressed: `
 H4sIAAAAAAAC/+z9C3faSLYojn8V3fSc/50+lm3AGNvpufM/qpKEBQGCieO4J7MmQpRBRg/QA4xn9Xf/
 rXqq9AKSzsztc09mzUrj2vXau3btV+0q/fPNBkWxGwZv3l6ob+IwjRwUv3n7tzdnZ+dnZ+exE8fn0zBM
@@ -2344,7 +2344,7 @@ w5rSETf/9vD/BwAA//9003TYIY0JAA==
 		name:    "custom.css",
 		local:   "pkg/uploader/assets/resources/assets/custom.css",
 		size:    82,
-		modtime: 1678803811,
+		modtime: 1553451733,
 		compressed: `
 H4sIAAAAAAAC/8ooyc3RUUjKT6lUqOZSUFBQyEjNTM8osVIwNDBQteaq5dJLy8zJgcrlZubpospj0QEI
 AAD//0xhMXJSAAAA
@@ -2355,7 +2355,7 @@ AAD//0xhMXJSAAAA
 		name:    "logo.png",
 		local:   "pkg/uploader/assets/resources/assets/logo.png",
 		size:    4562,
-		modtime: 1678803811,
+		modtime: 1553451733,
 		compressed: `
 H4sIAAAAAAAC/3TX1zvbj+P38TdKo0ZVldh71WiM2qW2WLVSW+1RK/YeFbvUKrFpjBKitVN7q5mipSiK
 L1FKqtSIdV+fw/vgd72u5+HjD3ilGBlq09xhuQMAAA1UR8MEAID4/wKRAgCwKsDwBwCAW26qBqoA0JhB
@@ -2441,7 +2441,7 @@ AIBqGmo0qNnH/b8AAAD///H03wfSEQAA
 		name:    "database.html",
 		local:   "pkg/uploader/assets/resources/database.html",
 		size:    3759,
-		modtime: 1678803811,
+		modtime: 1622811287,
 		compressed: `
 H4sIAAAAAAAC/9SWz27bMAzG73kKQqftkOQ+JL60BTaswFp0fQDZYhJhsuRKdNbM87sPkmXH+dOicb0B
 yyGQYZIf9fto2VUFAldSIzCSpJBBXV9z4il3WFWAWkBdT3pRqRE7HzQBAFisjM0hR9oYsWSFccSAZySN
@@ -2463,7 +2463,7 @@ PASbXZnmcu9sShpS0tPCypzbHUseC8EJF/Mm6US6Wfp5SCaTruc/AQAA//+1xYK4rw4AAA==
 		name:    "orders-consult.html",
 		local:   "pkg/uploader/assets/resources/orders-consult.html",
 		size:    1990,
-		modtime: 1678803811,
+		modtime: 1619966579,
 		compressed: `
 H4sIAAAAAAAC/5RVwW7jNhC95ysGxPZWS1v0FkgGFuuitwXaTT+AEkcW1xRHHY6cOIr+vaCkOnIsJ60P
 BknNzHvzyEf2PRisrEdQYsWhgmH4Sj50ToDYIMPfHfKp7wG9gWG4WyQUZE4x/i6riBtoUGoyuWopiAJd
@@ -2485,7 +2485,7 @@ Zdvo+H781RotmKVT0gVclkbLb+9eW/knAAD//7ubBUrGBwAA
 		name:    "orders-lab.html",
 		local:   "pkg/uploader/assets/resources/orders-lab.html",
 		size:    1962,
-		modtime: 1678803811,
+		modtime: 1619966579,
 		compressed: `
 H4sIAAAAAAAC/5RVwW7jNhC95ysGxPZWSVv0FlACFnXRS7FAu+kHUOLI4poi1eHIiaPo3wtKqiPHctL6
 YJDUzLw3j3zkMIDG2jgEwYYtChjH31UJnjQS/N0jnYYB0GkYx7tVcOn1KcbeydpTCy1y43UuOh9YgKrY
@@ -2507,7 +2507,7 @@ LuBkFu1d3L228k8AAAD//wP1BASqBwAA
 		name:    "orders-radiology.html",
 		local:   "pkg/uploader/assets/resources/orders-radiology.html",
 		size:    1981,
-		modtime: 1678803811,
+		modtime: 1619966579,
 		compressed: `
 H4sIAAAAAAAC/5RVQW/jNhO951cMiP1un6UtegskA4u66G2B7qY/gBJHFtcURx2OnHUU/feCkuLIsZy0
 PhgkNTPvzSMf2fdgsLIeQYkVhwqG4Zs2lhztT0BskOHvDvnU94DewDDcLVIKMqeYcZdVxA00KDWZXLUU
@@ -2529,7 +2529,7 @@ yfirNVowS6ekC7gsjS7f3r228k8AAAD//9bc0/K9BwAA
 		name:    "query.html",
 		local:   "pkg/uploader/assets/resources/query.html",
 		size:    2214,
-		modtime: 1678803811,
+		modtime: 1564212738,
 		compressed: `
 H4sIAAAAAAAC/5xVwY7jNgy9z1cQwvbW2Fv0NrADLJqitwXanfYuW3TMjSy5FJ3ZjMdf1M/ojxWy3ZmM
 E2+29cGQrUe+R1Kk+h4MVuQQlJBYVDAMf1Ag8Qx/dsinvgd0Bobh7gxaeHOKyDsAgKzy3ECDUnuTq9YH
@@ -2551,7 +2551,7 @@ JC83biEOCnGblqnR8Ur8vTVaMEsnowvqaRknzvbuNdR/AgAA//9DJ3aYpggAAA==
 		name:    "status.html",
 		local:   "pkg/uploader/assets/resources/status.html",
 		size:    5150,
-		modtime: 1678803811,
+		modtime: 1620392739,
 		compressed: `
 H4sIAAAAAAAC/+RX30/bMBB+5684RUza0NowBi9VWglRpm3SJm0F9ji58aW1SO3Mdsq60P99spNACvm1
 Am2l5S3xd+e77z6fL0kCFAPGERzNdIgOLJcjTXSskgSQU1gu9wqYsaALA9kDAEgSYAF0r0jIKNFM8O4n
@@ -2574,7 +2574,7 @@ f9+mdLD6VtDH3wAAAP//hNzi/B4UAAA=
 		name:    "upload.html",
 		local:   "pkg/uploader/assets/resources/upload.html",
 		size:    1370,
-		modtime: 1678803811,
+		modtime: 1562944213,
 		compressed: `
 H4sIAAAAAAAC/7SUsY7bMAyG9zwFoakdHAM3BrGXtlOH3pIHkC36IlQWVYpOL3X97oWVXOz4gjZA77JE
 kH+SP76fUN+DwcZ6BCVWHCoYhl1wpE3fA3oDw7CaaSoyx1GyAgDYNsQttCh7MoUKFEWBrsWSL1TepSaq

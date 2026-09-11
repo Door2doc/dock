@@ -5,8 +5,15 @@ Name "Door2doc Upload Service"
 OutFile "_installer.exe"
 
 InstallDir "$PROGRAMFILES64\Door2doc\UploadService"
+; on upgrades, default to the previous location (NSIS strips the quotes and uninstall.exe)
+InstallDirRegKey HKLM "${REGKEY}" "UninstallString"
 
 RequestExecutionLevel admin
+
+Page directory
+Page instfiles
+UninstPage uninstConfirm
+UninstPage instfiles
 
 Function .onInit
 
@@ -64,6 +71,7 @@ Section "uninstall"
     DeleteRegKey HKLM "${REGKEY}"
     Delete "$INSTDIR\UploadService.exe"
     Delete "$INSTDIR\uninstall.exe"
-    RMDir /r "$INSTDIR"
+    ; not /r: the user may have picked a folder that holds other files
+    RMDir "$INSTDIR"
     RMDir "$PROGRAMFILES64\Door2doc"
 SectionEnd

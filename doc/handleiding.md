@@ -41,11 +41,17 @@ De software wordt geleverd als `.exe` bestand.
 
 ## Installatie 
 
-Installatie vindt plaats door een dubbelklik op het `.exe` bestand:
+Installatie vindt plaats door een dubbelklik op het `.exe` bestand. Kies de installatiemap
+(standaard `C:\Program Files\Door2doc\UploadService`) en klik op *Install*. Bij een upgrade
+staat de map van de vorige installatie al ingevuld.
 
-![Installatie van Dock](install-software-1.png){width=400px}\   
+![Installatiemap kiezen](install-software-1.png){width=400px}\ 
 
-Dit moet in enkele seconden afgerond zijn. U kunt de installatie verifiëren via Administrative Tools > Services. 
+Dit moet in enkele seconden afgerond zijn. Klik daarna op *Close*.
+
+![Installatie afgerond](install-software-2.png){width=400px}\ 
+
+U kunt de installatie verifiëren via Administrative Tools > Services. 
 Hier is nu de service Door2doc Upload Service te zien in de status Running. 
 
 ![Services overzicht](running-service.png){width=400px}\ 
